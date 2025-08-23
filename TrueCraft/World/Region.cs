@@ -51,16 +51,22 @@ namespace TrueCraft.World
         {
             Position = position;
 
-            string filename = Path.Combine(baseDirectory, "region", GetRegionFileName(position));
-
-            if (File.Exists(filename))
+            var regionPath = Path.Combine(baseDirectory, "region");
+            var regionFileName = Path.Combine(regionPath, GetRegionFileName(position));
+            
+            if (!Directory.Exists(regionPath))
             {
-                _regionFile = File.Open(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                Directory.CreateDirectory(regionPath);
+            }
+
+            if (File.Exists(regionFileName))
+            {
+                _regionFile = File.Open(regionFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                 _regionFile.Read(HeaderCache, 0, 8192);
             }
             else
             {
-                _regionFile = File.Open(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                _regionFile = File.Open(regionFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                 CreateRegionHeader();
             }
         }

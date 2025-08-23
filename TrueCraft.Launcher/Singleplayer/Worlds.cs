@@ -27,7 +27,7 @@ namespace TrueCraft.Launcher.Singleplayer
         public Worlds(string baseDirectory)
         {
             if (!Directory.Exists(baseDirectory))
-                throw new DirectoryNotFoundException(baseDirectory);
+                Directory.CreateDirectory(Paths.Worlds);
 
             _baseDirectory = baseDirectory;
 

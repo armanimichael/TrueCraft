@@ -72,14 +72,15 @@ namespace TrueCraft
                         Directory.Delete("players", true);
                 }
 
-                IWorld world;
-                if (!Directory.Exists("world"))
+                var worldPath = Path.Combine(Paths.Worlds, "world");
+
+                if (!Directory.Exists(worldPath))
                 {
                     int seed = MathHelper.Random.Next();
                     TrueCraft.World.World.CreateWorld(seed, Paths.Worlds, "world");
                 }
 
-                world = TrueCraft.World.World.LoadWorld(ServiceLocator, "world");
+                var world = TrueCraft.World.World.LoadWorld(ServiceLocator, worldPath);
                 ServiceLocator.World = world;
                 Server.World = world;
 
