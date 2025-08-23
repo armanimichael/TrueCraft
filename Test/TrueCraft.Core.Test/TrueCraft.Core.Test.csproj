@@ -32,6 +32,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\TrueCraft.Core\TrueCraft.Core.csproj" />
-    <ProjectReference Include="..\..\externals\fNbt\fNbt\fNbt.csproj" />
+    <ProjectReference Include="..\..\fNbt.Fork\fNbt.Fork.csproj" />
   </ItemGroup>
 </Project>

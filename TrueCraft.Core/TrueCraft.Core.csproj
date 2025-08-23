@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TrueCraft.Profiling\TrueCraft.Profiling.csproj" />
-    <ProjectReference Include="..\externals\fNbt\fNbt\fNbt.csproj" />
+    <ProjectReference Include="..\fNbt.Fork\fNbt.Fork.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\externals\fNbt\fNbt\fNbt.csproj" />
+    <ProjectReference Include="..\fNbt.Fork\fNbt.Fork.csproj" />
     <ProjectReference Include="..\TrueCraft.Core\TrueCraft.Core.csproj" />
   </ItemGroup>
 
