@@ -13,9 +13,8 @@ public class CoalItem : ItemProvider, IBurnableItem
 
     public static readonly short ItemID = 0x107;
 
-    public CoalItem(XmlNode node) : base(node)
-    {
-    }
+    public CoalItem(XmlNode node)
+        : base(node) { }
 
-    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(80); } }
+    public TimeSpan BurnTime => TimeSpan.FromSeconds(80);
 }

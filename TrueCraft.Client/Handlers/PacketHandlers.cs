@@ -32,32 +32,34 @@ internal static class PacketHandlers
 
     public static void HandleChatMessage(IPacket _packet, MultiplayerClient client)
     {
-        var packet = (ChatMessagePacket)_packet;
+        var packet = (ChatMessagePacket) _packet;
         client.OnChatMessage(new ChatMessageEventArgs(packet.Message));
     }
 
     public static void HandleHandshake(IPacket _packet, MultiplayerClient client)
     {
-        var packet = (HandshakeResponsePacket)_packet;
+        var packet = (HandshakeResponsePacket) _packet;
+
         if (packet.ConnectionHash != "-")
         {
             Console.WriteLine("Online mode is not supported");
             Process.GetCurrentProcess().Kill();
         }
+
         // TODO: Authentication
         client.QueuePacket(new LoginRequestPacket(PacketReader.Version, client.User.Username));
     }
 
     public static void HandleLoginResponse(IPacket _packet, MultiplayerClient client)
     {
-        var packet = (LoginResponsePacket)_packet;
+        var packet = (LoginResponsePacket) _packet;
         client.EntityID = packet.EntityID;
         client.QueuePacket(new PlayerGroundedPacket());
     }
 
     public static void HandlePositionAndLook(IPacket _packet, MultiplayerClient client)
     {
-        var packet = (SetPlayerPositionPacket)_packet;
+        var packet = (SetPlayerPositionPacket) _packet;
         // Note: This packet is received once from the server on initial login.
         //     It seems to serve as an acknowledgement of that login.
         //     Setting the client Position will send a PositionAndLook packet
@@ -69,13 +71,13 @@ internal static class PacketHandlers
 
     public static void HandleUpdateHealth(IPacket _packet, MultiplayerClient client)
     {
-        var packet = (UpdateHealthPacket)_packet;
+        var packet = (UpdateHealthPacket) _packet;
         client.Health = packet.Health;
     }
 
     public static void HandleTimeUpdate(IPacket _packet, MultiplayerClient client)
     {
-        TimeUpdatePacket packet = (TimeUpdatePacket)_packet;
+        var packet = (TimeUpdatePacket) _packet;
         client.Dimension.TimeOfDay = packet.Time % 24000;
     }
 }

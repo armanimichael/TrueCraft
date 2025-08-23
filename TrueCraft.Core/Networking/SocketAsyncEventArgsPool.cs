@@ -23,7 +23,7 @@ public class SocketAsyncEventArgsPool : IDisposable
 
     private void Init(int size)
     {
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
             argsPool.Add(CreateEventArgs());
         }
@@ -32,6 +32,7 @@ public class SocketAsyncEventArgsPool : IDisposable
     public SocketAsyncEventArgs Get()
     {
         SocketAsyncEventArgs? args;
+
         if (!argsPool.TryTake(out args))
         {
             args = CreateEventArgs();
@@ -48,12 +49,14 @@ public class SocketAsyncEventArgsPool : IDisposable
     public void Add(SocketAsyncEventArgs args)
     {
         if (!argsPool.IsAddingCompleted)
+        {
             argsPool.Add(args);
+        }
     }
 
     protected SocketAsyncEventArgs CreateEventArgs()
     {
-        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        var args = new SocketAsyncEventArgs();
         bufferManager.SetBuffer(args);
 
         return args;
@@ -61,7 +64,7 @@ public class SocketAsyncEventArgsPool : IDisposable
 
     public void Trim(int count)
     {
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             SocketAsyncEventArgs? args;
 
@@ -88,7 +91,7 @@ public class SocketAsyncEventArgsPool : IDisposable
 
             while (argsPool.Count > 0)
             {
-                SocketAsyncEventArgs arg = argsPool.Take();
+                var arg = argsPool.Take();
 
                 bufferManager.ClearBuffer(arg);
                 arg.Dispose();

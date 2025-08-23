@@ -8,17 +8,11 @@ namespace TrueCraft.Core.Networking.Packets;
 /// </summary>
 public struct RespawnPacket : IPacket
 {
-    public byte ID { get { return 0x09; } }
+    public byte ID => 0x09;
 
     public DimensionID Dimension;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        Dimension = (DimensionID)stream.ReadInt8();
-    }
+    public void ReadPacket(IMinecraftStream stream) => Dimension = (DimensionID) stream.ReadInt8();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteInt8((sbyte)Dimension);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteInt8((sbyte) Dimension);
 }

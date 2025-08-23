@@ -13,7 +13,7 @@ public class FontRenderer
     /// <summary>
     /// 
     /// </summary>
-    public Font[] Fonts { get; private set; }
+    public Font[] Fonts { get; }
 
     /// <summary>
     /// 
@@ -22,12 +22,14 @@ public class FontRenderer
     public FontRenderer(Font font)
     {
         if (font == null)
+        {
             throw new ArgumentNullException("font");
+        }
 
         Fonts = new Font[]
-        {
-            font
-        };
+                {
+                    font
+                };
     }
 
     /// <summary>
@@ -41,16 +43,18 @@ public class FontRenderer
     public FontRenderer(Font regular, Font? bold, Font? strikethrough, Font? underline, Font? italic)
     {
         if (regular is null)
+        {
             throw new ArgumentNullException("regular");
+        }
 
         Fonts = new Font[]
-        {
-            regular,
-            bold ?? regular,
-            strikethrough ?? regular,
-            underline ?? regular,
-            italic ?? regular
-        };
+                {
+                    regular,
+                    bold ?? regular,
+                    strikethrough ?? regular,
+                    underline ?? regular,
+                    italic ?? regular
+                };
     }
 
     public Point MeasureText(string text, float scale = 1.0f)
@@ -58,26 +62,35 @@ public class FontRenderer
         var dx = 0;
         var height = 0;
         var font = Fonts[0];
-        for (int i = 0; i < text.Length; i++)
+
+        for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '§')
             {
                 i++;
                 var code = string.Format("§{0}", text[i]);
+
                 if (ChatFormat.IsValid(code))
+                {
                     font = GetFont(code);
+                }
             }
             else
             {
                 var glyph = font.GetGlyph(text[i]);
+
                 if (glyph != null)
                 {
-                    dx += (int)(glyph.XAdvance * scale);
+                    dx += (int) (glyph.XAdvance * scale);
+
                     if (glyph.Height > height)
+                    {
                         height = glyph.Height;
+                    }
                 }
             }
         }
+
         return new Point(dx, height);
     }
 
@@ -88,37 +101,59 @@ public class FontRenderer
         var color = Color.White;
         var font = Fonts[0];
 
-        for (int i = 0; i < text.Length; i++)
+        for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '§')
             {
                 i++;
                 var code = string.Format("§{0}", text[i]);
+
                 if (ChatFormat.IsValid(code))
+                {
                     font = GetFont(code);
+                }
                 else
+                {
                     color = GetColor(code);
+                }
             }
             else
             {
                 var glyph = font.GetGlyph(text[i]);
+
                 if (glyph != null)
                 {
                     var sourceRectangle = new Rectangle(glyph.X, glyph.Y, glyph.Width, glyph.Height);
-                    var destRectangle = new Rectangle(
-                        dx + (int)(glyph.XOffset * scale),
-                        dy + (int)(glyph.YOffset * scale),
-                        (int)(glyph.Width * scale),
-                        (int)(glyph.Height * scale));
-                    var shadowRectangle = new Rectangle(
-                        dx + (int)(glyph.XOffset * scale) + 4,
-                        dy + (int)(glyph.YOffset * scale) + 4,
-                        (int)(glyph.Width * scale),
-                        (int)(glyph.Height * scale));
 
-                    spriteBatch.Draw(font.GetTexture(glyph.Page), shadowRectangle, sourceRectangle, new Color((byte)21, (byte)21, (byte)21, alpha));
-                    spriteBatch.Draw(font.GetTexture(glyph.Page), destRectangle, sourceRectangle, new Color(color, alpha));
-                    dx += (int)(glyph.XAdvance * scale);
+                    var destRectangle = new Rectangle(
+                        dx + (int) (glyph.XOffset * scale),
+                        dy + (int) (glyph.YOffset * scale),
+                        (int) (glyph.Width * scale),
+                        (int) (glyph.Height * scale)
+                    );
+
+                    var shadowRectangle = new Rectangle(
+                        dx + (int) (glyph.XOffset * scale) + 4,
+                        dy + (int) (glyph.YOffset * scale) + 4,
+                        (int) (glyph.Width * scale),
+                        (int) (glyph.Height * scale)
+                    );
+
+                    spriteBatch.Draw(
+                        font.GetTexture(glyph.Page),
+                        shadowRectangle,
+                        sourceRectangle,
+                        new Color((byte) 21, (byte) 21, (byte) 21, alpha)
+                    );
+
+                    spriteBatch.Draw(
+                        font.GetTexture(glyph.Page),
+                        destRectangle,
+                        sourceRectangle,
+                        new Color(color, alpha)
+                    );
+
+                    dx += (int) (glyph.XAdvance * scale);
                 }
             }
         }
@@ -128,7 +163,9 @@ public class FontRenderer
     {
         // If we are a mono-font renderer, we don't actually care about formatting codes.
         if (Fonts.Length == 1)
+        {
             return Fonts[0];
+        }
 
         // Otherwise, determine which font to switch to.
         formatCode = formatCode.ToLowerInvariant();
@@ -136,22 +173,22 @@ public class FontRenderer
         switch (formatCode)
         {
             case ChatFormat.Obfuscated: // We don't support obfuscated text yet.
-                return Fonts[(int)FontStyle.Regular];
+                return Fonts[(int) FontStyle.Regular];
 
             case ChatFormat.Bold:
-                return Fonts[(int)FontStyle.Bold];
+                return Fonts[(int) FontStyle.Bold];
 
             case ChatFormat.Strikethrough:
-                return Fonts[(int)FontStyle.Strikethrough];
+                return Fonts[(int) FontStyle.Strikethrough];
 
             case ChatFormat.Underline:
-                return Fonts[(int)FontStyle.Underline];
+                return Fonts[(int) FontStyle.Underline];
 
             case ChatFormat.Italic:
-                return Fonts[(int)FontStyle.Italic];
+                return Fonts[(int) FontStyle.Italic];
 
             case ChatFormat.Reset:
-                return Fonts[(int)FontStyle.Regular];
+                return Fonts[(int) FontStyle.Regular];
 
             default:
                 return Fonts[0];

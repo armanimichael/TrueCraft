@@ -5,7 +5,7 @@
 /// </summary>
 public struct UpdateSignPacket : IPacket
 {
-    public byte ID { get { return 0x82; } }
+    public byte ID => 0x82;
 
     public int X;
     public short Y;

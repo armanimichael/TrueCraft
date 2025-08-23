@@ -12,36 +12,25 @@ public class SaplingBlock : BlockProvider, IBurnableItem
     }
 
     public static readonly byte BlockID = 0x06;
-        
-    public override byte ID { get { return 0x06; } }
-        
-    public override double BlastResistance { get { return 0; } }
 
-    public override double Hardness { get { return 0; } }
+    public override byte ID => 0x06;
 
-    public override byte Luminance { get { return 0; } }
+    public override double BlastResistance => 0;
 
-    public override bool Opaque { get { return false; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Sapling";
-    }
+    public override double Hardness => 0;
 
-    public override BoundingBox? BoundingBox { get { return null; } }
+    public override byte Luminance => 0;
 
-    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(5); } }
+    public override bool Opaque => false;
 
-    public override BoundingBox? InteractiveBoundingBox
-    {
-        get
-        {
-            return new BoundingBox(new Vector3(1 / 16.0, 0, 1 / 16.0), new Vector3(14 / 16.0));
-        }
-    }
+    public override string GetDisplayName(short metadata) => "Sapling";
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(15, 0);
-    }
+    public override BoundingBox? BoundingBox => null;
+
+    public TimeSpan BurnTime => TimeSpan.FromSeconds(5);
+
+    public override BoundingBox? InteractiveBoundingBox =>
+        new BoundingBox(new Vector3(1 / 16.0, 0, 1 / 16.0), new Vector3(14 / 16.0));
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(15, 0);
 }

@@ -22,7 +22,6 @@ public struct Ray : IEquatable<Ray>
 
     #endregion
 
-
     #region Public Constructors
 
     /// <summary>
@@ -32,12 +31,11 @@ public struct Ray : IEquatable<Ray>
     /// <param name="direction">The direction of the ray.</param>
     public Ray(Vector3 position, Vector3 direction)
     {
-        this.Position = position;
-        this.Direction = direction;
+        Position = position;
+        Direction = direction;
     }
 
     #endregion
-
 
     #region Public Methods
 
@@ -46,30 +44,20 @@ public struct Ray : IEquatable<Ray>
     /// </summary>
     /// <param name="obj">The other object.</param>
     /// <returns></returns>
-    public override bool Equals(object? obj)
-    {
-        return (obj is Ray) && Equals((Ray)obj);
-    }
-
+    public override bool Equals(object? obj) => obj is Ray && Equals((Ray) obj);
 
     /// <summary>
     /// Determines whether this and another ray are equal.
     /// </summary>
     /// <param name="other">The other ray.</param>
     /// <returns></returns>
-    public bool Equals(Ray other)
-    {
-        return Position.Equals(other.Position) && Direction.Equals(other.Direction);
-    }
+    public bool Equals(Ray other) => Position.Equals(other.Position) && Direction.Equals(other.Direction);
 
     /// <summary>
     /// Returns the hash code for this ray.
     /// </summary>
     /// <returns></returns>
-    public override int GetHashCode()
-    {
-        return Position.GetHashCode() ^ Direction.GetHashCode();
-    }
+    public override int GetHashCode() => Position.GetHashCode() ^ Direction.GetHashCode();
 
     /// <summary>
     /// Determines if this Ray intersects the Bounding Box.
@@ -93,23 +81,31 @@ public struct Ray : IEquatable<Ray>
         double txmin, txmax, tymin, tymax, tzmin, tzmax;
 
         // Check if the Ray is co-planar with any face of the Box.
-        if ((Math.Abs(Position.X - box.Min.X) < GameConstants.Epsilon || Math.Abs(Position.X - box.Max.X) < GameConstants.Epsilon) && Math.Abs(Direction.X) < GameConstants.Epsilon ||
-            (Math.Abs(Position.Z - box.Min.Z) < GameConstants.Epsilon || Math.Abs(Position.Z - box.Max.Z) < GameConstants.Epsilon) && Math.Abs(Direction.Z) < GameConstants.Epsilon ||
-            (Math.Abs(Position.Y - box.Min.Y) < GameConstants.Epsilon || Math.Abs(Position.Y - box.Max.Y) < GameConstants.Epsilon) && Math.Abs(Direction.Y) < GameConstants.Epsilon)
+        if (((Math.Abs(Position.X - box.Min.X) < GameConstants.Epsilon ||
+              Math.Abs(Position.X - box.Max.X) < GameConstants.Epsilon) &&
+             Math.Abs(Direction.X) < GameConstants.Epsilon) ||
+            ((Math.Abs(Position.Z - box.Min.Z) < GameConstants.Epsilon ||
+              Math.Abs(Position.Z - box.Max.Z) < GameConstants.Epsilon) &&
+             Math.Abs(Direction.Z) < GameConstants.Epsilon) ||
+            ((Math.Abs(Position.Y - box.Min.Y) < GameConstants.Epsilon ||
+              Math.Abs(Position.Y - box.Max.Y) < GameConstants.Epsilon) &&
+             Math.Abs(Direction.Y) < GameConstants.Epsilon))
+        {
             return false;
+        }
 
-        double tmin = double.MaxValue;
-        double tmax = double.MinValue;
+        var tmin = double.MaxValue;
+        var tmax = double.MinValue;
 
         // t0 represents the start position of the Ray.
-        double t0 = 0.0;
+        var t0 = 0.0;
         // t1 represents the tip of the Ray.
-        double t1 = Math.Sqrt(Direction.X * Direction.X + Direction.Y * Direction.Y + Direction.Z * Direction.Z);
+        var t1 = Math.Sqrt((Direction.X * Direction.X) + (Direction.Y * Direction.Y) + (Direction.Z * Direction.Z));
 
-        Vector3 normalizedDirection = Direction / t1;
-        double invdx = 1.0 / normalizedDirection.X;
-        double invdy = 1.0 / normalizedDirection.Y;
-        double invdz = 1.0 / normalizedDirection.Z;
+        var normalizedDirection = Direction / t1;
+        var invdx = 1.0 / normalizedDirection.X;
+        var invdy = 1.0 / normalizedDirection.Y;
+        var invdz = 1.0 / normalizedDirection.Z;
 
         if (invdx >= 0)
         {
@@ -121,10 +117,21 @@ public struct Ray : IEquatable<Ray>
             tmin = txmin = (box.Max.X - Position.X) * invdx;
             tmax = txmax = (box.Min.X - Position.X) * invdx;
         }
+
         if (txmin > t1 || txmax < t0)
+        {
             return false;
-        if (txmin > tmin) tmin = txmin;
-        if (txmax < tmax) tmax = txmax;
+        }
+
+        if (txmin > tmin)
+        {
+            tmin = txmin;
+        }
+
+        if (txmax < tmax)
+        {
+            tmax = txmax;
+        }
 
         if (invdy >= 0)
         {
@@ -136,10 +143,21 @@ public struct Ray : IEquatable<Ray>
             tymin = (box.Max.Y - Position.Y) * invdy;
             tymax = (box.Min.Y - Position.Y) * invdy;
         }
+
         if (tymin > tmax || tymax < tmin)
+        {
             return false;
-        if (tymin > tmin) tmin = tymin;
-        if (tymax < tmax) tmax = tymax;
+        }
+
+        if (tymin > tmin)
+        {
+            tmin = tymin;
+        }
+
+        if (tymax < tmax)
+        {
+            tmax = tymax;
+        }
 
         if (invdz >= 0)
         {
@@ -151,15 +169,28 @@ public struct Ray : IEquatable<Ray>
             tzmin = (box.Max.Z - Position.Z) * invdz;
             tzmax = (box.Min.Z - Position.Z) * invdz;
         }
+
         if (tzmin > tmax || tzmax < tmin)
+        {
             return false;
-        if (tzmin > tmin) tmin = tzmin;
-        if (tzmax < tmax) tmax = tzmax;
+        }
+
+        if (tzmin > tmin)
+        {
+            tmin = tzmin;
+        }
+
+        if (tzmax < tmax)
+        {
+            tmax = tzmax;
+        }
 
         // If tmin > t1, the Ray ends prior to entering the Box.
         // If tmax < t0, the Ray starts past the Box.
         if (tmin > t1 || tmax < t0)
+        {
             return false;
+        }
 
         // If tmax == t0, either the Ray starts on the surface of the Box,
         // the Ray is very short, or the Box is very small.  (The case of
@@ -175,11 +206,23 @@ public struct Ray : IEquatable<Ray>
             // As tmin was assigned from one of txmin, tymin or tzmin,
             // we can safely use exact equality checks.
             if (tmin == txmin)
-                face = invdx >= 0 ? BlockFace.NegativeX : BlockFace.PositiveX;
+            {
+                face = invdx >= 0
+                    ? BlockFace.NegativeX
+                    : BlockFace.PositiveX;
+            }
             else if (tmin == tymin)
-                face = invdy >= 0 ? BlockFace.NegativeY : BlockFace.PositiveY;
+            {
+                face = invdy >= 0
+                    ? BlockFace.NegativeY
+                    : BlockFace.PositiveY;
+            }
             else
-                face = invdz >= 0 ? BlockFace.NegativeZ : BlockFace.PositiveZ;
+            {
+                face = invdz >= 0
+                    ? BlockFace.NegativeZ
+                    : BlockFace.PositiveZ;
+            }
         }
 
         // Determine distance as fraction of the Ray's Length:
@@ -188,24 +231,15 @@ public struct Ray : IEquatable<Ray>
         return true;
     }
 
-    public static bool operator !=(Ray a, Ray b)
-    {
-        return !a.Equals(b);
-    }
+    public static bool operator !=(Ray a, Ray b) => !a.Equals(b);
 
-    public static bool operator ==(Ray a, Ray b)
-    {
-        return a.Equals(b);
-    }
+    public static bool operator ==(Ray a, Ray b) => a.Equals(b);
 
     /// <summary>
     /// Returns a string representation of this ray.
     /// </summary>
     /// <returns></returns>
-    public override string ToString()
-    {
-        return string.Format("{{Position:{0} Direction:{1}}}", Position.ToString(), Direction.ToString());
-    }
+    public override string ToString() => string.Format("{{Position:{0} Direction:{1}}}", Position.ToString(), Direction.ToString());
 
     #endregion
 }

@@ -1,52 +1,52 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>false</Deterministic>
-    <LangVersion>13</LangVersion>
-    <Nullable>enable</Nullable>
-    <!-- Suppress missing XML comments.  There are so many they obscure other warnings. -->
-    <!-- TODO fill in missing XML comments and remove NoWarn. -->
-    <NoWarn>CS1591</NoWarn>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <Deterministic>false</Deterministic>
+        <LangVersion>13</LangVersion>
+        <Nullable>enable</Nullable>
+        <!-- Suppress missing XML comments.  There are so many they obscure other warnings. -->
+        <!-- TODO fill in missing XML comments and remove NoWarn. -->
+        <NoWarn>CS1591</NoWarn>
+    </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Optimize>False</Optimize>
-  </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <Optimize>False</Optimize>
+    </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <Optimize>true</Optimize>
-  </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <Optimize>true</Optimize>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Windows\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Content/**/*.png" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Content/**/*.txt" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Content/**/*.ogg" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Content/**/*.wav" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Content/Fonts/*.fnt" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="Windows\"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="Content/**/*.png" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Include="Content/**/*.txt" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Include="Content/**/*.ogg" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Include="Content/**/*.wav" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="Content/Fonts/*.fnt" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\fNbt.Fork\fNbt.Fork.csproj" />
-    <ProjectReference Include="..\TrueCraft.Core\TrueCraft.Core.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\fNbt.Fork\fNbt.Fork.csproj"/>
+        <ProjectReference Include="..\TrueCraft.Core\TrueCraft.Core.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
-    <PackageReference Include="OpenTK" Version="4.7.4" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641"/>
+        <PackageReference Include="OpenTK" Version="4.7.4"/>
+        <PackageReference Include="System.Drawing.Common" Version="6.0.0"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(IsMacOS)' == 'true'">
-    <None Include="..\lib\osx-x64\*" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(IsMacOS)' == 'true'">
+        <None Include="..\lib\osx-x64\*" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Windows\" />
-  </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Windows\"/>
+    </ItemGroup>
 </Project>

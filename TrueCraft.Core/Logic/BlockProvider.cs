@@ -24,14 +24,22 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
         _metadata.Add(0);
     }
 
-    public virtual void BlockLeftClicked(IServiceLocator serviceLocator,
-        BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public virtual void BlockLeftClicked(
+        IServiceLocator serviceLocator,
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         var coords = descriptor.Coordinates + MathHelper.BlockFaceToCoordinates(face);
+
         if (dimension.IsValidPosition(coords) && dimension.GetBlockID(coords) == FireBlock.BlockID)
+        {
             dimension.SetBlockID(coords, 0);
+        }
     }
 
     /// <summary>
@@ -42,21 +50,27 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
     /// <param name="dimension"></param>
     /// <param name="user"></param>
     /// <returns>True if the right-click has been handled; false otherwise.</returns>
-    public virtual bool BlockRightClicked(IServiceLocator serviceLocator,
-        BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public virtual bool BlockRightClicked(
+        IServiceLocator serviceLocator,
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         return true;
     }
 
-    public virtual void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
-    {
-        ServerOnly.Assert();
+    public virtual void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    ) => ServerOnly.Assert();
 
-        // This space intentionally left blank
-    }
-
+    // This space intentionally left blank
     public virtual void BlockMined(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
     {
         ServerOnly.Assert();
@@ -65,19 +79,24 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
         dimension.SetBlockID(descriptor.Coordinates, 0);
     }
 
-    public virtual void GenerateDropEntity(BlockDescriptor descriptor, IDimension dimension, IMultiplayerServer server, ItemStack item)
+    public virtual void GenerateDropEntity(
+        BlockDescriptor descriptor,
+        IDimension dimension,
+        IMultiplayerServer server,
+        ItemStack item
+    )
     {
         ServerOnly.Assert();
 
-        IEntityManager entityManager = ((IDimensionServer)dimension).EntityManager;
-        ItemStack[] items = new ItemStack[0];
-        ToolType type = ToolType.None;
-        ToolMaterial material = ToolMaterial.None;
-        IItemProvider? held = dimension.ItemRepository.GetItemProvider(item.ID);
+        var entityManager = ((IDimensionServer) dimension).EntityManager;
+        var items = new ItemStack[0];
+        var type = ToolType.None;
+        var material = ToolMaterial.None;
+        var held = dimension.ItemRepository.GetItemProvider(item.ID);
 
         if (held is ToolItem)
         {
-            ToolItem tool = (ToolItem)held;
+            var tool = (ToolItem) held;
             material = tool.Material;
             type = tool.ToolType;
         }
@@ -85,14 +104,25 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
         if ((EffectiveTools & type) > 0)
         {
             if ((EffectiveToolMaterials & material) > 0)
+            {
                 items = GetDrop(descriptor, item);
+            }
         }
 
         foreach (var i in items)
         {
-            if (i.Empty) continue;
-            IEntity entity = new ItemEntity(dimension, entityManager,
-                (Vector3)descriptor.Coordinates + new Vector3(0.5), i);
+            if (i.Empty)
+            {
+                continue;
+            }
+
+            IEntity entity = new ItemEntity(
+                dimension,
+                entityManager,
+                (Vector3) descriptor.Coordinates + new Vector3(0.5),
+                i
+            );
+
             entityManager.SpawnEntity(entity);
         }
     }
@@ -102,16 +132,27 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
         ServerOnly.Assert();
 
         var support = GetSupportDirection(descriptor);
+
         if (support != Vector3i.Zero)
         {
-            var supportingBlock = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(descriptor.Coordinates + support));
+            var supportingBlock =
+                dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(descriptor.Coordinates + support));
+
             if (!supportingBlock.Opaque)
+            {
                 return false;
+            }
         }
+
         return true;
     }
 
-    public virtual void BlockUpdate(BlockDescriptor descriptor, BlockDescriptor source, IMultiplayerServer server, IDimension dimension)
+    public virtual void BlockUpdate(
+        BlockDescriptor descriptor,
+        BlockDescriptor source,
+        IMultiplayerServer server,
+        IDimension dimension
+    )
     {
         ServerOnly.Assert();
 
@@ -127,25 +168,14 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
     //   the meaning of, say, passing in a Torch BlockDescriptor, if this is a StoneBlock?
     //   The only part of the BlockDescriptor to be used appears to be the metadata.
     //   Also: item means the item held by the player breaking the block.
-    protected virtual ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item)
-    {
-        return new[] { new ItemStack(descriptor.ID, 1, descriptor.Metadata) };
-    }
+    protected virtual ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item) => new[] { new ItemStack(descriptor.ID, 1, descriptor.Metadata) };
 
-    public virtual void ItemUsedOnEntity(ItemStack item, IEntity usedOn, IDimension dimension, IRemoteClient user)
-    {
-        ServerOnly.Assert();
+    public virtual void ItemUsedOnEntity(ItemStack item, IEntity usedOn, IDimension dimension, IRemoteClient user) => ServerOnly.Assert();
 
-        // This space intentionally left blank
-    }
+    // This space intentionally left blank
+    public virtual void ItemUsedOnNothing(ItemStack item, IDimension dimension, IRemoteClient user) => ServerOnly.Assert();
 
-    public virtual void ItemUsedOnNothing(ItemStack item, IDimension dimension, IRemoteClient user)
-    {
-        ServerOnly.Assert();
-
-        // This space intentionally left blank
-    }
-
+    // This space intentionally left blank
     public static readonly byte[] Overwritable =
     {
         AirBlock.BlockID,
@@ -156,43 +186,63 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
         SnowfallBlock.BlockID
     };
 
-    public virtual void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public virtual void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         var old = dimension.GetBlockData(coordinates);
+
         if (!Overwritable.Any(b => b == old.ID))
         {
             coordinates += MathHelper.BlockFaceToCoordinates(face);
             old = dimension.GetBlockData(coordinates);
+
             if (!Overwritable.Any(b => b == old.ID))
+            {
                 return;
+            }
         }
 
         // Test for entities
         if (BoundingBox.HasValue)
         {
-            IEntityManager em = ((IDimensionServer)dimension).EntityManager;
-            var entities = em.EntitiesInRange((Vector3)coordinates, 3);
-            var box = new BoundingBox(BoundingBox.Value.Min + (Vector3)coordinates,
-                BoundingBox.Value.Max + (Vector3)coordinates);
-            foreach (IEntity entity in entities)
+            var em = ((IDimensionServer) dimension).EntityManager;
+            var entities = em.EntitiesInRange((Vector3) coordinates, 3);
+
+            var box = new BoundingBox(
+                BoundingBox.Value.Min + (Vector3) coordinates,
+                BoundingBox.Value.Max + (Vector3) coordinates
+            );
+
+            foreach (var entity in entities)
             {
-                if (entity is not null && !(typeof(ItemEntity).IsAssignableFrom(entity.GetType())))
+                if (entity is not null && !typeof(ItemEntity).IsAssignableFrom(entity.GetType()))
+                {
                     if (entity.BoundingBox.Intersects(box))
+                    {
                         return;
+                    }
+                }
             }
         }
 
         // Place block
         dimension.SetBlockID(coordinates, ID);
-        dimension.SetMetadata(coordinates, (byte)item.Metadata);
+        dimension.SetMetadata(coordinates, (byte) item.Metadata);
 
         BlockPlaced(dimension.GetBlockData(coordinates), face, dimension, user);
 
         // TODO: How could the block we just placed be unsupported?
         if (!IsSupported(dimension, dimension.GetBlockData(coordinates)))
+        {
             dimension.SetBlockData(coordinates, old);
+        }
         else
         {
             item.Count--;
@@ -201,79 +251,68 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
     }
 
     /// <inheritdoc />
-    public virtual void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coordinates)
-    {
-        ServerOnly.Assert();
+    public virtual void BlockLoadedFromChunk(
+        IMultiplayerServer server,
+        IDimension dimension,
+        GlobalVoxelCoordinates coordinates
+    ) => ServerOnly.Assert();
 
-        // This space intentionally left blank
-    }
+    // This space intentionally left blank
+    public virtual void TileEntityLoadedForClient(
+        BlockDescriptor descriptor,
+        IDimension dimension,
+        NbtCompound entity,
+        IRemoteClient client
+    ) => ServerOnly.Assert();
 
-    public virtual void TileEntityLoadedForClient(BlockDescriptor descriptor, IDimension dimension, NbtCompound entity, IRemoteClient client)
-    {
-        ServerOnly.Assert();
-
-        // This space intentionally left blank
-    }
-
-    short IItemProvider.ID
-    {
-        get
-        {
-            return ID;
-        }
-    }
+    // This space intentionally left blank
+    short IItemProvider.ID => ID;
 
     /// <summary>
     /// The ID of the block.
     /// </summary>
     public abstract byte ID { get; }
 
-    public virtual Tuple<int, int>? GetIconTexture(byte metadata)
-    {
-        return null; // Blocks are rendered in 3D
-    }
+    public virtual Tuple<int, int>? GetIconTexture(byte metadata) => null; // Blocks are rendered in 3D
 
     /// <inheritdoc />
     public virtual IEnumerable<short> VisibleMetadata => _metadata;
 
-    public virtual Vector3i GetSupportDirection(BlockDescriptor descriptor)
-    {
-        return Vector3i.Zero;
-    }
+    public virtual Vector3i GetSupportDirection(BlockDescriptor descriptor) => Vector3i.Zero;
 
-    public virtual SoundEffectClass SoundEffect { get { return SoundEffectClass.Stone; } }
+    public virtual SoundEffectClass SoundEffect => SoundEffectClass.Stone;
 
     /// <summary>
     /// The maximum amount that can be in a single stack of this block.
     /// </summary>
-    public virtual sbyte MaximumStack { get { return 64; } }
+    public virtual sbyte MaximumStack => 64;
 
     /// <summary>
     /// How resist the block is to explosions.
     /// </summary>
-    public virtual double BlastResistance { get { return 0; } }
+    public virtual double BlastResistance => 0;
 
     /// <summary>
     /// How resist the block is to player mining/digging.
     /// </summary>
-    public virtual double Hardness { get { return 0; } }
+    public virtual double Hardness => 0;
 
     /// <summary>
     /// The light level emitted by the block. 0 - 15
     /// </summary>
-    public virtual byte Luminance { get { return 0; } }
+    public virtual byte Luminance => 0;
 
     /// <summary>
     /// Whether or not the block is opaque
     /// </summary>
-    public virtual bool Opaque { get { return true; } }
+    public virtual bool Opaque => true;
 
     /// <summary>
     /// Whether or not the block is rendered opaque
     /// </summary>
-    public virtual bool RenderOpaque { get { return Opaque; } }
+    public virtual bool RenderOpaque => Opaque;
 
-    public virtual bool Flammable { get { return false; } }
+    public virtual bool Flammable => false;
 
     /// <summary>
     /// The amount removed from the light level as it passes through this block.
@@ -287,44 +326,30 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
         get
         {
             if (Opaque)
+            {
                 return 255;
+            }
             else
+            {
                 return 0;
+            }
         }
     }
 
-    public virtual bool DiffuseSkyLight { get { return false; } }
+    public virtual bool DiffuseSkyLight => false;
 
     /// <inheritdoc />
-    public virtual string GetDisplayName(short metadata)
-    {
-        return string.Empty;
-    }
+    public virtual string GetDisplayName(short metadata) => string.Empty;
 
-    public virtual ToolMaterial EffectiveToolMaterials { get { return ToolMaterial.All; } }
+    public virtual ToolMaterial EffectiveToolMaterials => ToolMaterial.All;
 
-    public virtual ToolType EffectiveTools { get { return ToolType.All; } }
+    public virtual ToolType EffectiveTools => ToolType.All;
 
-    public virtual Tuple<int, int>? GetTextureMap(byte metadata)
-    {
-        return null;
-    }
+    public virtual Tuple<int, int>? GetTextureMap(byte metadata) => null;
 
-    public virtual BoundingBox? BoundingBox
-    {
-        get
-        {
-            return new BoundingBox(Vector3.Zero, Vector3.One);
-        }
-    }
+    public virtual BoundingBox? BoundingBox => new BoundingBox(Vector3.Zero, Vector3.One);
 
-    public virtual BoundingBox? InteractiveBoundingBox
-    {
-        get
-        {
-            return BoundingBox;
-        }
-    }
+    public virtual BoundingBox? InteractiveBoundingBox => BoundingBox;
 
     /// <summary>
     /// Gets the time required to mine the given block with the given item.
@@ -341,75 +366,107 @@ public abstract class BlockProvider : IItemProvider, IBlockProvider
 
         damage = 0;
 
-        IBlockProvider block = serviceLocator.BlockRepository.GetBlockProvider(blockId);
-        IItemProvider? item = serviceLocator.ItemRepository.GetItemProvider(itemId);
+        var block = serviceLocator.BlockRepository.GetBlockProvider(blockId);
+        var item = serviceLocator.ItemRepository.GetItemProvider(itemId);
 
-        double hardness = block.Hardness;
+        var hardness = block.Hardness;
+
         if (hardness == -1)
+        {
             return -1;
+        }
 
-        double time = hardness * 1.5;
+        var time = hardness * 1.5;
 
         var tool = ToolType.None;
         var material = ToolMaterial.None;
 
         if (item is ToolItem)
         {
-            ToolItem toolItem = (ToolItem)item;
+            var toolItem = (ToolItem) item;
             tool = toolItem.ToolType;
             material = toolItem.Material;
 
-            if ((block.EffectiveTools & tool) == 0 || (block.EffectiveToolMaterials & material) == 0)
+            if ((block.EffectiveTools & tool) == 0 ||
+                (block.EffectiveToolMaterials & material) == 0)
             {
                 time *= 3.33; // Add time for ineffective tools
             }
+
             if (material != ToolMaterial.None)
             {
                 switch (material)
                 {
                     case ToolMaterial.Wood:
                         time /= 2;
+
                         break;
                     case ToolMaterial.Stone:
                         time /= 4;
+
                         break;
                     case ToolMaterial.Iron:
                         time /= 6;
+
                         break;
                     case ToolMaterial.Diamond:
                         time /= 8;
+
                         break;
                     case ToolMaterial.Gold:
                         time /= 12;
+
                         break;
                 }
             }
+
             damage = 1;
+
             if (tool == ToolType.Shovel || tool == ToolType.Axe || tool == ToolType.Pickaxe)
             {
-                damage = (short)(hardness != 0 ? 1 : 0);
+                damage = (short) (hardness != 0
+                    ? 1
+                    : 0);
             }
             else if (tool == ToolType.Sword)
             {
-                damage = (short)(hardness != 0 ? 2 : 0);
+                damage = (short) (hardness != 0
+                    ? 2
+                    : 0);
+
                 time /= 1.5;
+
                 if (block is CobwebBlock)
+                {
                     time /= 1.5;
+                }
             }
             else if (tool == ToolType.Hoe)
+            {
                 damage = 0; // What? This doesn't seem right
+            }
             else if (item is ShearsItem)
             {
                 if (block is WoolBlock)
+                {
                     time /= 5;
+                }
                 else if (block is LeavesBlock || block is CobwebBlock)
+                {
                     time /= 15;
+                }
+
                 if (block is LeavesBlock || block is CobwebBlock || block is TallGrassBlock)
+                {
                     damage = 1;
+                }
                 else
+                {
                     damage = 0;
+                }
             }
         }
-        return (int)(time * 1000);
+
+        return (int) (time * 1000);
     }
 }

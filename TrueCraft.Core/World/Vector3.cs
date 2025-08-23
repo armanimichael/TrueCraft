@@ -65,28 +65,19 @@ public struct Vector3 : IEquatable<Vector3>
     /// Converts this Vector3 to a string in the format &lt;x,y,z&gt;.
     /// </summary>
     /// <returns></returns>
-    public override string ToString()
-    {
-        return string.Format("<{0},{1},{2}>", X, Y, Z);
-    }
+    public override string ToString() => string.Format("<{0},{1},{2}>", X, Y, Z);
 
     #region Math
 
     /// <summary>
     /// Truncates the decimal component of each part of this Vector3.
     /// </summary>
-    public Vector3 Floor()
-    {
-        return new Vector3(Math.Floor(X), Math.Floor(Y), Math.Floor(Z));
-    }
+    public Vector3 Floor() => new(Math.Floor(X), Math.Floor(Y), Math.Floor(Z));
 
     /// <summary>
     /// Rounds the decimal component of each part of this Vector3.
     /// </summary>
-    public Vector3 Round()
-    {
-        return new Vector3(Math.Round(X), Math.Round(Y), Math.Round(Z));
-    }
+    public Vector3 Round() => new(Math.Round(X), Math.Round(Y), Math.Round(Z));
 
     /// <summary>
     /// Clamps the vector to within the specified value.
@@ -95,49 +86,54 @@ public struct Vector3 : IEquatable<Vector3>
     public void Clamp(double value)
     {
         if (Math.Abs(X) > value)
-            X = value * (X < 0 ? -1 : 1);
+        {
+            X = value * (X < 0
+                ? -1
+                : 1);
+        }
+
         if (Math.Abs(Y) > value)
-            Y = value * (Y < 0 ? -1 : 1);
+        {
+            Y = value * (Y < 0
+                ? -1
+                : 1);
+        }
+
         if (Math.Abs(Z) > value)
-            Z = value * (Z < 0 ? -1 : 1);
+        {
+            Z = value * (Z < 0
+                ? -1
+                : 1);
+        }
     }
 
     /// <summary>
     /// Calculates the distance between two Vector3 objects.
     /// </summary>
-    public double DistanceTo(Vector3 other)
-    {
-        return Math.Sqrt(Square(other.X - X) +
-                         Square(other.Y - Y) +
-                         Square(other.Z - Z));
-    }
+    public double DistanceTo(Vector3 other) => Math.Sqrt(
+        Square(other.X - X) +
+        Square(other.Y - Y) +
+        Square(other.Z - Z)
+    );
 
     public Vector3 Transform(Matrix matrix)
     {
         var x = (X * matrix.M11) + (Y * matrix.M21) + (Z * matrix.M31) + matrix.M41;
         var y = (X * matrix.M12) + (Y * matrix.M22) + (Z * matrix.M32) + matrix.M42;
         var z = (X * matrix.M13) + (Y * matrix.M23) + (Z * matrix.M33) + matrix.M43;
+
         return new Vector3(x, y, z);
     }
 
     /// <summary>
     /// Calculates the square of a num.
     /// </summary>
-    private double Square(double num)
-    {
-        return num * num;
-    }
+    private static double Square(double num) => num * num;
 
     /// <summary>
     /// Finds the distance of this vector from Vector3.Zero
     /// </summary>
-    public double Distance
-    {
-        get
-        {
-            return DistanceTo(Zero);
-        }
-    }
+    public double Distance => DistanceTo(Zero);
 
     /// <summary>
     /// Returns a unit vector in the same direction as this Vector.
@@ -145,9 +141,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// <returns></returns>
     public Vector3 Unit()
     {
-        double len = Math.Sqrt(Square(this.X) + Square(this.Y) + Square(this.Z));
-        double invLen = 1.0 / len;
-        return new Vector3(this.X * invLen, this.Y * invLen, this.Z * invLen);
+        var len = Math.Sqrt(Square(X) + Square(Y) + Square(Z));
+        var invLen = 1.0 / len;
+
+        return new Vector3(X * invLen, Y * invLen, Z * invLen);
     }
 
     /// <summary>
@@ -156,14 +153,11 @@ public struct Vector3 : IEquatable<Vector3>
     /// <param name="value1">The first vector.</param>
     /// <param name="value2">The second vector.</param>
     /// <returns></returns>
-    public static Vector3 Min(Vector3 value1, Vector3 value2)
-    {
-        return new Vector3(
-            Math.Min(value1.X, value2.X),
-            Math.Min(value1.Y, value2.Y),
-            Math.Min(value1.Z, value2.Z)
-        );
-    }
+    public static Vector3 Min(Vector3 value1, Vector3 value2) => new(
+        Math.Min(value1.X, value2.X),
+        Math.Min(value1.Y, value2.Y),
+        Math.Min(value1.Z, value2.Z)
+    );
 
     /// <summary>
     /// Returns the component-wise maximum of two vectors.
@@ -171,23 +165,17 @@ public struct Vector3 : IEquatable<Vector3>
     /// <param name="value1">The first vector.</param>
     /// <param name="value2">The second vector.</param>
     /// <returns></returns>
-    public static Vector3 Max(Vector3 value1, Vector3 value2)
-    {
-        return new Vector3(
-            Math.Max(value1.X, value2.X),
-            Math.Max(value1.Y, value2.Y),
-            Math.Max(value1.Z, value2.Z)
-        );
-    }
-        
+    public static Vector3 Max(Vector3 value1, Vector3 value2) => new(
+        Math.Max(value1.X, value2.X),
+        Math.Max(value1.Y, value2.Y),
+        Math.Max(value1.Z, value2.Z)
+    );
+
     /// <summary>
     /// Calculates the dot product between two vectors.
     /// </summary>
-    public static double Dot(Vector3 value1, Vector3 value2)
-    {
-        return value1.X * value2.X + value1.Y * value2.Y + value1.Z * value2.Z;
-    }
-        
+    public static double Dot(Vector3 value1, Vector3 value2) => (value1.X * value2.X) + (value1.Y * value2.Y) + (value1.Z * value2.Z);
+
     /// <summary>
     /// Computes the cross product of two vectors.
     /// </summary>
@@ -197,6 +185,7 @@ public struct Vector3 : IEquatable<Vector3>
     public static Vector3 Cross(Vector3 vector1, Vector3 vector2)
     {
         Cross(ref vector1, ref vector2, out vector1);
+
         return vector1;
     }
 
@@ -208,9 +197,9 @@ public struct Vector3 : IEquatable<Vector3>
     /// <param name="result">The cross product of two vectors as an output parameter.</param>
     public static void Cross(ref Vector3 vector1, ref Vector3 vector2, out Vector3 result)
     {
-        var x = vector1.Y * vector2.Z - vector2.Y * vector1.Z;
-        var y = -(vector1.X * vector2.Z - vector2.X * vector1.Z);
-        var z = vector1.X * vector2.Y - vector2.X * vector1.Y;
+        var x = (vector1.Y * vector2.Z) - (vector2.Y * vector1.Z);
+        var y = -((vector1.X * vector2.Z) - (vector2.X * vector1.Z));
+        var z = (vector1.X * vector2.Y) - (vector2.X * vector1.Y);
         result.X = x;
         result.Y = y;
         result.Z = z;
@@ -220,172 +209,120 @@ public struct Vector3 : IEquatable<Vector3>
 
     #region Operators
 
-    public static bool operator !=(Vector3 a, Vector3 b)
-    {
-        return !a.Equals(b);
-    }
+    public static bool operator !=(Vector3 a, Vector3 b) => !a.Equals(b);
 
-    public static bool operator ==(Vector3 a, Vector3 b)
-    {
-        return a.Equals(b);
-    }
+    public static bool operator ==(Vector3 a, Vector3 b) => a.Equals(b);
 
-    public static Vector3 operator +(Vector3 a, Vector3 b)
-    {
-        return new Vector3(
-            a.X + b.X,
-            a.Y + b.Y,
-            a.Z + b.Z);
-    }
+    public static Vector3 operator +(Vector3 a, Vector3 b) => new(
+        a.X + b.X,
+        a.Y + b.Y,
+        a.Z + b.Z
+    );
 
-    public static Vector3 operator+(Vector3 l, Vector3i r)
-    {
-        return new Vector3(
-            l.X + r.X,
-            l.Y + r.Y,
-            l.Z + r.Z);
-    }
+    public static Vector3 operator +(Vector3 l, Vector3i r) => new(
+        l.X + r.X,
+        l.Y + r.Y,
+        l.Z + r.Z
+    );
 
-    public static Vector3 operator+(Vector3i l, Vector3 r)
-    {
-        return r + l;
-    }
+    public static Vector3 operator +(Vector3i l, Vector3 r) => r + l;
 
-    public static Vector3 operator -(Vector3 a, Vector3 b)
-    {
-        return new Vector3(
-            a.X - b.X,
-            a.Y - b.Y,
-            a.Z - b.Z);
-    }
+    public static Vector3 operator -(Vector3 a, Vector3 b) => new(
+        a.X - b.X,
+        a.Y - b.Y,
+        a.Z - b.Z
+    );
 
-    public static Vector3 operator +(Vector3 a, Size b)
-    {
-        return new Vector3(
-            a.X + b.Width,
-            a.Y + b.Height,
-            a.Z + b.Depth);
-    }
+    public static Vector3 operator +(Vector3 a, Size b) => new(
+        a.X + b.Width,
+        a.Y + b.Height,
+        a.Z + b.Depth
+    );
 
-    public static Vector3 operator -(Vector3 a, Size b)
-    {
-        return new Vector3(
-            a.X - b.Width,
-            a.Y - b.Height,
-            a.Z - b.Depth);
-    }
+    public static Vector3 operator -(Vector3 a, Size b) => new(
+        a.X - b.Width,
+        a.Y - b.Height,
+        a.Z - b.Depth
+    );
 
-    public static Vector3 operator -(Vector3 a)
-    {
-        return new Vector3(
-            -a.X,
-            -a.Y,
-            -a.Z);
-    }
+    public static Vector3 operator -(Vector3 a) => new(
+        -a.X,
+        -a.Y,
+        -a.Z
+    );
 
-    public static Vector3 operator *(Vector3 a, Vector3 b)
-    {
-        return new Vector3(
-            a.X * b.X,
-            a.Y * b.Y,
-            a.Z * b.Z);
-    }
+    public static Vector3 operator *(Vector3 a, Vector3 b) => new(
+        a.X * b.X,
+        a.Y * b.Y,
+        a.Z * b.Z
+    );
 
-    public static Vector3 operator /(Vector3 a, Vector3 b)
-    {
-        return new Vector3(
-            a.X / b.X,
-            a.Y / b.Y,
-            a.Z / b.Z);
-    }
+    public static Vector3 operator /(Vector3 a, Vector3 b) => new(
+        a.X / b.X,
+        a.Y / b.Y,
+        a.Z / b.Z
+    );
 
-    public static Vector3 operator %(Vector3 a, Vector3 b)
-    {
-        return new Vector3(a.X % b.X, a.Y % b.Y, a.Z % b.Z);
-    }
+    public static Vector3 operator %(Vector3 a, Vector3 b) => new(a.X % b.X, a.Y % b.Y, a.Z % b.Z);
 
-    public static Vector3 operator +(Vector3 a, double b)
-    {
-        return new Vector3(
-            a.X + b,
-            a.Y + b,
-            a.Z + b);
-    }
+    public static Vector3 operator +(Vector3 a, double b) => new(
+        a.X + b,
+        a.Y + b,
+        a.Z + b
+    );
 
-    public static Vector3 operator -(Vector3 a, double b)
-    {
-        return new Vector3(
-            a.X - b,
-            a.Y - b,
-            a.Z - b);
-    }
+    public static Vector3 operator -(Vector3 a, double b) => new(
+        a.X - b,
+        a.Y - b,
+        a.Z - b
+    );
 
-    public static Vector3 operator *(Vector3 a, double b)
-    {
-        return new Vector3(
-            a.X * b,
-            a.Y * b,
-            a.Z * b);
-    }
+    public static Vector3 operator *(Vector3 a, double b) => new(
+        a.X * b,
+        a.Y * b,
+        a.Z * b
+    );
 
-    public static Vector3 operator /(Vector3 a, double b)
-    {
-        return new Vector3(
-            a.X / b,
-            a.Y / b,
-            a.Z / b);
-    }
+    public static Vector3 operator /(Vector3 a, double b) => new(
+        a.X / b,
+        a.Y / b,
+        a.Z / b
+    );
 
-    public static Vector3 operator %(Vector3 a, double b)
-    {
-        return new Vector3(a.X % b, a.Y % b, a.Y % b);
-    }
+    public static Vector3 operator %(Vector3 a, double b) => new(a.X % b, a.Y % b, a.Y % b);
 
-    public static Vector3 operator +(double a, Vector3 b)
-    {
-        return new Vector3(
-            a + b.X,
-            a + b.Y,
-            a + b.Z);
-    }
+    public static Vector3 operator +(double a, Vector3 b) => new(
+        a + b.X,
+        a + b.Y,
+        a + b.Z
+    );
 
-    public static Vector3 operator -(double a, Vector3 b)
-    {
-        return new Vector3(
-            a - b.X,
-            a - b.Y,
-            a - b.Z);
-    }
+    public static Vector3 operator -(double a, Vector3 b) => new(
+        a - b.X,
+        a - b.Y,
+        a - b.Z
+    );
 
-    public static Vector3 operator *(double a, Vector3 b)
-    {
-        return new Vector3(
-            a * b.X,
-            a * b.Y,
-            a * b.Z);
-    }
+    public static Vector3 operator *(double a, Vector3 b) => new(
+        a * b.X,
+        a * b.Y,
+        a * b.Z
+    );
 
-    public static Vector3 operator /(double a, Vector3 b)
-    {
-        return new Vector3(
-            a / b.X,
-            a / b.Y,
-            a / b.Z);
-    }
+    public static Vector3 operator /(double a, Vector3 b) => new(
+        a / b.X,
+        a / b.Y,
+        a / b.Z
+    );
 
-    public static Vector3 operator %(double a, Vector3 b)
-    {
-        return new Vector3(a % b.X, a % b.Y, a % b.Y);
-    }
+    public static Vector3 operator %(double a, Vector3 b) => new(a % b.X, a % b.Y, a % b.Y);
 
     #endregion
 
     #region Conversion operators
 
-    public static explicit operator Vector3(GlobalVoxelCoordinates a)
-    {
-        return new Vector3(a.X, a.Y, a.Z);
-    }
+    public static explicit operator Vector3(GlobalVoxelCoordinates a) => new(a.X, a.Y, a.Z);
+
     #endregion
 
     #region Constants
@@ -393,64 +330,62 @@ public struct Vector3 : IEquatable<Vector3>
     /// <summary>
     /// A vector with its components set to 0.0.
     /// </summary>
-    public static readonly Vector3 Zero = new Vector3(0);
+    public static readonly Vector3 Zero = new(0);
 
     /// <summary>
     /// A vector with its components set to 1.0.
     /// </summary>
-    public static readonly Vector3 One = new Vector3(1);
-
+    public static readonly Vector3 One = new(1);
 
     /// <summary>
     /// A vector that points upward.
     /// </summary>
-    public static readonly Vector3 Up = new Vector3(0, 1, 0);
+    public static readonly Vector3 Up = new(0, 1, 0);
 
     /// <summary>
     /// A vector that points downward.
     /// </summary>
-    public static readonly Vector3 Down = new Vector3(0, -1, 0);
+    public static readonly Vector3 Down = new(0, -1, 0);
 
     /// <summary>
     /// A vector that points to the left.
     /// </summary>
-    public static readonly Vector3 Left = new Vector3(-1, 0, 0);
+    public static readonly Vector3 Left = new(-1, 0, 0);
 
     /// <summary>
     /// A vector that points to the right.
     /// </summary>
-    public static readonly Vector3 Right = new Vector3(1, 0, 0);
+    public static readonly Vector3 Right = new(1, 0, 0);
 
     /// <summary>
     /// A vector that points backward.
     /// </summary>
-    public static readonly Vector3 Backwards = new Vector3(0, 0, -1);
+    public static readonly Vector3 Backwards = new(0, 0, -1);
 
     /// <summary>
     /// A vector that points forward.
     /// </summary>
-    public static readonly Vector3 Forwards = new Vector3(0, 0, 1);
-
+    public static readonly Vector3 Forwards = new(0, 0, 1);
 
     /// <summary>
     /// A vector that points to the east.
     /// </summary>
-    public static readonly Vector3 East = new Vector3(1, 0, 0);
+    public static readonly Vector3 East = new(1, 0, 0);
 
     /// <summary>
     /// A vector that points to the west.
     /// </summary>
-    public static readonly Vector3 West = new Vector3(-1, 0, 0);
+    public static readonly Vector3 West = new(-1, 0, 0);
 
     /// <summary>
     /// A vector that points to the north.
     /// </summary>
-    public static readonly Vector3 North = new Vector3(0, 0, -1);
+    public static readonly Vector3 North = new(0, 0, -1);
 
     /// <summary>
     /// A vector that points to the south.
     /// </summary>
-    public static readonly Vector3 South = new Vector3(0, 0, 1);
+    public static readonly Vector3 South = new(0, 0, 1);
 
     #endregion
 
@@ -459,10 +394,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// </summary>
     /// <param name="other">The other vector.</param>
     /// <returns></returns>
-    public bool Equals(Vector3 other)
-    {
-        return other.X.Equals(X) && other.Y.Equals(Y) && other.Z.Equals(Z);
-    }
+    public bool Equals(Vector3 other) => other.X.Equals(X) && other.Y.Equals(Y) && other.Z.Equals(Z);
 
     /// <summary>
     /// Determines whether this and another object are equal.
@@ -472,9 +404,11 @@ public struct Vector3 : IEquatable<Vector3>
     public override bool Equals(object? obj)
     {
         if (obj is null)
+        {
             return false;
+        }
 
-        return obj is Vector3 && Equals((Vector3)obj);
+        return obj is Vector3 && Equals((Vector3) obj);
     }
 
     /// <summary>
@@ -485,9 +419,10 @@ public struct Vector3 : IEquatable<Vector3>
     {
         unchecked
         {
-            int result = X.GetHashCode();
+            var result = X.GetHashCode();
             result = (result * 397) ^ Y.GetHashCode();
             result = (result * 397) ^ Z.GetHashCode();
+
             return result;
         }
     }

@@ -10,8 +10,8 @@ public class BiomeCell
 
     public BiomeCell(byte biomeID, GlobalColumnCoordinates cellPoint)
     {
-        this.BiomeID = biomeID;
-        this.CellPoint = cellPoint;
+        BiomeID = biomeID;
+        CellPoint = cellPoint;
     }
 }
 

@@ -6,7 +6,6 @@ public class RedstoneRepeaterItem : ItemProvider
 {
     public static readonly short ItemID = 0x164;
 
-    public RedstoneRepeaterItem(XmlNode node) : base(node)
-    {
-    }
+    public RedstoneRepeaterItem(XmlNode node)
+        : base(node) { }
 }

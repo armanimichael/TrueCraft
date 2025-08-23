@@ -6,25 +6,22 @@ public class MinecartItem : ItemProvider
 {
     public static readonly short ItemID = 0x148;
 
-    public MinecartItem(XmlNode node) : base(node)
-    {
-    }
+    public MinecartItem(XmlNode node)
+        : base(node) { }
 }
 
 public class MinecartWithChestItem : MinecartItem
 {
-    public static readonly new short ItemID = 0x156;
+    public new static readonly short ItemID = 0x156;
 
-    public MinecartWithChestItem(XmlNode node) : base(node)
-    {
-    }
+    public MinecartWithChestItem(XmlNode node)
+        : base(node) { }
 }
 
 public class MinecartWithFurnaceItem : MinecartItem
 {
-    public static readonly new short ItemID = 0x157;
+    public new static readonly short ItemID = 0x157;
 
-    public MinecartWithFurnaceItem(XmlNode node) : base(node)
-    {
-    }
+    public MinecartWithFurnaceItem(XmlNode node)
+        : base(node) { }
 }

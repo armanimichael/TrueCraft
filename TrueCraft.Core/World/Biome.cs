@@ -27,7 +27,7 @@ public enum Biome
     /// A rainforest biome.
     /// </summary>
     Rainforest = 3,
-        
+
     /// <summary>
     /// A seasonal forest biome.
     /// </summary>
@@ -78,7 +78,7 @@ public enum Biome
     /// Implementation into TrueCraft is undetermined at this point
     /// </remarks>
     IceDesert = 12,
-        
+
     //Below are "transitional" biomes/biomes which are not in b1.7.3
 
     /// <summary>
@@ -113,5 +113,5 @@ public enum Biome
     /// <remarks>
     /// Implementation into TrueCraft is undetermined at this point
     /// </remarks>
-    FrozenRiver = 17,
+    FrozenRiver = 17
 }

@@ -1,48 +1,48 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>false</Deterministic>
-    <LangVersion>13</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <Deterministic>false</Deterministic>
+        <LangVersion>13</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;</DefineConstants>
-  </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <DefineConstants>DEBUG;</DefineConstants>
+    </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <DebugType>none</DebugType>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.24.24.38" />
-    <PackageReference Include="GdkSharp" Version="3.24.24.38" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="GtkSharp" Version="3.24.24.38"/>
+        <PackageReference Include="GdkSharp" Version="3.24.24.38"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\TrueCraft\TrueCraft.csproj" />
-    <ProjectReference Include="..\TrueCraft.Core\TrueCraft.Core.csproj" />
-    <ProjectReference Include="..\fNbt.Fork\fNbt.Fork.csproj" />
-    <ProjectReference Include="..\TrueCraft.Client\TrueCraft.Client.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\TrueCraft\TrueCraft.csproj"/>
+        <ProjectReference Include="..\TrueCraft.Core\TrueCraft.Core.csproj"/>
+        <ProjectReference Include="..\fNbt.Fork\fNbt.Fork.csproj"/>
+        <ProjectReference Include="..\TrueCraft.Client\TrueCraft.Client.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Content\**\*.png" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Content\**\*.txt" CopyToOutputDirectory="PreserveNewest" />
-    <EmbeddedResource Include="Content\truecraft_logo.png" />
-    <EmbeddedResource Include="Content\truecraft-logo.png" />
-    <EmbeddedResource Include="Content\default-server-icon.png" />
-    <None Include="Content\truecraft_logo.svg" />
-    <None Include="truecraft" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+    <ItemGroup>
+        <Content Include="Content\**\*.png" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Include="Content\**\*.txt" CopyToOutputDirectory="PreserveNewest"/>
+        <EmbeddedResource Include="Content\truecraft_logo.png"/>
+        <EmbeddedResource Include="Content\truecraft-logo.png"/>
+        <EmbeddedResource Include="Content\default-server-icon.png"/>
+        <None Include="Content\truecraft_logo.svg"/>
+        <None Include="truecraft" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
 
 </Project>

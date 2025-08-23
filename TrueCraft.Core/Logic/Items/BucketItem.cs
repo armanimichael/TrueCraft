@@ -11,23 +11,31 @@ public class BucketItem : ItemProvider
 {
     public static readonly short ItemID = 0x145;
 
-    public BucketItem(XmlNode node) : base(node)
-    {
-    }
+    public BucketItem(XmlNode node)
+        : base(node) { }
 
-    protected virtual byte? RelevantBlockType { get { return null; } }
+    protected virtual byte? RelevantBlockType => null;
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         coordinates += MathHelper.BlockFaceToCoordinates(face);
+
         if (item.ID == ItemID) // Empty bucket
         {
             var block = dimension.GetBlockID(coordinates);
+
             if (block == WaterBlock.BlockID || block == StationaryWaterBlock.BlockID)
             {
                 var meta = dimension.GetMetadata(coordinates);
+
                 if (meta == 0) // Is source block?
                 {
                     user.Hotbar[user.SelectedSlot].Item = new ItemStack(WaterBucketItem.ItemID);
@@ -37,6 +45,7 @@ public class BucketItem : ItemProvider
             else if (block == LavaBlock.BlockID || block == StationaryLavaBlock.BlockID)
             {
                 var meta = dimension.GetMetadata(coordinates);
+
                 if (meta == 0) // Is source block?
                 {
                     user.Hotbar[user.SelectedSlot].Item = new ItemStack(LavaBucketItem.ItemID);
@@ -47,6 +56,7 @@ public class BucketItem : ItemProvider
         else
         {
             var provider = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates));
+
             if (!provider.Opaque)
             {
                 if (RelevantBlockType != null)
@@ -57,9 +67,16 @@ public class BucketItem : ItemProvider
                     dimension.SetMetadata(coordinates, 0); // Source block
                     user.Server.BlockUpdatesEnabled = true;
                     var liquidProvider = dimension.BlockRepository.GetBlockProvider(blockType);
-                    liquidProvider.BlockPlaced(new BlockDescriptor { Coordinates = coordinates }, face, dimension, user);
+
+                    liquidProvider.BlockPlaced(
+                        new BlockDescriptor { Coordinates = coordinates },
+                        face,
+                        dimension,
+                        user
+                    );
                 }
-                user.Hotbar[user.SelectedSlot].Item = new ItemStack(BucketItem.ItemID);
+
+                user.Hotbar[user.SelectedSlot].Item = new ItemStack(ItemID);
             }
         }
     }
@@ -67,53 +84,32 @@ public class BucketItem : ItemProvider
 
 public class LavaBucketItem : BucketItem, IBurnableItem
 {
-    public static readonly new short ItemID = 0x147;
+    public new static readonly short ItemID = 0x147;
 
-    public LavaBucketItem(XmlNode node) : base(node)
-    {
-    }
+    public LavaBucketItem(XmlNode node)
+        : base(node) { }
 
-    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(1000); } }
+    public TimeSpan BurnTime => TimeSpan.FromSeconds(1000);
 
-    protected override byte? RelevantBlockType
-    {
-        get
-        {
-            return LavaBlock.BlockID;
-        }
-    }
+    protected override byte? RelevantBlockType => LavaBlock.BlockID;
 }
 
 public class MilkItem : BucketItem
 {
-    public static readonly new short ItemID = 0x14F;
+    public new static readonly short ItemID = 0x14F;
 
-    public MilkItem(XmlNode node) : base(node)
-    {
-    }
+    public MilkItem(XmlNode node)
+        : base(node) { }
 
-    protected override byte? RelevantBlockType
-    {
-        get
-        {
-            return null;
-        }
-    }
+    protected override byte? RelevantBlockType => null;
 }
 
 public class WaterBucketItem : BucketItem
 {
-    public static readonly new short ItemID = 0x146;
+    public new static readonly short ItemID = 0x146;
 
-    public WaterBucketItem(XmlNode node) : base(node)
-    {
-    }
+    public WaterBucketItem(XmlNode node)
+        : base(node) { }
 
-    protected override byte? RelevantBlockType
-    {
-        get
-        {
-            return WaterBlock.BlockID;
-        }
-    }
+    protected override byte? RelevantBlockType => WaterBlock.BlockID;
 }

@@ -11,39 +11,25 @@ public class FireBlock : BlockProvider
     public static readonly int MaxSpreadTime = 5;
 
     public static readonly byte BlockID = 0x33;
-        
-    public override byte ID { get { return 0x33; } }
-        
-    public override double BlastResistance { get { return 0; } }
 
-    public override double Hardness { get { return 0; } }
+    public override byte ID => 0x33;
 
-    public override byte Luminance { get { return 15; } }
+    public override double BlastResistance => 0;
 
-    public override bool Opaque { get { return false; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Fire";
-    }
+    public override double Hardness => 0;
 
-    public override SoundEffectClass SoundEffect
-    {
-        get
-        {
-            return SoundEffectClass.Wood; // Yeah, this is what Minecraft actually uses here
-        }
-    }
+    public override byte Luminance => 15;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(15, 1);
-    }
+    public override bool Opaque => false;
 
-    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item)
-    {
-        return new ItemStack[0];
-    }
+    public override string GetDisplayName(short metadata) => "Fire";
+
+    public override SoundEffectClass SoundEffect =>
+        SoundEffectClass.Wood; // Yeah, this is what Minecraft actually uses here
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(15, 1);
+
+    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item) => new ItemStack[0];
 
     private static readonly Vector3i[] SpreadableBlocks =
     {
@@ -70,36 +56,49 @@ public class FireBlock : BlockProvider
 
     public void DoUpdate(IMultiplayerServer server, IDimension dimension, BlockDescriptor descriptor)
     {
-        IChunk? chunk = dimension.GetChunk(descriptor.Coordinates);
+        var chunk = dimension.GetChunk(descriptor.Coordinates);
+
         if (chunk is null)
+        {
             return;
+        }
 
         var down = descriptor.Coordinates + Vector3i.Down;
 
         var current = dimension.GetBlockID(descriptor.Coordinates);
-        if (current != FireBlock.BlockID && current != LavaBlock.BlockID && current != StationaryLavaBlock.BlockID)
+
+        if (current != BlockID && current != LavaBlock.BlockID && current != StationaryLavaBlock.BlockID)
+        {
             return;
+        }
 
         // Decay
         var meta = dimension.GetMetadata(descriptor.Coordinates);
         meta++;
+
         if (meta == 0xE)
         {
             if (!dimension.IsValidPosition(down) || dimension.GetBlockID(down) != NetherrackBlock.BlockID)
             {
                 dimension.SetBlockID(descriptor.Coordinates, AirBlock.BlockID);
+
                 return;
             }
         }
+
         dimension.SetMetadata(descriptor.Coordinates, meta);
 
         if (meta > 9)
         {
             var pick = AdjacentBlocks[meta % AdjacentBlocks.Length];
-            IBlockProvider provider = dimension.BlockRepository
-                .GetBlockProvider(dimension.GetBlockID(pick + descriptor.Coordinates));
+
+            var provider = dimension.BlockRepository
+                                    .GetBlockProvider(dimension.GetBlockID(pick + descriptor.Coordinates));
+
             if (provider.Flammable)
+            {
                 dimension.SetBlockID(pick + descriptor.Coordinates, AirBlock.BlockID);
+            }
         }
 
         // Spread
@@ -114,21 +113,27 @@ public class FireBlock : BlockProvider
         foreach (var coord in SpreadableBlocks)
         {
             var check = descriptor.Coordinates + coord;
+
             if (dimension.GetBlockID(check) == AirBlock.BlockID)
-            {
                 // Check if this is adjacent to a flammable block
+            {
                 foreach (var adj in AdjacentBlocks)
                 {
-                    IBlockProvider provider = dimension.BlockRepository.GetBlockProvider(
-                        dimension.GetBlockID(check + adj));
+                    var provider = dimension.BlockRepository.GetBlockProvider(
+                        dimension.GetBlockID(check + adj)
+                    );
+
                     if (provider.Flammable)
                     {
                         if (provider.Hardness == 0)
+                        {
                             check = check + adj;
+                        }
 
                         // Spread to this block
-                        dimension.SetBlockID(check, FireBlock.BlockID);
+                        dimension.SetBlockID(check, BlockID);
                         ScheduleUpdate(server, dimension, dimension.GetBlockData(check));
+
                         break;
                     }
                 }
@@ -136,19 +141,27 @@ public class FireBlock : BlockProvider
         }
     }
 
-    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
-    {
-        ScheduleUpdate(user.Server, dimension, descriptor);
-    }
+    public override void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    ) => ScheduleUpdate(user.Server, dimension, descriptor);
 
     public void ScheduleUpdate(IMultiplayerServer server, IDimension dimension, BlockDescriptor descriptor)
     {
-        IChunk? chunk = dimension.GetChunk(descriptor.Coordinates);
-        if (chunk is null)
-            return;
+        var chunk = dimension.GetChunk(descriptor.Coordinates);
 
-        server.Scheduler.ScheduleEvent("fire.spread", chunk,
+        if (chunk is null)
+        {
+            return;
+        }
+
+        server.Scheduler.ScheduleEvent(
+            "fire.spread",
+            chunk,
             TimeSpan.FromSeconds(MathHelper.Random.Next(MinSpreadTime, MaxSpreadTime)),
-            s => DoUpdate(s, dimension, descriptor));
+            s => DoUpdate(s, dimension, descriptor)
+        );
     }
 }

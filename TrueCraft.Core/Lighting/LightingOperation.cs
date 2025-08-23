@@ -48,8 +48,12 @@ public class LightingOperation
     /// <param name="mode">Specifies whether light is being added or subtracted.</param>
     /// <param name="kind">Specifies the kind of the Lighting Operation</param>
     /// <param name="lightLevel">Specifies the level of light that was added or subtracted.</param>
-    public LightingOperation(GlobalVoxelCoordinates seed,
-        LightingOperationMode mode, LightingOperationKind kind, byte lightLevel)
+    public LightingOperation(
+        GlobalVoxelCoordinates seed,
+        LightingOperationMode mode,
+        LightingOperationKind kind,
+        byte lightLevel
+    )
     {
         _seed = seed;
         _mode = mode;
@@ -60,20 +64,20 @@ public class LightingOperation
     /// <summary>
     /// Gets the location of the change that initiated this Lighting Operation.
     /// </summary>
-    public GlobalVoxelCoordinates Seed { get => _seed; }
+    public GlobalVoxelCoordinates Seed => _seed;
 
     /// <summary>
     /// Gets whether light is being added or removed.
     /// </summary>
-    public LightingOperationMode Mode { get => _mode; }
+    public LightingOperationMode Mode => _mode;
 
     /// <summary>
     /// Gets the type of Lighting being updated.
     /// </summary>
-    public LightingOperationKind Kind { get => _kind; }
+    public LightingOperationKind Kind => _kind;
 
     /// <summary>
     /// Specifies the Light Level that was added or subtracted at the Seed location.
     /// </summary>
-    public byte LightLevel { get => _lightLevel; }
+    public byte LightLevel => _lightLevel;
 }

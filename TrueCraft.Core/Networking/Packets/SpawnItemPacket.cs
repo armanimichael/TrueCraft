@@ -5,7 +5,7 @@
 /// </summary>
 public struct SpawnItemPacket : IPacket
 {
-    public byte ID { get { return 0x15; } }
+    public byte ID => 0x15;
 
     public int EntityID;
     public short ItemID;
@@ -16,7 +16,18 @@ public struct SpawnItemPacket : IPacket
     public sbyte Pitch;
     public sbyte Roll;
 
-    public SpawnItemPacket(int entityID, short itemID, sbyte count, short metadata, int x, int y, int z, sbyte yaw, sbyte pitch, sbyte roll)
+    public SpawnItemPacket(
+        int entityID,
+        short itemID,
+        sbyte count,
+        short metadata,
+        int x,
+        int y,
+        int z,
+        sbyte yaw,
+        sbyte pitch,
+        sbyte roll
+    )
     {
         EntityID = entityID;
         ItemID = itemID;

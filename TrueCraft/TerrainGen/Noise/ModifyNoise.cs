@@ -11,9 +11,9 @@ public class ModifyNoise : NoiseGen
 
     public ModifyNoise(INoise primaryNoise, INoise secondaryNoise, NoiseModifier modifier = NoiseModifier.Add)
     {
-        this.PrimaryNoise = primaryNoise;
-        this.SecondaryNoise = secondaryNoise;
-        this.Modifier = modifier;
+        PrimaryNoise = primaryNoise;
+        SecondaryNoise = secondaryNoise;
+        Modifier = modifier;
     }
 
     public override double Value2D(double x, double y)

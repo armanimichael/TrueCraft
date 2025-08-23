@@ -7,18 +7,18 @@ namespace TrueCraft.Client.Modelling.Blocks;
 
 public class SlabModeller : BlockModeller
 {
-    private static Vector2 StoneTopTexture = new Vector2(6, 0);
-    private static Vector2 StoneSideTexture = new Vector2(5, 0);
-    private static Vector2 StoneBottomTexture = new Vector2(6, 0);
-    private static Vector2 SandstoneTopTexture = new Vector2(0, 13);
-    private static Vector2 SandstoneSideTexture = new Vector2(0, 12);
-    private static Vector2 SandstoneBottomTexture = new Vector2(0, 14);
-    private static Vector2 WoodTopTexture = new Vector2(4, 0);
-    private static Vector2 WoodSideTexture = new Vector2(4, 0);
-    private static Vector2 WoodBottomTexture = new Vector2(4, 0);
-    private static Vector2 CobbleTopTexture = new Vector2(0, 1);
-    private static Vector2 CobbleSideTexture = new Vector2(0, 1);
-    private static Vector2 CobbleBottomTexture = new Vector2(0, 1);
+    private static Vector2 StoneTopTexture = new(6, 0);
+    private static Vector2 StoneSideTexture = new(5, 0);
+    private static Vector2 StoneBottomTexture = new(6, 0);
+    private static Vector2 SandstoneTopTexture = new(0, 13);
+    private static Vector2 SandstoneSideTexture = new(0, 12);
+    private static Vector2 SandstoneBottomTexture = new(0, 14);
+    private static Vector2 WoodTopTexture = new(4, 0);
+    private static Vector2 WoodSideTexture = new(4, 0);
+    private static Vector2 WoodBottomTexture = new(4, 0);
+    private static Vector2 CobbleTopTexture = new(0, 1);
+    private static Vector2 CobbleSideTexture = new(0, 1);
+    private static Vector2 CobbleBottomTexture = new(0, 1);
 
     private static Vector2[] StoneTextureMap =
     {
@@ -51,7 +51,7 @@ public class SlabModeller : BlockModeller
         StoneBottomTexture + Vector2.UnitX + Vector2.UnitY,
         StoneBottomTexture + Vector2.UnitY,
         StoneBottomTexture,
-        StoneBottomTexture + Vector2.UnitX,
+        StoneBottomTexture + Vector2.UnitX
     };
 
     private static Vector2[] SandstoneTextureMap =
@@ -85,7 +85,7 @@ public class SlabModeller : BlockModeller
         SandstoneBottomTexture + Vector2.UnitX + Vector2.UnitY,
         SandstoneBottomTexture + Vector2.UnitY,
         SandstoneBottomTexture,
-        SandstoneBottomTexture + Vector2.UnitX,
+        SandstoneBottomTexture + Vector2.UnitX
     };
 
     private static Vector2[] WoodTextureMap =
@@ -119,7 +119,7 @@ public class SlabModeller : BlockModeller
         WoodBottomTexture + Vector2.UnitX + Vector2.UnitY,
         WoodBottomTexture + Vector2.UnitY,
         WoodBottomTexture,
-        WoodBottomTexture + Vector2.UnitX,
+        WoodBottomTexture + Vector2.UnitX
     };
 
     private static Vector2[] CobbleTextureMap =
@@ -153,7 +153,7 @@ public class SlabModeller : BlockModeller
         CobbleBottomTexture + Vector2.UnitX + Vector2.UnitY,
         CobbleBottomTexture + Vector2.UnitY,
         CobbleBottomTexture,
-        CobbleBottomTexture + Vector2.UnitX,
+        CobbleBottomTexture + Vector2.UnitX
     };
 
     static SlabModeller()
@@ -161,7 +161,7 @@ public class SlabModeller : BlockModeller
         RegisterRenderer(SlabBlock.BlockID, new SlabModeller());
         RegisterRenderer(DoubleSlabBlock.BlockID, new SlabModeller());
 
-        for (int i = 0; i < StoneTextureMap.Length; i++)
+        for (var i = 0; i < StoneTextureMap.Length; i++)
         {
             StoneTextureMap[i] *= new Vector2(16f / 256f);
             SandstoneTextureMap[i] *= new Vector2(16f / 256f);
@@ -187,43 +187,74 @@ public class SlabModeller : BlockModeller
         }
     }
 
-    public override VertexPositionNormalColorTexture[] Render(BlockDescriptor descriptor, Vector3 offset,
-        VisibleFaces faces, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    public override VertexPositionNormalColorTexture[] Render(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        VisibleFaces faces,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
         if (descriptor.ID == SlabBlock.BlockID)
+        {
             return RenderSlab(descriptor, offset, textureMap, indiciesOffset, out indicies);
+        }
         else
+        {
             return RenderDoubleSlab(descriptor, offset, textureMap, indiciesOffset, out indicies);
+        }
     }
 
-    protected virtual VertexPositionNormalColorTexture[] RenderSlab(BlockDescriptor descriptor, Vector3 offset, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    protected virtual VertexPositionNormalColorTexture[] RenderSlab(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
-        int[] lighting = GetLighting(descriptor);
+        var lighting = GetLighting(descriptor);
 
-        var result = CreateUniformCube(offset,
-            GetTextureMap((SlabBlock.SlabMaterial)descriptor.Metadata), VisibleFaces.All,
-            indiciesOffset, out indicies, Color.White, lighting);
-        for (int i = 0; i < 6; i++)
+        var result = CreateUniformCube(
+            offset,
+            GetTextureMap((SlabBlock.SlabMaterial) descriptor.Metadata),
+            VisibleFaces.All,
+            indiciesOffset,
+            out indicies,
+            Color.White,
+            lighting
+        );
+
+        for (var i = 0; i < 6; i++)
         {
-            var face = (CubeFace)i;
+            var face = (CubeFace) i;
+
             switch (face)
             {
                 case CubeFace.PositiveZ:
                 case CubeFace.NegativeZ:
                 case CubeFace.PositiveX:
                 case CubeFace.NegativeX:
-                    for (int j = 0; j < 2; j++)
-                        result[i * 4 + j].Texture.Y -= 1f / 32f;
-                    for (int k = 2; k < 4; k++)
+                    for (var j = 0; j < 2; j++)
                     {
-                        result[i * 4 + k].Position.Y -= 0.5f;
-                        // result[(i * 4) + k].Texture.Y -= (1f / 16f);
+                        result[(i * 4) + j].Texture.Y -= 1f / 32f;
                     }
+
+                    for (var k = 2; k < 4; k++)
+                    {
+                        result[(i * 4) + k].Position.Y -= 0.5f;
+                    }
+
+                    // result[(i * 4) + k].Texture.Y -= (1f / 16f);
                     break;
 
                 case CubeFace.PositiveY:
-                    for (int j = 0; j < 4; j++)
-                        result[i * 4 + j].Position.Y -= 0.5f;
+                    for (var j = 0; j < 4; j++)
+                    {
+                        result[(i * 4) + j].Position.Y -= 0.5f;
+                    }
+
                     break;
             }
         }
@@ -231,10 +262,18 @@ public class SlabModeller : BlockModeller
         return result;
     }
 
-    protected virtual VertexPositionNormalColorTexture[] RenderDoubleSlab(BlockDescriptor descriptor,
-        Vector3 offset, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
-    {
-        return CreateUniformCube(offset, GetTextureMap((SlabBlock.SlabMaterial)descriptor.Metadata),
-            VisibleFaces.All, indiciesOffset, out indicies, Color.White);
-    }
+    protected virtual VertexPositionNormalColorTexture[] RenderDoubleSlab(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    ) => CreateUniformCube(
+        offset,
+        GetTextureMap((SlabBlock.SlabMaterial) descriptor.Metadata),
+        VisibleFaces.All,
+        indiciesOffset,
+        out indicies,
+        Color.White
+    );
 }

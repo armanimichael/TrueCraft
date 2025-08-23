@@ -6,9 +6,8 @@ public class EggItem : ItemProvider
 {
     public static readonly short ItemID = 0x158;
 
-    public EggItem(XmlNode node) : base(node)
-    {
-    }
+    public EggItem(XmlNode node)
+        : base(node) { }
 
     // TODO: (server-side) Eggs have behaviour (be thrown, possible hatch...)
 }

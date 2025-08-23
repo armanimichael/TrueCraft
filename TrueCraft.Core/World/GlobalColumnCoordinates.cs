@@ -43,45 +43,53 @@ public class GlobalColumnCoordinates : IEquatable<GlobalColumnCoordinates>
     public bool Equals(GlobalColumnCoordinates? other)
     {
         if (other is null)
+        {
             return false;
+        }
         else
-            return this.X == other.X && this.Z == other.Z;
+        {
+            return X == other.X && Z == other.Z;
+        }
     }
 
-    public static bool operator !=(GlobalColumnCoordinates? a, GlobalColumnCoordinates? b)
-    {
-        return !(a == b);
-    }
+    public static bool operator !=(GlobalColumnCoordinates? a, GlobalColumnCoordinates? b) => !(a == b);
 
     public static bool operator ==(GlobalColumnCoordinates? a, GlobalColumnCoordinates? b)
     {
         if (a is null)
         {
             if (b is null)
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
         else
         {
             if (b is null)
+            {
                 return false;
+            }
             else
+            {
                 return a.Equals(b);
+            }
         }
     }
+
     #endregion // IEquatable<>
 
     #region object overrides
+
     /// <summary>
     /// Determines whether this and another object are equal.
     /// </summary>
     /// <param name="obj">The other object.</param>
     /// <returns></returns>
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as GlobalColumnCoordinates);
-    }
+    public override bool Equals(object? obj) => Equals(obj as GlobalColumnCoordinates);
 
     /// <summary>
     /// Returns the hash code for this 3D coordinates.
@@ -91,8 +99,9 @@ public class GlobalColumnCoordinates : IEquatable<GlobalColumnCoordinates>
     {
         unchecked
         {
-            int result = X.GetHashCode();
+            var result = X.GetHashCode();
             result = (result * 397) ^ Z.GetHashCode();
+
             return result;
         }
     }
@@ -101,9 +110,7 @@ public class GlobalColumnCoordinates : IEquatable<GlobalColumnCoordinates>
     /// Converts this GlobalColumnCoordinates to a string in the format &lt;x, z&gt;.
     /// </summary>
     /// <returns></returns>
-    public override string ToString()
-    {
-        return $"<{X},{Z}>";
-    }
+    public override string ToString() => $"<{X},{Z}>";
+
     #endregion
 }

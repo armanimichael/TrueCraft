@@ -11,16 +11,23 @@ public class GrassModeller : BlockModeller
     static GrassModeller()
     {
         RegisterRenderer(GrassBlock.BlockID, new GrassModeller());
-        for (int i = 0; i < Texture.Length; i++)
+
+        for (var i = 0; i < Texture.Length; i++)
+        {
             Texture[i] *= new Vector2(16f / 256f);
-        for (int i = 0; i < Texture.Length; i++)
+        }
+
+        for (var i = 0; i < Texture.Length; i++)
+        {
             SnowTexture[i] *= new Vector2(16f / 256f);
+        }
     }
 
-    private static Vector2 TextureMap = new Vector2(0, 0);
-    private static Vector2 EndsTexture = new Vector2(2, 0);
-    private static Vector2 SideTexture = new Vector2(3, 0);
-    private static Vector2 SideTextureSnow = new Vector2(4, 4);
+    private static Vector2 TextureMap = new(0, 0);
+    private static Vector2 EndsTexture = new(2, 0);
+    private static Vector2 SideTexture = new(3, 0);
+    private static Vector2 SideTextureSnow = new(4, 4);
+
     private static Vector2[] Texture =
     {
         // Positive Z
@@ -52,8 +59,9 @@ public class GrassModeller : BlockModeller
         EndsTexture + Vector2.UnitX + Vector2.UnitY,
         EndsTexture + Vector2.UnitY,
         EndsTexture,
-        EndsTexture + Vector2.UnitX,
+        EndsTexture + Vector2.UnitX
     };
+
     private static Vector2[] SnowTexture =
     {
         // Positive Z
@@ -85,27 +93,39 @@ public class GrassModeller : BlockModeller
         EndsTexture + Vector2.UnitX + Vector2.UnitY,
         EndsTexture + Vector2.UnitY,
         EndsTexture,
-        EndsTexture + Vector2.UnitX,
+        EndsTexture + Vector2.UnitX
     };
 
-    public static readonly Color BiomeColor = new Color(105, 169, 63);
+    public static readonly Color BiomeColor = new(105, 169, 63);
 
-    public override VertexPositionNormalColorTexture[] Render(BlockDescriptor descriptor, Vector3 offset,
-        VisibleFaces faces, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    public override VertexPositionNormalColorTexture[] Render(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        VisibleFaces faces,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
         var texture = Texture;
-        if (descriptor.Coordinates.Y < WorldConstants.Height && descriptor.Chunk != null &&
-            descriptor.Chunk.GetBlockID((LocalVoxelCoordinates)(descriptor.Coordinates + Vector3i.Up)) == SnowfallBlock.BlockID)
-            texture = SnowTexture;
 
-        int[] lighting = GetLighting(descriptor);
+        if (descriptor.Coordinates.Y < WorldConstants.Height && descriptor.Chunk != null &&
+            descriptor.Chunk.GetBlockID((LocalVoxelCoordinates) (descriptor.Coordinates + Vector3i.Up)) ==
+            SnowfallBlock.BlockID)
+        {
+            texture = SnowTexture;
+        }
+
+        var lighting = GetLighting(descriptor);
 
         var cube = CreateUniformCube(offset, texture, faces, indiciesOffset, out indicies, Color.White, lighting);
+
         // Apply biome colors to top of cube
-        for (int i = (int)CubeFace.PositiveY * 4; i < (int)CubeFace.PositiveY * 4 + 4; i++)
+        for (var i = (int) CubeFace.PositiveY * 4; i < ((int) CubeFace.PositiveY * 4) + 4; i++)
         {
             cube[i].Color = new Color(cube[i].Color.ToVector3() * BiomeColor.ToVector3()); // TODO: Take this from biome
         }
+
         return cube;
     }
 }

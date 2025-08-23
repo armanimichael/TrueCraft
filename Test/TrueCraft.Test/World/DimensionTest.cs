@@ -26,27 +26,36 @@ public class DimensionTest
 
     public DimensionTest()
     {
-        Mock<IBlockProvider> mockProvider = new Mock<IBlockProvider>(MockBehavior.Strict);
+        var mockProvider = new Mock<IBlockProvider>(MockBehavior.Strict);
         mockProvider.Setup(x => x.ID).Returns(3);
 
-        Mock<IBlockRepository> mockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
         mockRepository.Setup(x => x.GetBlockProvider(It.Is<byte>(b => b == 3))).Returns(mockProvider.Object);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<IServerServiceLocator> mockServiceLocator = new Mock<IServerServiceLocator>(MockBehavior.Strict);
+        var mockServiceLocator = new Mock<IServerServiceLocator>(MockBehavior.Strict);
         mockServiceLocator.Setup(x => x.BlockRepository).Returns(mockRepository.Object);
         mockServiceLocator.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockServiceLocator.Setup(x => x.Server).Returns(mockServer.Object);
         _serviceLocator = mockServiceLocator.Object;
 
-        Mock<ILightingQueue> mockLightingQueue = new Mock<ILightingQueue>(MockBehavior.Strict);
-        mockLightingQueue.Setup(x => x.Enqueue(It.IsAny<GlobalVoxelCoordinates>(), It.IsAny<LightingOperationMode>(), It.IsAny<LightingOperationKind>(), It.IsAny<byte>()));
+        var mockLightingQueue = new Mock<ILightingQueue>(MockBehavior.Strict);
+
+        mockLightingQueue.Setup(
+            x => x.Enqueue(
+                It.IsAny<GlobalVoxelCoordinates>(),
+                It.IsAny<LightingOperationMode>(),
+                It.IsAny<LightingOperationKind>(),
+                It.IsAny<byte>()
+            )
+        );
+
         _lightingQueue = mockLightingQueue.Object;
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
         _entityManager = mockEntityManager.Object;
 
         _assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
@@ -67,11 +76,18 @@ public class DimensionTest
         }
     }
 
-    private IDimensionServer BuildDimension()
+    private Dimension BuildDimension()
     {
-        string filePath = Path.Combine(_assemblyDir, "Files");
-        return new Dimension(_serviceLocator, filePath, DimensionID.Overworld,
-            new FlatlandGenerator(1234), _lightingQueue, _entityManager);
+        var filePath = Path.Combine(_assemblyDir, "Files");
+
+        return new Dimension(
+            _serviceLocator,
+            filePath,
+            DimensionID.Overworld,
+            new FlatlandGenerator(1234),
+            _lightingQueue,
+            _entityManager
+        );
     }
 
     /// <summary>
@@ -81,12 +97,12 @@ public class DimensionTest
     [Test]
     public void TestGetChunk_Global_NoGenerate()
     {
-        IDimension dimension = BuildDimension();
+        var dimension = BuildDimension();
 
-        IChunk? a = dimension.GetChunk(new GlobalVoxelCoordinates(0, 0, 0));
-        IChunk? b = dimension.GetChunk(new GlobalVoxelCoordinates(-1, 0, 0));
-        IChunk? c = dimension.GetChunk(new GlobalVoxelCoordinates(-1, 0, -1));
-        IChunk? d = dimension.GetChunk(new GlobalVoxelCoordinates(0, 0, -1));
+        var a = dimension.GetChunk(new GlobalVoxelCoordinates(0, 0, 0));
+        var b = dimension.GetChunk(new GlobalVoxelCoordinates(-1, 0, 0));
+        var c = dimension.GetChunk(new GlobalVoxelCoordinates(-1, 0, -1));
+        var d = dimension.GetChunk(new GlobalVoxelCoordinates(0, 0, -1));
 
         Assert.IsNull(a);
         Assert.IsNull(b);
@@ -101,12 +117,12 @@ public class DimensionTest
     [Test]
     public void TestGetChunk_Chunk_NoGenerate()
     {
-        IDimension dimension = BuildDimension();
+        var dimension = BuildDimension();
 
-        IChunk? a = dimension.GetChunk(new GlobalChunkCoordinates(0, 0));
-        IChunk? b = dimension.GetChunk(new GlobalChunkCoordinates(-1, 0));
-        IChunk? c = dimension.GetChunk(new GlobalChunkCoordinates(-1, -1));
-        IChunk? d = dimension.GetChunk(new GlobalChunkCoordinates(0, -1));
+        var a = dimension.GetChunk(new GlobalChunkCoordinates(0, 0));
+        var b = dimension.GetChunk(new GlobalChunkCoordinates(-1, 0));
+        var c = dimension.GetChunk(new GlobalChunkCoordinates(-1, -1));
+        var d = dimension.GetChunk(new GlobalChunkCoordinates(0, -1));
 
         Assert.IsNull(a);
         Assert.IsNull(b);
@@ -121,13 +137,13 @@ public class DimensionTest
     [Test]
     public void TestGetChunk_Chunk_InMemory()
     {
-        IDimensionServer dimension = BuildDimension();
+        var dimension = BuildDimension();
         // The Chunk at 16,6 is not present in the region file in the Files
         // folder, so it cannot be loaded from disk.
-        GlobalChunkCoordinates chunkCoordinates = new GlobalChunkCoordinates(16, 6);
+        var chunkCoordinates = new GlobalChunkCoordinates(16, 6);
 
         // Try to get the Chunk from memory
-        IChunk? chunk = dimension.GetChunk(chunkCoordinates, LoadEffort.InMemory);
+        var chunk = dimension.GetChunk(chunkCoordinates, LoadEffort.InMemory);
         Assert.IsNull(chunk);
 
         // Generate the Chunk
@@ -146,12 +162,12 @@ public class DimensionTest
     [Test]
     public void TestGetChunk_Chunk_Load()
     {
-        IDimensionServer dimension = BuildDimension();
-        GlobalChunkCoordinates chunkCoordinates = new GlobalChunkCoordinates(0, 0);
+        var dimension = BuildDimension();
+        var chunkCoordinates = new GlobalChunkCoordinates(0, 0);
 
         // The chunk is known to be not in memory as we just created the
         // Dimension.
-        IChunk? chunk = dimension.GetChunk(chunkCoordinates, LoadEffort.Load);
+        var chunk = dimension.GetChunk(chunkCoordinates, LoadEffort.Load);
         Assert.IsNotNull(chunk);
         Assert.AreEqual(chunkCoordinates, chunk?.Coordinates);
     }
@@ -163,16 +179,16 @@ public class DimensionTest
     [Test]
     public void TestGetChunk_Chunk_Generate()
     {
-        IDimensionServer dimension = BuildDimension();
+        var dimension = BuildDimension();
         // The Chunk at 16,6 is not present in the region file in the Files
         // folder, so it cannot be loaded from disk.
-        GlobalChunkCoordinates chunkCoordinates = new GlobalChunkCoordinates(16, 6);
+        var chunkCoordinates = new GlobalChunkCoordinates(16, 6);
 
         // The Chunk is known not to be in memory because we just created
         // a brand-new dimension.
 
         // Assert that the Chunk can not be loaded from disk.
-        IChunk? chunk = dimension.GetChunk(chunkCoordinates, LoadEffort.Load);
+        var chunk = dimension.GetChunk(chunkCoordinates, LoadEffort.Load);
         Assert.IsNull(chunk);
 
         // Generate the Chunk

@@ -34,10 +34,10 @@ public interface IMultiplayerServer
 
     IEventScheduler Scheduler { get; }
 
-    [Obsolete()]
+    [Obsolete]
     IBlockRepository BlockRepository { get; }
 
-    [Obsolete()]
+    [Obsolete]
     IItemRepository ItemRepository { get; }
 
     IPEndPoint? EndPoint { get; }

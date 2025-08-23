@@ -1,4 +1,5 @@
 using System;
+
 namespace TrueCraft.Core;
 
 public enum IAm
@@ -23,17 +24,29 @@ public static class WhoAmI
         get
         {
             if (_whoami == IAm.Unset)
+            {
                 throw new InvalidOperationException("WhoAmI.Answer not yet set.");
+            }
+
             return _whoami;
         }
         set
         {
             if (_whoami == value)
+            {
                 return;
+            }
+
             if (_whoami != IAm.Unset)
+            {
                 throw new InvalidOperationException("WhoAmI.Answer can only be set once.");
+            }
+
             if (value == IAm.Unset)
+            {
                 throw new ArgumentException("value cannot be set to IAm.Unset");
+            }
+
             _whoami = value;
         }
     }

@@ -10,5 +10,5 @@ public class CobwebModeller : FlatQuadModeller
         RegisterRenderer(CobwebBlock.BlockID, new CobwebModeller());
     }
 
-    protected override Vector2 TextureMap { get { return new Vector2(11, 0); } }
+    protected override Vector2 TextureMap => new(11, 0);
 }

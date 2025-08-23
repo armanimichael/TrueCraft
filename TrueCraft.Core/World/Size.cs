@@ -35,7 +35,7 @@ public struct Size : IEquatable<Size>
     /// <param name="d">The value of the components for the size.</param>
     public Size(double d)
     {
-        this.Width = this.Height = this.Depth = d;
+        Width = Height = Depth = d;
     }
 
     /// <summary>
@@ -46,9 +46,9 @@ public struct Size : IEquatable<Size>
     /// <param name="depth">The depth component for the size.</param>
     public Size(double width, double height, double depth)
     {
-        this.Width = width;
-        this.Height = height;
-        this.Depth = depth;
+        Width = width;
+        Height = height;
+        Depth = depth;
     }
 
     /// <summary>
@@ -57,189 +57,144 @@ public struct Size : IEquatable<Size>
     /// <param name="s">The size to copy.</param>
     public Size(Size s)
     {
-        this.Width = s.Width;
-        this.Height = s.Height;
-        this.Depth = s.Depth;
+        Width = s.Width;
+        Height = s.Height;
+        Depth = s.Depth;
     }
 
     #endregion
 
     #region Operators
 
-    public static Size operator /(Size a, double b)
-    {
-        return new Size(a.Width / b,
-            a.Height / b,
-            a.Depth / b);
-    }
+    public static Size operator /(Size a, double b) => new(
+        a.Width / b,
+        a.Height / b,
+        a.Depth / b
+    );
 
-    public static Size operator *(Size a, double b)
-    {
-        return new Size(a.Width * b,
-            a.Height * b,
-            a.Depth * b);
-    }
+    public static Size operator *(Size a, double b) => new(
+        a.Width * b,
+        a.Height * b,
+        a.Depth * b
+    );
 
-    public static Size operator %(Size a, double b)
-    {
-        return new Size(a.Width % b,
-            a.Height % b,
-            a.Depth % b);
-    }
+    public static Size operator %(Size a, double b) => new(
+        a.Width % b,
+        a.Height % b,
+        a.Depth % b
+    );
 
-    public static Size operator +(Size a, double b)
-    {
-        return new Size(a.Width + b,
-            a.Height + b,
-            a.Depth + b);
-    }
+    public static Size operator +(Size a, double b) => new(
+        a.Width + b,
+        a.Height + b,
+        a.Depth + b
+    );
 
-    public static Size operator -(Size a, double b)
-    {
-        return new Size(a.Width - b,
-            a.Height - b,
-            a.Depth - b);
-    }
+    public static Size operator -(Size a, double b) => new(
+        a.Width - b,
+        a.Height - b,
+        a.Depth - b
+    );
 
-    public static Size operator /(double a, Size b)
-    {
-        return new Size(a / b.Width,
-            a / b.Height,
-            a / b.Depth);
-    }
+    public static Size operator /(double a, Size b) => new(
+        a / b.Width,
+        a / b.Height,
+        a / b.Depth
+    );
 
-    public static Size operator *(double a, Size b)
-    {
-        return new Size(a * b.Width,
-            a * b.Height,
-            a * b.Depth);
-    }
+    public static Size operator *(double a, Size b) => new(
+        a * b.Width,
+        a * b.Height,
+        a * b.Depth
+    );
 
-    public static Size operator %(double a, Size b)
-    {
-        return new Size(a % b.Width,
-            a % b.Height,
-            a % b.Depth);
-    }
+    public static Size operator %(double a, Size b) => new(
+        a % b.Width,
+        a % b.Height,
+        a % b.Depth
+    );
 
-    public static Size operator +(double a, Size b)
-    {
-        return new Size(a + b.Width,
-            a + b.Height,
-            a + b.Depth);
-    }
+    public static Size operator +(double a, Size b) => new(
+        a + b.Width,
+        a + b.Height,
+        a + b.Depth
+    );
 
-    public static Size operator -(double a, Size b)
-    {
-        return new Size(a - b.Width,
-            a - b.Height,
-            a - b.Depth);
-    }
+    public static Size operator -(double a, Size b) => new(
+        a - b.Width,
+        a - b.Height,
+        a - b.Depth
+    );
 
-    public static Size operator /(Size a, Size b)
-    {
-        return new Size(a.Width / b.Width,
-            a.Height / b.Height,
-            a.Depth / b.Depth);
-    }
+    public static Size operator /(Size a, Size b) => new(
+        a.Width / b.Width,
+        a.Height / b.Height,
+        a.Depth / b.Depth
+    );
 
-    public static Size operator *(Size a, Size b)
-    {
-        return new Size(a.Width * b.Width,
-            a.Height * b.Height,
-            a.Depth * b.Depth);
-    }
+    public static Size operator *(Size a, Size b) => new(
+        a.Width * b.Width,
+        a.Height * b.Height,
+        a.Depth * b.Depth
+    );
 
-    public static Size operator %(Size a, Size b)
-    {
-        return new Size(a.Width % b.Width,
-            a.Height % b.Height,
-            a.Depth % b.Depth);
-    }
+    public static Size operator %(Size a, Size b) => new(
+        a.Width % b.Width,
+        a.Height % b.Height,
+        a.Depth % b.Depth
+    );
 
-    public static Size operator +(Size a, Size b)
-    {
-        return new Size(a.Width + b.Width,
-            a.Height + b.Height,
-            a.Depth + b.Depth);
-    }
+    public static Size operator +(Size a, Size b) => new(
+        a.Width + b.Width,
+        a.Height + b.Height,
+        a.Depth + b.Depth
+    );
 
-    public static Size operator -(Size a, Size b)
-    {
-        return new Size(a.Width - b.Width,
-            a.Height - b.Height,
-            a.Depth - b.Depth);
-    }
+    public static Size operator -(Size a, Size b) => new(
+        a.Width - b.Width,
+        a.Height - b.Height,
+        a.Depth - b.Depth
+    );
 
-    public static Size operator -(Size a)
-    {
-        return new Size(-a.Width, -a.Height, -a.Depth);
-    }
+    public static Size operator -(Size a) => new(-a.Width, -a.Height, -a.Depth);
 
-    public static Size operator +(Size a)
-    {
-        return new Size(a);
-    }
+    public static Size operator +(Size a) => new(a);
 
-    public static Size operator ++(Size a)
-    {
-        return new Size(a.Width++,
-            a.Height++,
-            a.Depth++);
-    }
+    public static Size operator ++(Size a) => new(
+        a.Width++,
+        a.Height++,
+        a.Depth++
+    );
 
-    public static Size operator --(Size a)
-    {
-        return new Size(a.Width--,
-            a.Height--,
-            a.Depth--);
-    }
+    public static Size operator --(Size a) => new(
+        a.Width--,
+        a.Height--,
+        a.Depth--
+    );
 
-    public static bool operator ==(Size a, Size b)
-    {
-        return a.Equals(b);
-    }
+    public static bool operator ==(Size a, Size b) => a.Equals(b);
 
-    public static bool operator !=(Size a, Size b)
-    {
-        return !a.Equals(b);
-    }
+    public static bool operator !=(Size a, Size b) => !a.Equals(b);
 
-    public static bool operator >(Size a, Size b)
-    {
-        return a.Volume > b.Volume;
-    }
+    public static bool operator >(Size a, Size b) => a.Volume > b.Volume;
 
-    public static bool operator <(Size a, Size b)
-    {
-        return a.Volume < b.Volume;
-    }
+    public static bool operator <(Size a, Size b) => a.Volume < b.Volume;
 
-    public static bool operator >=(Size a, Size b)
-    {
-        return a.Volume >= b.Volume;
-    }
+    public static bool operator >=(Size a, Size b) => a.Volume >= b.Volume;
 
-    public static bool operator <=(Size a, Size b)
-    {
-        return a.Volume <= b.Volume;
-    }
+    public static bool operator <=(Size a, Size b) => a.Volume <= b.Volume;
 
     #endregion
 
     #region Conversion operators
 
-    public static implicit operator Size(Vector3 v)
-    {
-        return new Size(v.X, v.Y, v.Z);
-    }
+    public static implicit operator Size(Vector3 v) => new(v.X, v.Y, v.Z);
 
-    public static explicit operator Size(Tuple<double, double, double> t)
-    {
-        return new Size(t.Item1,
-            t.Item2,
-            t.Item3);
-    }
+    public static explicit operator Size(Tuple<double, double, double> t) => new(
+        t.Item1,
+        t.Item2,
+        t.Item3
+    );
 
     #endregion
 
@@ -251,24 +206,22 @@ public struct Size : IEquatable<Size>
     /// <param name="a">The first size.</param>
     /// <param name="b">The second size.</param>
     /// <returns></returns>
-    public static Size Min(Size a, Size b)
-    {
-        return new Size(Math.Min(a.Width, b.Width),
-            Math.Min(a.Height, b.Height),
-            Math.Min(a.Depth, b.Depth));
-    }
+    public static Size Min(Size a, Size b) => new(
+        Math.Min(a.Width, b.Width),
+        Math.Min(a.Height, b.Height),
+        Math.Min(a.Depth, b.Depth)
+    );
 
     /// <summary>
     /// Returns the component-wise minimum of this and another size.
     /// </summary>
     /// <param name="b">The other size.</param>
     /// <returns></returns>
-    public Size Min(Size b)
-    {
-        return new Size(Math.Min(this.Width, b.Width),
-            Math.Min(this.Height, b.Height),
-            Math.Min(this.Depth, b.Depth));
-    }
+    public Size Min(Size b) => new(
+        Math.Min(Width, b.Width),
+        Math.Min(Height, b.Height),
+        Math.Min(Depth, b.Depth)
+    );
 
     /// <summary>
     /// Returns the component-wise maximum of two sizes.
@@ -276,150 +229,109 @@ public struct Size : IEquatable<Size>
     /// <param name="a">The first size.</param>
     /// <param name="b">The second size.</param>
     /// <returns></returns>
-    public static Size Max(Size a, Size b)
-    {
-        return new Size(Math.Max(a.Width, b.Width),
-            Math.Max(a.Height, b.Height),
-            Math.Max(a.Depth, b.Depth));
-    }
+    public static Size Max(Size a, Size b) => new(
+        Math.Max(a.Width, b.Width),
+        Math.Max(a.Height, b.Height),
+        Math.Max(a.Depth, b.Depth)
+    );
 
     /// <summary>
     /// Returns the component-wise maximum of this and another size.
     /// </summary>
     /// <param name="b">The other size.</param>
     /// <returns></returns>
-    public Size Max(Size b)
-    {
-        return new Size(Math.Max(this.Width, b.Width),
-            Math.Max(this.Height, b.Height),
-            Math.Max(this.Depth, b.Depth));
-    }
+    public Size Max(Size b) => new(
+        Math.Max(Width, b.Width),
+        Math.Max(Height, b.Height),
+        Math.Max(Depth, b.Depth)
+    );
 
     /// <summary>
     /// Returns the negate of a size.
     /// </summary>
     /// <param name="a">The size to negate.</param>
     /// <returns></returns>
-    public static Size Negate(Size a)
-    {
-        return -a;
-    }
+    public static Size Negate(Size a) => -a;
 
     /// <summary>
     /// Returns the negate of this size.
     /// </summary>
     /// <returns></returns>
-    public Size Negate()
-    {
-        return -this;
-    }
+    public Size Negate() => -this;
 
     /// <summary>
     /// Returns the component-wise absolute value of a size.
     /// </summary>
     /// <param name="a">The size.</param>
     /// <returns></returns>
-    public static Size Abs(Size a)
-    {
-        return new Size(Math.Abs(a.Width),
-            Math.Abs(a.Height),
-            Math.Abs(a.Depth));
-    }
+    public static Size Abs(Size a) => new(
+        Math.Abs(a.Width),
+        Math.Abs(a.Height),
+        Math.Abs(a.Depth)
+    );
 
     /// <summary>
     /// Returns the component-wise absolute value of this size.
     /// </summary>
     /// <returns></returns>
-    public Size Abs()
-    {
-        return new Size(Math.Abs(this.Width),
-            Math.Abs(this.Height),
-            Math.Abs(this.Depth));
-    }
+    public Size Abs() => new(
+        Math.Abs(Width),
+        Math.Abs(Height),
+        Math.Abs(Depth)
+    );
 
     #endregion
 
     /// <summary>
     /// Gets the volume of a cuboid with the same dimensions as this size.
     /// </summary>
-    public double Volume
-    {
-        get
-        {
-            return Width * Height * Depth;
-        }
-    }
+    public double Volume => Width * Height * Depth;
 
     /// <summary>
     /// Gets the surface area of a cuboid with the same dimensions as this size.
     /// </summary>
-    public double SurfaceArea
-    {
-        get
-        {
-            return 2 * (Width * Depth +
-                        Width * Height +
-                        Depth * Height);
-        }
-    }
+    public double SurfaceArea =>
+        2 * ((Width * Depth) +
+             (Width * Height) +
+             (Depth * Height));
 
     /// <summary>
     /// Gets the lateral surface area of a cuboid with the same dimensions as this size.
     /// </summary>
-    public double LateralSurfaceArea
-    {
-        get
-        {
-            return 2 * (Width * Depth +
-                        Depth * Height);
-        }
-    }
+    public double LateralSurfaceArea =>
+        2 * ((Width * Depth) +
+             (Depth * Height));
 
     /// <summary>
     /// Gets the length of a diagonal line passing through a cuboid with the same dimensions as this size.
     /// </summary>
-    public double Diagonal
-    {
-        get
-        {
-            return Math.Sqrt(Width * Width +
-                             Height * Height +
-                             Depth * Depth);
-        }
-    }
+    public double Diagonal =>
+        Math.Sqrt(
+            (Width * Width) +
+            (Height * Height) +
+            (Depth * Depth)
+        );
 
     /// <summary>
     /// Returns the average dimension for this size.
     /// </summary>
-    public double Average
-    {
-        get
-        {
-            return (Width + Height + Depth) / 3;
-        }
-    }
+    public double Average => (Width + Height + Depth) / 3;
 
     /// <summary>
     /// Determines whether this size and another are equal.
     /// </summary>
     /// <param name="other">The other size.</param>
     /// <returns></returns>
-    public bool Equals(Size other)
-    {
-        return this.Width == other.Width &&
-               this.Height == other.Height &&
-               this.Depth == other.Depth;
-    }
+    public bool Equals(Size other) => Width == other.Width &&
+                                      Height == other.Height &&
+                                      Depth == other.Depth;
 
     /// <summary>
     /// Determines whether this and another object are equal.
     /// </summary>
     /// <param name="obj">The other object.</param>
     /// <returns></returns>
-    public override bool Equals(object? obj)
-    {
-        return obj is Size && Equals((Size)obj);
-    }
+    public override bool Equals(object? obj) => obj is Size && Equals((Size) obj);
 
     /// <summary>
     /// Returns the hash code for this size.
@@ -429,21 +341,19 @@ public struct Size : IEquatable<Size>
     {
         unchecked
         {
-            int hash = 449;
+            var hash = 449;
             hash = (hash * 457) ^ Width.GetHashCode();
             hash = (hash * 457) ^ Height.GetHashCode();
             hash = (hash * 457) ^ Depth.GetHashCode();
+
             return hash;
         }
     }
-        
+
     /// <summary>
     /// Returns a string representing the <see cref="Size"/> object in the format of &lt;Width,Height,Depth&gt;.
     /// </summary>
     /// <returns>A string representation of the object</returns>
     /// <inheritdoc cref="Object.ToString"/>
-    public override string ToString()
-    {
-        return string.Format("<{0},{1},{2}>", Width, Height, Depth);
-    }
+    public override string ToString() => string.Format("<{0},{1},{2}>", Width, Height, Depth);
 }

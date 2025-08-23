@@ -12,6 +12,7 @@ public class WanderState : IMobState
     /// </summary>
     /// <value>The distance.</value>
     public int Distance { get; set; }
+
     public AStarPathFinder PathFinder { get; set; }
 
     public WanderState()
@@ -23,6 +24,7 @@ public class WanderState : IMobState
     public void Update(IMobEntity entity, IEntityManager manager)
     {
         var cast = entity as IEntity;
+
         if (entity.CurrentPath != null)
         {
             if (entity.AdvancePath(manager.TimeSinceLastUpdate))
@@ -32,23 +34,37 @@ public class WanderState : IMobState
         }
         else
         {
-            GlobalVoxelCoordinates target = new GlobalVoxelCoordinates(
-                (int)(cast.Position.X + (MathHelper.Random.Next(Distance) - Distance / 2)),
+            var target = new GlobalVoxelCoordinates(
+                (int) (cast.Position.X + (MathHelper.Random.Next(Distance) - (Distance / 2))),
                 0,
-                (int)(cast.Position.Z + (MathHelper.Random.Next(Distance) - Distance / 2))
+                (int) (cast.Position.Z + (MathHelper.Random.Next(Distance) - (Distance / 2)))
             );
 
             IChunk? chunk;
-            LocalVoxelCoordinates adjusted = entity.Dimension.FindBlockPosition(target, out chunk);
-            if (chunk is null)
-                return;
+            var adjusted = entity.Dimension.FindBlockPosition(target, out chunk);
 
-            target = new GlobalVoxelCoordinates(target.X, chunk.GetHeight((byte)adjusted.X, (byte)adjusted.Z), target.Z);
-            Task.Factory.StartNew(() =>
+            if (chunk is null)
             {
-                entity.CurrentPath = PathFinder.FindPath(entity.Dimension, entity.BoundingBox,
-                    (GlobalVoxelCoordinates)cast.Position, target);
-            });
+                return;
+            }
+
+            target = new GlobalVoxelCoordinates(
+                target.X,
+                chunk.GetHeight((byte) adjusted.X, (byte) adjusted.Z),
+                target.Z
+            );
+
+            Task.Factory.StartNew(
+                () =>
+                {
+                    entity.CurrentPath = PathFinder.FindPath(
+                        entity.Dimension,
+                        entity.BoundingBox,
+                        (GlobalVoxelCoordinates) cast.Position,
+                        target
+                    );
+                }
+            );
         }
     }
 }

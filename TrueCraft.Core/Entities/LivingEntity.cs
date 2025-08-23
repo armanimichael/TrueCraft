@@ -11,11 +11,24 @@ public abstract class LivingEntity : Entity
     protected short _health;
     protected float _headYaw;
 
-    protected LivingEntity(IDimension dimension, IEntityManager entityManager,
-        short maxHealth, Size size, float accelerationDueToGravity,
-        float drag, float terminalVelocity) :
-        base(dimension, entityManager, size, accelerationDueToGravity, drag,
-            terminalVelocity)
+    protected LivingEntity(
+        IDimension dimension,
+        IEntityManager entityManager,
+        short maxHealth,
+        Size size,
+        float accelerationDueToGravity,
+        float drag,
+        float terminalVelocity
+    )
+        :
+        base(
+            dimension,
+            entityManager,
+            size,
+            accelerationDueToGravity,
+            drag,
+            terminalVelocity
+        )
     {
         _maxHealth = maxHealth;
         Health = MaxHealth;
@@ -23,11 +36,14 @@ public abstract class LivingEntity : Entity
 
     public short Air
     {
-        get { return _air; }
+        get => _air;
         set
         {
             if (_air == value)
+            {
                 return;
+            }
+
             _air = value;
             OnPropertyChanged();
         }
@@ -35,11 +51,14 @@ public abstract class LivingEntity : Entity
 
     public short Health
     {
-        get { return _health; }
+        get => _health;
         set
         {
             if (_health == value)
+            {
                 return;
+            }
+
             _health = value;
             OnPropertyChanged();
         }
@@ -47,23 +66,20 @@ public abstract class LivingEntity : Entity
 
     public float HeadYaw
     {
-        get { return _headYaw; }
+        get => _headYaw;
         set
         {
             if (_headYaw == value)
+            {
                 return;
+            }
+
             _headYaw = value;
             OnPropertyChanged();
         }
     }
 
-    public override bool SendMetadataToClients
-    {
-        get
-        {
-            return true;
-        }
-    }
+    public override bool SendMetadataToClients => true;
 
-    public virtual short MaxHealth { get => _maxHealth; }
+    public virtual short MaxHealth => _maxHealth;
 }

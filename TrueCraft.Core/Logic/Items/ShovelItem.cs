@@ -4,7 +4,6 @@ namespace TrueCraft.Core.Logic.Items;
 
 public class ShovelItem : ToolItem
 {
-    public ShovelItem(XmlNode node) : base(node)
-    {
-    }
+    public ShovelItem(XmlNode node)
+        : base(node) { }
 }

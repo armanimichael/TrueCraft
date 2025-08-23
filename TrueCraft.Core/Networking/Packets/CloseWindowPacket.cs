@@ -5,7 +5,7 @@
 /// </summary>
 public struct CloseWindowPacket : IPacket
 {
-    public byte ID { get { return 0x65; } }
+    public byte ID => 0x65;
 
     public CloseWindowPacket(sbyte windowID)
     {
@@ -14,13 +14,7 @@ public struct CloseWindowPacket : IPacket
 
     public sbyte WindowID;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        WindowID = stream.ReadInt8();
-    }
+    public void ReadPacket(IMinecraftStream stream) => WindowID = stream.ReadInt8();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteInt8(WindowID);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteInt8(WindowID);
 }

@@ -5,9 +5,18 @@
 /// </summary>
 public struct SpawnMobPacket : IPacket
 {
-    public byte ID { get { return 0x18; } }
+    public byte ID => 0x18;
 
-    public SpawnMobPacket(int entityId, sbyte type, int x, int y, int z, sbyte yaw, sbyte pitch, MetadataDictionary metadata)
+    public SpawnMobPacket(
+        int entityId,
+        sbyte type,
+        int x,
+        int y,
+        int z,
+        sbyte yaw,
+        sbyte pitch,
+        MetadataDictionary metadata
+    )
     {
         EntityID = entityId;
         MobType = type;

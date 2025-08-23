@@ -35,11 +35,12 @@ public class LauncherWindow : ApplicationWindow
 
     private Notebook _notebook;
 
-    public LauncherWindow(Application app) : base(app)
+    public LauncherWindow(Application app)
+        : base(app)
     {
-        this.Title = "TrueCraft Launcher";
-        this.DefaultSize = new Gdk.Size(1200, 576);
-        this.User = new TrueCraftUser();
+        Title = "TrueCraft Launcher";
+        DefaultSize = new Gdk.Size(1200, 576);
+        User = new TrueCraftUser();
 
         _mainContainer = new HBox();
         _webScrollView = new ScrolledWindow();
@@ -60,9 +61,12 @@ public class LauncherWindow : ApplicationWindow
         _indexOptionView = _notebook.AppendPage(_optionView, null);
         _indexMultiplayerView = _notebook.AppendPage(_multiplayerView, null);
         _indexSingleplayerView = _notebook.AppendPage(_singleplayerView, null);
-            
-        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TrueCraft.Launcher.Content.truecraft_logo.png"))
+
+        using (var stream = Assembly.GetExecutingAssembly()
+                                    .GetManifestResourceStream("TrueCraft.Launcher.Content.truecraft_logo.png"))
+        {
             _trueCraftLogoImage = new Image(new Gdk.Pixbuf(stream, 350, 75));
+        }
 
         _interactionBox = new Box(Orientation.Vertical, 1);
         _interactionBox.PackStart(_trueCraftLogoImage, true, false, 0);
@@ -72,37 +76,19 @@ public class LauncherWindow : ApplicationWindow
         _mainContainer.PackStart(_webScrollView, true, false, 0);
         _mainContainer.PackEnd(_interactionBox, true, false, 0);
 
-        this.Add(_mainContainer);
+        Add(_mainContainer);
         _mainContainer.ShowAll();
     }
 
-    void ClientExited()
-    {
-        this.Visible = true;
-    }
+    private void ClientExited() => Visible = true;
 
-    public void ShowLoginView()
-    {
-        _notebook.Page = _indexLoginView;
-    }
+    public void ShowLoginView() => _notebook.Page = _indexLoginView;
 
-    public void ShowMainMenuView()
-    {
-        _notebook.Page = _indexMainMenuView;
-    }
+    public void ShowMainMenuView() => _notebook.Page = _indexMainMenuView;
 
-    public void ShowOptionView()
-    {
-        _notebook.Page = _indexOptionView;
-    }
+    public void ShowOptionView() => _notebook.Page = _indexOptionView;
 
-    public void ShowMultiplayerView()
-    {
-        _notebook.Page = _indexMultiplayerView;
-    }
+    public void ShowMultiplayerView() => _notebook.Page = _indexMultiplayerView;
 
-    public void ShowSinglePlayerView()
-    {
-        _notebook.Page = _indexSingleplayerView;
-    }
+    public void ShowSinglePlayerView() => _notebook.Page = _indexSingleplayerView;
 }

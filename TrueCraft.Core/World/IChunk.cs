@@ -66,9 +66,11 @@ public interface IChunk : IEventSubject, IDisposable
     // TODO: remove this method
     [Obsolete("Violation of encapsulation")]
     NybbleArray Metadata { get; }
+
     // TODO: remove this method
     [Obsolete("Violation of encapsulation")]
     NybbleArray BlockLight { get; }
+
     // TODO: remove this method
     [Obsolete("Violation of encapsulation")]
     NybbleArray SkyLight { get; }

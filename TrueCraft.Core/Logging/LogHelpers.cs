@@ -4,10 +4,9 @@ namespace TrueCraft.Core.Logging;
 
 public static class LogHelpers
 {
-    public static string GetTimestamp(bool utc = true, string timeFormat = "yyyy-MM-dd H:mm:ss", string suffix = "    ")
-    {
-        return (utc ? DateTime.UtcNow : DateTime.Now).ToString(timeFormat) + suffix;
-    }
+    public static string GetTimestamp(bool utc = true, string timeFormat = "yyyy-MM-dd H:mm:ss", string suffix = "    ") => (utc
+        ? DateTime.UtcNow
+        : DateTime.Now).ToString(timeFormat) + suffix;
 
     public static ConsoleColor GetCategoryColor(LogCategory category)
     {

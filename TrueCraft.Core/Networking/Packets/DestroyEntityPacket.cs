@@ -2,7 +2,7 @@
 
 public struct DestroyEntityPacket : IPacket
 {
-    public byte ID { get { return 0x1D; } }
+    public byte ID => 0x1D;
 
     public int EntityID;
 
@@ -11,13 +11,7 @@ public struct DestroyEntityPacket : IPacket
         EntityID = entityID;
     }
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        EntityID = stream.ReadInt32();
-    }
+    public void ReadPacket(IMinecraftStream stream) => EntityID = stream.ReadInt32();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteInt32(EntityID);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteInt32(EntityID);
 }

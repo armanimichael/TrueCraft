@@ -22,8 +22,6 @@ namespace TrueCraft;
 
 public class MultiplayerServer : IMultiplayerServer, IDisposable
 {
-    private static MultiplayerServer? _singleton = null;
-
     private readonly IServiceLocator _serviceLocator;
 
     public event EventHandler<ChatMessageEventArgs>? ChatMessageReceived;
@@ -38,25 +36,23 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     private Thread _environmentWorker;
     private AutoResetEvent _environmentAutoReset;
 
-
-
     private TcpListener? _listener;
     private readonly PacketHandler[] PacketHandlers;
-    private IList<ILogProvider> LogProviders;
+    private List<ILogProvider> LogProviders;
     private Stopwatch Time;
     private ConcurrentBag<Tuple<IDimension, IChunk>> ChunksToSchedule;
-    internal object ClientLock = new object();
+    internal object ClientLock = new();
 
     private readonly QueryProtocol _queryProtocol;
 
     public MultiplayerServer(IServiceLocator serviceLocator)
     {
-        TrueCraft.Core.WhoAmI.Answer = Core.IAm.Server;
+        WhoAmI.Answer = IAm.Server;
 
         _serviceLocator = serviceLocator;
 
-        TrueCraft.Core.Inventory.InventoryFactory<IServerSlot>.RegisterInventoryFactory(new TrueCraft.Inventory.InventoryFactory());
-        TrueCraft.Core.Inventory.SlotFactory<IServerSlot>.RegisterSlotFactory(new TrueCraft.Inventory.SlotFactory());
+        Core.Inventory.InventoryFactory<IServerSlot>.RegisterInventoryFactory(new Inventory.InventoryFactory());
+        Core.Inventory.SlotFactory<IServerSlot>.RegisterSlotFactory(new Inventory.SlotFactory());
         var reader = new PacketReader();
         PacketReader = reader;
         Clients = new List<IRemoteClient>();
@@ -76,7 +72,7 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
 
         PendingBlockUpdates = new Queue<BlockUpdate>();
         EnableClientLogging = false;
-        _queryProtocol = new TrueCraft.QueryProtocol(this);
+        _queryProtocol = new QueryProtocol(this);
         WorldLighters = new List<Lighting>();
         ChunksToSchedule = new ConcurrentBag<Tuple<IDimension, IChunk>>();
         Time = new Stopwatch();
@@ -89,8 +85,8 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
 
     public IAccessConfiguration AccessConfiguration { get; internal set; }
 
-    public IPacketReader PacketReader { get; private set; }
-    public IList<IRemoteClient> Clients { get; private set; }
+    public IPacketReader PacketReader { get; }
+    public IList<IRemoteClient> Clients { get; }
 
     // <inheritdoc />
     public object? World
@@ -99,51 +95,61 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
         set
         {
             if (value is null)
+            {
                 throw new ArgumentException("World must not be set to null.");
-            if (_world is not null)
-                throw new InvalidOperationException($"{nameof(World)} is already set.");
+            }
 
-            _world = (IWorld)value;
-            foreach (IDimensionServer d in _world)
+            if (_world is not null)
+            {
+                throw new InvalidOperationException($"{nameof(World)} is already set.");
+            }
+
+            _world = (IWorld) value;
+
+            foreach (var d in _world)
                 // TODO: Once the nether is created, there will no longer be a null dimension.
+            {
                 if (d is not null)
+                {
                     d.BlockChanged += HandleBlockChanged;
+                }
+            }
         }
     }
 
     public IList<Lighting> WorldLighters { get; set; }
-    public IEventScheduler Scheduler { get; private set; }
+    public IEventScheduler Scheduler { get; }
 
     [Obsolete]
-    public IBlockRepository BlockRepository { get => _serviceLocator.BlockRepository; }
+    public IBlockRepository BlockRepository => _serviceLocator.BlockRepository;
+
     [Obsolete]
-    public IItemRepository ItemRepository { get => _serviceLocator.ItemRepository; }
+    public IItemRepository ItemRepository => _serviceLocator.ItemRepository;
 
     public bool EnableClientLogging { get; set; }
 
     public IPEndPoint? EndPoint { get; private set; }
 
-    private static readonly int MillisecondsPerTick = 1000 / 20;
+    private const int _millisecondsPerTick = 1000 / 20;
 
-    private bool _BlockUpdatesEnabled = true;
+    private bool _blockUpdatesEnabled = true;
 
     private struct BlockUpdate
     {
         public GlobalVoxelCoordinates Coordinates;
         public IDimension Dimension;
     }
-    private Queue<BlockUpdate> PendingBlockUpdates { get; set; }
+
+    private Queue<BlockUpdate> PendingBlockUpdates { get; }
 
     public bool BlockUpdatesEnabled
     {
-        get
-        {
-            return _BlockUpdatesEnabled;
-        }
+        get => _blockUpdatesEnabled;
         set
         {
-            _BlockUpdatesEnabled = value;
-            if (_BlockUpdatesEnabled)
+            _blockUpdatesEnabled = value;
+
+            if (_blockUpdatesEnabled)
             {
                 ProcessBlockUpdates();
             }
@@ -151,104 +157,115 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     }
 
     internal bool ShuttingDown { get; private set; }
-        
-
-    private long lastTick = 0;
 
     private void MasterTick()
     {
         while (!ShuttingDown)
         {
-            long start = Time.ElapsedMilliseconds;
+            var start = Time.ElapsedMilliseconds;
 
             // Release all threads for this tick
-            foreach (AutoResetEvent j in _lstAutoResetEvents)
+            foreach (var j in _lstAutoResetEvents)
+            {
                 j.Set();
+            }
 
             // Wait for all threads to confirm they have started
             _cde.Wait();
             _cde.Reset();
 
-            long end = Time.ElapsedMilliseconds;
-            int wait = (int)Math.Max(MillisecondsPerTick - (end - start), 0);
+            var end = Time.ElapsedMilliseconds;
+            var wait = (int) Math.Max(_millisecondsPerTick - (end - start), 0);
             Thread.Sleep(wait);
         }
     }
 
-    public void RegisterPacketHandler(byte packetId, PacketHandler handler)
-    {
-        PacketHandlers[packetId] = handler;
-    }
+    public void RegisterPacketHandler(byte packetId, PacketHandler handler) => PacketHandlers[packetId] = handler;
 
     public void Start(IPEndPoint endPoint)
     {
         if (_world is null)
+        {
             throw new InvalidOperationException("Start called before World was set.");
+        }
 
         Scheduler.DisabledEvents.Clear();
+
         if (Program.ServerConfiguration?.DisabledEvents is not null)
-            Program.ServerConfiguration.DisabledEvents.ToList().ForEach(
-                ev => Scheduler.DisabledEvents.Add(ev));
+        {
+            Program.ServerConfiguration.DisabledEvents.ToList().ForEach(ev => Scheduler.DisabledEvents.Add(ev));
+        }
+
         ShuttingDown = false;
         Time.Reset();
         Time.Start();
         _listener = new TcpListener(endPoint);
         _listener.Start();
-        EndPoint = (IPEndPoint)_listener.LocalEndpoint;
+        EndPoint = (IPEndPoint) _listener.LocalEndpoint;
 
-        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        var args = new SocketAsyncEventArgs();
         args.Completed += AcceptClient;
 
         if (!_listener.Server.AcceptAsync(args))
+        {
             AcceptClient(this, args);
-            
+        }
+
         Log(LogCategory.Notice, "Running TrueCraft server on {0}", EndPoint);
 
         // Start all threads
         _environmentWorker.Start(new Tuple<Action, AutoResetEvent>(DoEnvironment, _environmentAutoReset));
         _masterTick.Start();
 
-        if(Program.ServerConfiguration?.Query ?? ServerConfiguration.QueryDefault)
+        if (Program.ServerConfiguration?.Query ?? ServerConfiguration.QueryDefault)
+        {
             _queryProtocol.Start();
+        }
     }
 
     public void Stop()
     {
         ShuttingDown = true;
         _listener?.Stop();
-        if(Program.ServerConfiguration?.Query ?? ServerConfiguration.QueryDefault)
+
+        if (Program.ServerConfiguration?.Query ?? ServerConfiguration.QueryDefault)
+        {
             _queryProtocol.Stop();
+        }
 
         _world?.Save();
 
         // NOTE: DisconnectClient modifies the Clients collection!
-        for (int j = Clients.Count - 1; j >= 0; j --)
+        for (var j = Clients.Count - 1; j >= 0; j--)
+        {
             DisconnectClient(Clients[j]);
+        }
     }
 
-    void ScheduleUpdatesForChunk(IDimension dimension, IChunk chunk)
+    private void ScheduleUpdatesForChunk(IDimension dimension, IChunk chunk)
     {
         chunk.UpdateHeightMap();
         // NOTE: adhoc coordinate conversion.
-        int xg = chunk.Coordinates.X * WorldConstants.ChunkWidth;
-        int zg = chunk.Coordinates.Z * WorldConstants.ChunkDepth;
+        var xg = chunk.Coordinates.X * WorldConstants.ChunkWidth;
+        var zg = chunk.Coordinates.Z * WorldConstants.ChunkDepth;
         LocalVoxelCoordinates _coords;
         GlobalVoxelCoordinates coords;
+
         for (byte x = 0; x < WorldConstants.ChunkWidth; x++)
+        for (byte z = 0; z < WorldConstants.ChunkDepth; z++)
+        for (var y = 0; y <= chunk.GetHeight(x, z); y++)
         {
-            for (byte z = 0; z < WorldConstants.ChunkDepth; z++)
+            _coords = new LocalVoxelCoordinates(x, y, z);
+            var id = chunk.GetBlockID(_coords);
+
+            if (id == 0) // TODO: Fix hard-coded air block ID.
             {
-                for (int y = 0; y <= chunk.GetHeight(x, z); y++)
-                {
-                    _coords = new LocalVoxelCoordinates(x, y, z);
-                    var id = chunk.GetBlockID(_coords);
-                    if (id == 0)  // TODO: Fix hard-coded air block ID.
-                        continue;
-                    coords = new GlobalVoxelCoordinates(xg + x, y, zg + z);
-                    var provider = _serviceLocator.BlockRepository.GetBlockProvider(id);
-                    provider.BlockLoadedFromChunk(this, dimension, coords);
-                }
+                continue;
             }
+
+            coords = new GlobalVoxelCoordinates(xg + x, y, zg + z);
+            var provider = _serviceLocator.BlockRepository.GetBlockProvider(id);
+            provider.BlockLoadedFromChunk(this, dimension, coords);
         }
     }
 
@@ -256,26 +273,29 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     private void ProcessBlockUpdates()
     {
         if (!BlockUpdatesEnabled)
+        {
             return;
+        }
 
         while (PendingBlockUpdates.Count != 0)
         {
             var update = PendingBlockUpdates.Dequeue();
             var source = update.Dimension.GetBlockData(update.Coordinates);
+
             foreach (var offset in Vector3i.Neighbors6)
             {
                 var descriptor = update.Dimension.GetBlockData(update.Coordinates + offset);
                 var provider = _serviceLocator.BlockRepository.GetBlockProvider(descriptor.ID);
+
                 if (provider != null)
+                {
                     provider.BlockUpdate(descriptor, source, this, update.Dimension);
+                }
             }
         }
     }
 
-    public void AddLogProvider(ILogProvider provider)
-    {
-        LogProviders.Add(provider);
-    }
+    public void AddLogProvider(ILogProvider provider) => LogProviders.Add(provider);
 
     public void Log(LogCategory category, string text, params object[] parameters)
     {
@@ -290,19 +310,24 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     {
         var compiled = string.Format(message, parameters);
         var parts = compiled.Split('\n');
+
         foreach (var client in Clients)
+        foreach (var part in parts)
         {
-            foreach (var part in parts)
-                client.SendMessage(part);
+            client.SendMessage(part);
         }
+
         Log(LogCategory.Notice, ChatColor.RemoveColors(compiled));
     }
 
     protected internal void OnChatMessageReceived(ChatMessageEventArgs e)
     {
         HandleChatMessageReceived(e);
+
         if (ChatMessageReceived != null)
+        {
             ChatMessageReceived(this, e);
+        }
     }
 
     private void HandleChatMessageReceived(ChatMessageEventArgs e)
@@ -310,15 +335,21 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
         var message = e.Message;
 
         if (!message.StartsWith("/") || message.StartsWith("//"))
+        {
             SendChatMessage(e.Client.Username!, message);
+        }
         else
+        {
             e.PreventDefault = ProcessChatCommand(e);
+        }
     }
 
     private void SendChatMessage(string username, string message)
     {
         if (message.StartsWith("//"))
+        {
             message = message.Substring(1);
+        }
 
         SendMessage("<{0}> {1}", username, message);
     }
@@ -331,15 +362,22 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     private static bool ProcessChatCommand(ChatMessageEventArgs e)
     {
         var commandWithoutSlash = e.Message.TrimStart('/');
-        var messageArray = commandWithoutSlash
-            .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-        if (messageArray.Length <= 0) return false; // command not found
+        var messageArray = commandWithoutSlash
+            .Split([' '], StringSplitOptions.RemoveEmptyEntries);
+
+        if (messageArray.Length <= 0)
+        {
+            return false; // command not found
+        }
 
         var alias = messageArray[0];
         var trimmedMessageArray = new string[messageArray.Length - 1];
+
         if (trimmedMessageArray.Length != 0)
+        {
             Array.Copy(messageArray, 1, trimmedMessageArray, 0, messageArray.Length - 1);
+        }
 
         CommandManager.Instance.HandleCommand(e.Client, alias, trimmedMessageArray);
 
@@ -349,18 +387,22 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     protected internal void OnPlayerJoined(PlayerJoinedQuitEventArgs e)
     {
         if (PlayerJoined != null)
+        {
             PlayerJoined(this, e);
+        }
     }
 
     protected internal void OnPlayerQuit(PlayerJoinedQuitEventArgs e)
     {
         if (PlayerQuit != null)
+        {
             PlayerQuit(this, e);
+        }
     }
 
     public void DisconnectClient(IRemoteClient _client)
     {
-        var client = (RemoteClient)_client;
+        var client = (RemoteClient) _client;
 
         lock (ClientLock)
         {
@@ -368,17 +410,20 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
         }
 
         if (client.Disconnected)
+        {
             return;
+        }
 
         client.Disconnected = true;
 
         if (client.LoggedIn)
         {
             SendMessage(ChatColor.Yellow + "{0} has left the server.", client.Username!);
-            IEntityManager manager = ((IDimensionServer)_client.Dimension!).EntityManager;
+            var manager = ((IDimensionServer) _client.Dimension!).EntityManager;
             manager.DespawnEntity(client.Entity!);
             manager.FlushDespawns();
         }
+
         client.Save();
         client.Disconnect();
         OnPlayerQuit(new PlayerJoinedQuitEventArgs(client));
@@ -391,28 +436,36 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
         try
         {
             if (args.SocketError != SocketError.Success)
+            {
                 return;
+            }
 
             var client = new RemoteClient(_serviceLocator, this, PacketReader, PacketHandlers, args.AcceptSocket!);
 
             lock (ClientLock)
+            {
                 Clients.Add(client);
+            }
         }
         finally
         {
             args.AcceptSocket = null;
 
             if (!ShuttingDown && !_listener!.Server.AcceptAsync(args))
+            {
                 AcceptClient(this, args);
+            }
         }
     }
 
     private void TickedThreadEntry(object? args)
     {
         if (args is null)
+        {
             throw new ArgumentNullException(nameof(args));
+        }
 
-        (Action action, AutoResetEvent autoReset) = (Tuple<Action, AutoResetEvent>)args;
+        var (action, autoReset) = (Tuple<Action, AutoResetEvent>) args;
 
         while (!ShuttingDown)
         {
@@ -431,30 +484,36 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
     /// </summary>
     private void DoEnvironment()
     {
-        long start = Time.ElapsedMilliseconds;
-        long limit = Time.ElapsedMilliseconds + MillisecondsPerTick;
+        var start = Time.ElapsedMilliseconds;
+        var limit = Time.ElapsedMilliseconds + _millisecondsPerTick;
         Profiler.Start("environment");
 
         Scheduler.Update();
 
         Profiler.Start("environment.entities");
+
         // TODO: once the Nether is created, make this "server" not nullable.
-        foreach (IDimensionServer? server in _world!)
+        foreach (var server in _world!)
+        {
             server?.EntityManager.Update();
+        }
+
         Profiler.Done();
 
         if (Program.ServerConfiguration?.EnableLighting ?? ServerConfiguration.EnableLightingDefault)
         {
             Profiler.Start("environment.lighting");
+
             foreach (var lighter in WorldLighters)
             {
                 while (Time.ElapsedMilliseconds < limit && lighter.TryLightNext())
                 {
                     // This space intentionally left blank
                 }
-                //if (Time.ElapsedMilliseconds >= limit)
-                //    Log(LogCategory.Warning, "Lighting queue is backed up");
             }
+
+            //if (Time.ElapsedMilliseconds >= limit)
+            //    Log(LogCategory.Warning, "Lighting queue is backed up");
             Profiler.Done();
         }
 
@@ -462,40 +521,46 @@ public class MultiplayerServer : IMultiplayerServer, IDisposable
         {
             Profiler.Start("environment.chunks");
             Tuple<IDimension, IChunk>? t;
+
             if (ChunksToSchedule.TryTake(out t))
+            {
                 ScheduleUpdatesForChunk(t.Item1, t.Item2);
+            }
+
             Profiler.Done();
         }
 
-        Profiler.Done(MillisecondsPerTick);
+        Profiler.Done(_millisecondsPerTick);
     }
 
     private void HandleBlockChanged(object? sender, BlockChangeEventArgs e)
     {
-        IDimensionServer sendingDimension = (IDimensionServer)sender!;
+        var sendingDimension = (IDimensionServer) sender!;
 
-        foreach (IRemoteClient client in Clients)
+        foreach (var client in Clients)
             // TODO: Confirm that the block is within this Client's Chunk Radius.
             // TODO: what if client just logged out?
+        {
             if (client.Dimension == sendingDimension)
-                client.QueuePacket(new BlockChangePacket(e.Position.X, (sbyte)e.Position.Y, e.Position.Z,
-                    (sbyte)e.NewBlock.ID, (sbyte)e.NewBlock.Metadata));
+            {
+                client.QueuePacket(
+                    new BlockChangePacket(
+                        e.Position.X,
+                        (sbyte) e.Position.Y,
+                        e.Position.Z,
+                        (sbyte) e.NewBlock.ID,
+                        (sbyte) e.NewBlock.Metadata
+                    )
+                );
+            }
+        }
     }
 
-    public bool PlayerIsWhitelisted(string client)
-    {
-        return AccessConfiguration.Whitelist.Contains(client, StringComparer.CurrentCultureIgnoreCase);
-    }
+    public bool PlayerIsWhitelisted(string client) => AccessConfiguration.Whitelist.Contains(client, StringComparer.CurrentCultureIgnoreCase);
 
-    public bool PlayerIsBlacklisted(string client)
-    {
-        return AccessConfiguration.Blacklist.Contains(client, StringComparer.CurrentCultureIgnoreCase);
-    }
+    public bool PlayerIsBlacklisted(string client) => AccessConfiguration.Blacklist.Contains(client, StringComparer.CurrentCultureIgnoreCase);
 
-    public bool PlayerIsOp(string client)
-    {
-        return AccessConfiguration.Oplist.Contains(client, StringComparer.CurrentCultureIgnoreCase);
-    }
+    public bool PlayerIsOp(string client) => AccessConfiguration.Oplist.Contains(client, StringComparer.CurrentCultureIgnoreCase);
 
     public void Dispose()
     {

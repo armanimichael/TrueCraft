@@ -6,7 +6,7 @@ using TrueCraft.Core;
 
 namespace TrueCraft.Launcher;
 
-class Program
+internal sealed class Program
 {
     private static LauncherWindow _window = null!;
 
@@ -16,7 +16,8 @@ class Program
         UserSettings.Local.Load();
 
         Application.Init();
-        using (Application app = new Application("TrueCraft.Launcher", GLib.ApplicationFlags.None))
+
+        using (var app = new Application("TrueCraft.Launcher", GLib.ApplicationFlags.None))
         {
             app.Register(GLib.Cancellable.Current);
 
@@ -43,9 +44,16 @@ class Program
             if (!string.IsNullOrEmpty(_window.User.SessionId))
             {
                 var wc = new WebClient();
-                wc.DownloadString(string.Format(TrueCraftUser.AuthServer + "/session?name={0}&session={1}",
-                    _window.User.Username, _window.User.SessionId));
+
+                wc.DownloadString(
+                    string.Format(
+                        TrueCraftUser.AuthServer + "/session?name={0}&session={1}",
+                        _window.User.Username,
+                        _window.User.SessionId
+                    )
+                );
             }
+
             Thread.Sleep(60 * 5 * 1000);
         }
     }

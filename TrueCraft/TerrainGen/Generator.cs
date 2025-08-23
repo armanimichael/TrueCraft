@@ -16,7 +16,7 @@ public abstract class Generator : IChunkProvider
         _decorators = new List<IChunkDecorator>();
     }
 
-    protected IList<IChunkDecorator> ChunkDecorators { get => _decorators; }
+    protected IList<IChunkDecorator> ChunkDecorators => _decorators;
 
     public abstract IChunk GenerateChunk(GlobalChunkCoordinates coordinates);
 

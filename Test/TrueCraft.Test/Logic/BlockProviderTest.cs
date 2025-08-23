@@ -39,49 +39,74 @@ public class BlockProviderTest
         //
         // Set up
         //
-        bool generateDropEntityCalled = false;
+        var generateDropEntityCalled = false;
         BlockDescriptor? generateDescriptor = null;
         IDimension? generateDimension = null;
         IMultiplayerServer? generateServer = null;
         ItemStack? generateHeldItem = null;
-        Mock<BlockProvider> blockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
-        blockProvider.Setup(x => x.BlockMined(It.IsAny<BlockDescriptor>(),
-            It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>())).CallBase();
-        blockProvider.Setup(x => x.GenerateDropEntity(It.IsAny<BlockDescriptor>(),
-                It.IsAny<IDimension>(), It.IsAny<IMultiplayerServer>(), It.IsAny<ItemStack>()))
-            .Callback<BlockDescriptor, IDimension, IMultiplayerServer, ItemStack>(
-                (block, dimension, server, heldItem) =>
-                {
-                    generateDropEntityCalled = true;
-                    generateDescriptor = block;
-                    generateDimension = dimension;
-                    generateServer = server;
-                    generateHeldItem = heldItem;
-                });
+        var blockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
+
+        blockProvider.Setup(
+                         x => x.BlockMined(
+                             It.IsAny<BlockDescriptor>(),
+                             It.IsAny<BlockFace>(),
+                             It.IsAny<IDimension>(),
+                             It.IsAny<IRemoteClient>()
+                         )
+                     )
+                     .CallBase();
+
+        blockProvider.Setup(
+                         x => x.GenerateDropEntity(
+                             It.IsAny<BlockDescriptor>(),
+                             It.IsAny<IDimension>(),
+                             It.IsAny<IMultiplayerServer>(),
+                             It.IsAny<ItemStack>()
+                         )
+                     )
+                     .Callback<BlockDescriptor, IDimension, IMultiplayerServer,
+                         ItemStack>(
+                         (block, dimension, server, heldItem) =>
+                         {
+                             generateDropEntityCalled = true;
+                             generateDescriptor = block;
+                             generateDimension = dimension;
+                             generateServer = server;
+                             generateHeldItem = heldItem;
+                         }
+                     );
 
         // NOTE: dependency upon BlockDescriptor and GlobalVoxelCoordinates.
-        GlobalVoxelCoordinates blockCoordinates = new GlobalVoxelCoordinates(5, 15, 10);
+        var blockCoordinates = new GlobalVoxelCoordinates(5, 15, 10);
+
         var descriptor = new BlockDescriptor
-        {
-            ID = 10,
-            Coordinates = blockCoordinates
-        };
+                         {
+                             ID = 10,
+                             Coordinates = blockCoordinates
+                         };
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        GlobalVoxelCoordinates blockSetAt = GlobalVoxelCoordinates.Zero;
-        byte newBlockID = 1;
-        Mock<IDimensionServer> mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
+        var blockSetAt = GlobalVoxelCoordinates.Zero;
+        byte newBlockId = 1;
+        var mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
         mockDimension.Setup(x => x.EntityManager).Returns(mockEntityManager.Object);
         mockDimension.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
+
         mockDimension.Setup(x => x.SetBlockID(It.IsAny<GlobalVoxelCoordinates>(), It.IsAny<byte>()))
-            .Callback<GlobalVoxelCoordinates, byte>((coord, id) => { blockSetAt = coord; newBlockID = id; });
+                     .Callback<GlobalVoxelCoordinates, byte>(
+                         (coord, id) =>
+                         {
+                             blockSetAt = coord;
+                             newBlockId = id;
+                         }
+                     );
 
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<IRemoteClient> mockRemoteClient = new Mock<IRemoteClient>(MockBehavior.Strict);
+        var mockRemoteClient = new Mock<IRemoteClient>(MockBehavior.Strict);
         mockRemoteClient.Setup(x => x.Server).Returns(mockServer.Object);
         // NOTE: dependent upon ItemStack class.
         mockRemoteClient.Setup(x => x.SelectedItem).Returns(ItemStack.EmptyStack);
@@ -95,14 +120,14 @@ public class BlockProviderTest
         // Assert
         //
         Assert.AreEqual(blockCoordinates, blockSetAt);
-        Assert.AreEqual(0, newBlockID);
+        Assert.AreEqual(0, newBlockId);
         Assert.True(generateDropEntityCalled);
         Assert.IsNotNull(generateDescriptor);
         Assert.AreEqual(10, generateDescriptor?.ID);
         Assert.AreEqual(blockCoordinates, generateDescriptor?.Coordinates);
-        Assert.True(object.ReferenceEquals(mockDimension.Object, generateDimension));
+        Assert.True(ReferenceEquals(mockDimension.Object, generateDimension));
         Assert.AreEqual(ItemStack.EmptyStack, generateHeldItem);
-        Assert.True(object.ReferenceEquals(mockServer.Object, generateServer));
+        Assert.True(ReferenceEquals(mockServer.Object, generateServer));
     }
 
     [Test]
@@ -111,59 +136,89 @@ public class BlockProviderTest
         //
         // Setup
         //
-        Mock<IBlockProvider> supportive = new Mock<IBlockProvider>(MockBehavior.Strict);
+        var supportive = new Mock<IBlockProvider>(MockBehavior.Strict);
         supportive.SetupGet(p => p.Opaque).Returns(true);
         supportive.SetupGet<byte>(p => p.ID).Returns(1);
-        Mock<IBlockProvider> needsSupport = new Mock<IBlockProvider>(MockBehavior.Strict);
+        var needsSupport = new Mock<IBlockProvider>(MockBehavior.Strict);
         needsSupport.SetupGet<byte>(p => p.ID).Returns(2);
-        Mock<IBlockProvider> unsupportive = new Mock<IBlockProvider>(MockBehavior.Strict);
+        var unsupportive = new Mock<IBlockProvider>(MockBehavior.Strict);
         unsupportive.SetupGet(p => p.Opaque).Returns(false);
         unsupportive.SetupGet<byte>(p => p.ID).Returns(3);
 
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
-        mockBlockRepository.Setup(r => r.GetBlockProvider(It.Is<byte>(b => b == supportive.Object.ID))).Returns(supportive.Object);
-        mockBlockRepository.Setup(r => r.GetBlockProvider(It.Is<byte>(b => b == unsupportive.Object.ID))).Returns(unsupportive.Object);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        mockBlockRepository.Setup(r => r.GetBlockProvider(It.Is<byte>(b => b == supportive.Object.ID)))
+                           .Returns(supportive.Object);
+
+        mockBlockRepository.Setup(r => r.GetBlockProvider(It.Is<byte>(b => b == unsupportive.Object.ID)))
+                           .Returns(unsupportive.Object);
+
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
         mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(x => x == -1))).Returns<IItemProvider>(null);
 
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<IServiceLocator> mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
+        var mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
         mockServiceLocator.Setup(x => x.BlockRepository).Returns(mockBlockRepository.Object);
         mockServiceLocator.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
         IEntity? spawnedEntity = null;
-        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>())).Callback<IEntity>(
-            (entity) =>
-            {
-                spawnedEntity = entity;
-            });
 
-        IDimension fakeDimension = new FakeDimension(mockBlockRepository.Object,
-            mockItemRepository.Object, mockEntityManager.Object);
+        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>()))
+                         .Callback<IEntity>(
+                             (entity) =>
+                             {
+                                 spawnedEntity = entity;
+                             }
+                         );
+
+        var fakeDimension = new FakeDimension(
+            mockBlockRepository.Object,
+            mockItemRepository.Object,
+            mockEntityManager.Object
+        );
 
         fakeDimension.SetBlockID(GlobalVoxelCoordinates.Zero, supportive.Object.ID);
-        GlobalVoxelCoordinates oneY = new GlobalVoxelCoordinates(0, 1, 0);
+        var oneY = new GlobalVoxelCoordinates(0, 1, 0);
         fakeDimension.SetBlockID(oneY, needsSupport.Object.ID);
 
         // Note: It would be preferable to have this be a Strict Mock rather
         //  than a loose one, but the setup of GetDrop is not working.
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
         testBlockProvider.CallBase = true;
         testBlockProvider.SetupGet<byte>(x => x.ID).Returns(2);
         testBlockProvider.SetupGet<ToolType>(x => x.EffectiveTools).Returns(ToolType.All);
         testBlockProvider.SetupGet<ToolMaterial>(x => x.EffectiveToolMaterials).Returns(ToolMaterial.All);
         testBlockProvider.Setup(b => b.GetSupportDirection(It.IsAny<BlockDescriptor>())).Returns(Vector3i.Down);
-        testBlockProvider.Setup(x => x.BlockUpdate(It.IsAny<BlockDescriptor>(),
-            It.IsAny<BlockDescriptor>(), It.IsAny<IMultiplayerServer>(),
-            It.IsAny<IDimension>())).CallBase();
-        testBlockProvider.Setup(x => x.IsSupported(It.IsAny<IDimension>(),
-            It.IsAny<BlockDescriptor>())).CallBase();
-        testBlockProvider.Setup(x => x.GenerateDropEntity(It.IsAny<BlockDescriptor>(),
-                It.IsAny<IDimension>(), It.IsAny<IMultiplayerServer>(), It.IsAny<ItemStack>()))
-            .CallBase();
+
+        testBlockProvider.Setup(
+                             x => x.BlockUpdate(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<IMultiplayerServer>(),
+                                 It.IsAny<IDimension>()
+                             )
+                         )
+                         .CallBase();
+
+        testBlockProvider.Setup(
+                             x => x.IsSupported(
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<BlockDescriptor>()
+                             )
+                         )
+                         .CallBase();
+
+        testBlockProvider.Setup(
+                             x => x.GenerateDropEntity(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IMultiplayerServer>(),
+                                 It.IsAny<ItemStack>()
+                             )
+                         )
+                         .CallBase();
         // Note: This could not be made to work.  It was throwing an exception
         // stating that
         // "all invocations on the Mock must have a corresponding setup"
@@ -172,9 +227,10 @@ public class BlockProviderTest
         // was not.
         //testBlockProvider.Protected().Setup<ItemStack[]>("GetDrop", It.IsAny<BlockDescriptor>(), It.IsAny<ItemStack>()).CallBase();
 
-        BlockDescriptor updated = new BlockDescriptor { ID = needsSupport.Object.ID, Coordinates = oneY };
-        BlockDescriptor source = new BlockDescriptor { ID = needsSupport.Object.ID, Coordinates = new GlobalVoxelCoordinates(1, 0, 0) };
+        var updated = new BlockDescriptor { ID = needsSupport.Object.ID, Coordinates = oneY };
 
+        var source = new BlockDescriptor
+                     { ID = needsSupport.Object.ID, Coordinates = new GlobalVoxelCoordinates(1, 0, 0) };
 
         //
         // Act / Assert
@@ -194,7 +250,7 @@ public class BlockProviderTest
         Assert.AreEqual(0, fakeDimension.GetBlockID(oneY));
         // Assert that an Item Entity with ID == 2 was spawned.
         Assert.IsNotNull(spawnedEntity);
-        ItemEntity? itemEntity = spawnedEntity as ItemEntity;
+        var itemEntity = spawnedEntity as ItemEntity;
         Assert.IsNotNull(itemEntity);
         Assert.AreEqual(needsSupport.Object.ID, itemEntity?.Item.ID);
     }
@@ -208,60 +264,76 @@ public class BlockProviderTest
         //
         // Setup
         //
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(5, 7, 13);
-        byte blockID = 47;
-        BlockDescriptor block = new BlockDescriptor()
-        {
-            ID = blockID,
-            Coordinates = coordinates
-        };
+        var coordinates = new GlobalVoxelCoordinates(5, 7, 13);
+        byte blockId = 47;
 
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
+        var block = new BlockDescriptor
+                    {
+                        ID = blockId,
+                        Coordinates = coordinates
+                    };
+
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
         testBlockProvider.CallBase = true;
         testBlockProvider.Setup(x => x.EffectiveToolMaterials).CallBase();
         testBlockProvider.Setup(x => x.EffectiveTools).CallBase();
-        testBlockProvider.Setup(x => x.GenerateDropEntity(It.IsAny<BlockDescriptor>(),
-                It.IsAny<IDimension>(), It.IsAny<IMultiplayerServer>(), It.IsAny<ItemStack>()))
-            .CallBase();
 
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        testBlockProvider.Setup(
+                             x => x.GenerateDropEntity(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IMultiplayerServer>(),
+                                 It.IsAny<ItemStack>()
+                             )
+                         )
+                         .CallBase();
 
-        short toolItemID = 12;
-        ItemStack heldItem = new ItemStack(toolItemID);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<ToolItem> mockTool = new Mock<ToolItem>(MockBehavior.Strict);
+        short toolItemId = 12;
+        var heldItem = new ItemStack(toolItemId);
+
+        var mockTool = new Mock<ToolItem>(MockBehavior.Strict);
         mockTool.Setup(x => x.Material).Returns(ToolMaterial.Stone);
         mockTool.Setup(x => x.ToolType).Returns(ToolType.Hoe);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
-        mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(y => y == toolItemID))).Returns(mockTool.Object);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(y => y == toolItemId))).Returns(mockTool.Object);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
-        int spawnCount = 0;
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var spawnCount = 0;
         IEntity? spawnedEntity = null;
-        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>())).Callback<IEntity>((entity) =>
-        {
-            spawnCount++;
-            spawnedEntity = entity;
-        });
 
-        Mock<IDimensionServer> mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
+        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>()))
+                         .Callback<IEntity>(
+                             (entity) =>
+                             {
+                                 spawnCount++;
+                                 spawnedEntity = entity;
+                             }
+                         );
+
+        var mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
         mockDimension.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockDimension.Setup(x => x.EntityManager).Returns(mockEntityManager.Object);
 
         //
         // Act
         //
-        testBlockProvider.Object.GenerateDropEntity(block, mockDimension.Object,
-            mockServer.Object, heldItem);
+        testBlockProvider.Object.GenerateDropEntity(
+            block,
+            mockDimension.Object,
+            mockServer.Object,
+            heldItem
+        );
 
         //
         // Assert
         //
         Assert.AreEqual(1, spawnCount);
-        ItemEntity? spawnedItem = spawnedEntity as ItemEntity;
+        var spawnedItem = spawnedEntity as ItemEntity;
         Assert.IsNotNull(spawnedItem);
-        Assert.AreEqual(blockID, spawnedItem?.Item.ID);
+        Assert.AreEqual(blockId, spawnedItem?.Item.ID);
         Assert.AreEqual(1, spawnedItem?.Item.Count);
         Assert.AreEqual(coordinates.X, Math.Floor(spawnedEntity?.Position.X ?? double.MinValue));
         Assert.AreEqual(coordinates.Y, Math.Floor(spawnedEntity?.Position.Y ?? double.MinValue));
@@ -277,52 +349,68 @@ public class BlockProviderTest
         //
         // Setup
         //
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(5, 7, 13);
-        byte blockID = 47;
-        BlockDescriptor block = new BlockDescriptor()
-        {
-            ID = blockID,
-            Coordinates = coordinates
-        };
+        var coordinates = new GlobalVoxelCoordinates(5, 7, 13);
+        byte blockId = 47;
 
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
+        var block = new BlockDescriptor
+                    {
+                        ID = blockId,
+                        Coordinates = coordinates
+                    };
+
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
         testBlockProvider.CallBase = true;
         testBlockProvider.Setup(x => x.EffectiveToolMaterials).Returns(ToolMaterial.Diamond);
         testBlockProvider.Setup(x => x.EffectiveTools).Returns(ToolType.Pickaxe);
-        testBlockProvider.Setup(x => x.GenerateDropEntity(It.IsAny<BlockDescriptor>(),
-                It.IsAny<IDimension>(), It.IsAny<IMultiplayerServer>(), It.IsAny<ItemStack>()))
-            .CallBase();
 
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        testBlockProvider.Setup(
+                             x => x.GenerateDropEntity(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IMultiplayerServer>(),
+                                 It.IsAny<ItemStack>()
+                             )
+                         )
+                         .CallBase();
 
-        short toolItemID = 12;
-        ItemStack heldItem = new ItemStack(toolItemID);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<ToolItem> mockTool = new Mock<ToolItem>(MockBehavior.Strict);
+        short toolItemId = 12;
+        var heldItem = new ItemStack(toolItemId);
+
+        var mockTool = new Mock<ToolItem>(MockBehavior.Strict);
         mockTool.Setup(x => x.Material).Returns(ToolMaterial.Diamond);
         mockTool.Setup(x => x.ToolType).Returns(ToolType.Hoe);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
-        mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(y => y == toolItemID))).Returns(mockTool.Object);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(y => y == toolItemId))).Returns(mockTool.Object);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
-        int spawnCount = 0;
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var spawnCount = 0;
         IEntity? spawnedEntity = null;
-        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>())).Callback<IEntity>((entity) =>
-        {
-            spawnCount++;
-            spawnedEntity = entity;
-        });
 
-        Mock<IDimensionServer> mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
+        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>()))
+                         .Callback<IEntity>(
+                             (entity) =>
+                             {
+                                 spawnCount++;
+                                 spawnedEntity = entity;
+                             }
+                         );
+
+        var mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
         mockDimension.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockDimension.Setup(x => x.EntityManager).Returns(mockEntityManager.Object);
 
         //
         // Act
         //
-        testBlockProvider.Object.GenerateDropEntity(block, mockDimension.Object,
-            mockServer.Object, heldItem);
+        testBlockProvider.Object.GenerateDropEntity(
+            block,
+            mockDimension.Object,
+            mockServer.Object,
+            heldItem
+        );
 
         //
         // Assert
@@ -340,52 +428,68 @@ public class BlockProviderTest
         //
         // Setup
         //
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(5, 7, 13);
-        byte blockID = 47;
-        BlockDescriptor block = new BlockDescriptor()
-        {
-            ID = blockID,
-            Coordinates = coordinates
-        };
+        var coordinates = new GlobalVoxelCoordinates(5, 7, 13);
+        byte blockId = 47;
 
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
+        var block = new BlockDescriptor
+                    {
+                        ID = blockId,
+                        Coordinates = coordinates
+                    };
+
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Loose);
         testBlockProvider.CallBase = true;
         testBlockProvider.Setup(x => x.EffectiveToolMaterials).Returns(ToolMaterial.Diamond);
         testBlockProvider.Setup(x => x.EffectiveTools).Returns(ToolType.Pickaxe);
-        testBlockProvider.Setup(x => x.GenerateDropEntity(It.IsAny<BlockDescriptor>(),
-                It.IsAny<IDimension>(), It.IsAny<IMultiplayerServer>(), It.IsAny<ItemStack>()))
-            .CallBase();
 
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        testBlockProvider.Setup(
+                             x => x.GenerateDropEntity(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IMultiplayerServer>(),
+                                 It.IsAny<ItemStack>()
+                             )
+                         )
+                         .CallBase();
 
-        short toolItemID = 12;
-        ItemStack heldItem = new ItemStack(toolItemID);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<ToolItem> mockTool = new Mock<ToolItem>(MockBehavior.Strict);
+        short toolItemId = 12;
+        var heldItem = new ItemStack(toolItemId);
+
+        var mockTool = new Mock<ToolItem>(MockBehavior.Strict);
         mockTool.Setup(x => x.Material).Returns(ToolMaterial.Stone);
         mockTool.Setup(x => x.ToolType).Returns(ToolType.Pickaxe);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
-        mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(y => y == toolItemID))).Returns(mockTool.Object);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        mockItemRepository.Setup(x => x.GetItemProvider(It.Is<short>(y => y == toolItemId))).Returns(mockTool.Object);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
-        int spawnCount = 0;
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var spawnCount = 0;
         IEntity? spawnedEntity = null;
-        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>())).Callback<IEntity>((entity) =>
-        {
-            spawnCount++;
-            spawnedEntity = entity;
-        });
 
-        Mock<IDimensionServer> mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
+        mockEntityManager.Setup(x => x.SpawnEntity(It.IsAny<IEntity>()))
+                         .Callback<IEntity>(
+                             (entity) =>
+                             {
+                                 spawnCount++;
+                                 spawnedEntity = entity;
+                             }
+                         );
+
+        var mockDimension = new Mock<IDimensionServer>(MockBehavior.Strict);
         mockDimension.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockDimension.Setup(x => x.EntityManager).Returns(mockEntityManager.Object);
 
         //
         // Act
         //
-        testBlockProvider.Object.GenerateDropEntity(block, mockDimension.Object,
-            mockServer.Object, heldItem);
+        testBlockProvider.Object.GenerateDropEntity(
+            block,
+            mockDimension.Object,
+            mockServer.Object,
+            heldItem
+        );
 
         //
         // Assert
@@ -403,50 +507,75 @@ public class BlockProviderTest
         //
         // Setup
         //
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
         mockBlockRepository.Setup(x => x.GetBlockProvider(CobblestoneBlock.BlockID)).Returns(new CobblestoneBlock());
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
-        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>())).Returns(new List<IEntity>(1));
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
 
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(3, 5, 7);
-        FakeDimension dimension = new FakeDimension(mockBlockRepository.Object,
-            mockItemRepository.Object, mockEntityManager.Object);
+        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
+                         .Returns(new List<IEntity>(1));
+
+        var coordinates = new GlobalVoxelCoordinates(3, 5, 7);
+
+        var dimension = new FakeDimension(
+            mockBlockRepository.Object,
+            mockItemRepository.Object,
+            mockEntityManager.Object
+        );
+
         dimension.SetBlockID(coordinates, CobblestoneBlock.BlockID);
         dimension.ResetCounts();
 
-        int blockPlacedCallCount = 0;
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
-        testBlockProvider.Setup(x => x.ItemUsedOnBlock(It.IsAny<GlobalVoxelCoordinates>(),
-                It.IsAny<ItemStack>(), It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .CallBase();
+        var blockPlacedCallCount = 0;
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
+
+        testBlockProvider.Setup(
+                             x => x.ItemUsedOnBlock(
+                                 It.IsAny<GlobalVoxelCoordinates>(),
+                                 It.IsAny<ItemStack>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.BoundingBox).CallBase();
         testBlockProvider.Setup(x => x.ID).Returns(CobblestoneBlock.BlockID);
-        testBlockProvider.Setup(x => x.BlockPlaced(It.IsAny<BlockDescriptor>(),
-                It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .Callback(() => blockPlacedCallCount++)
-            .CallBase();
+
+        testBlockProvider.Setup(
+                             x => x.BlockPlaced(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .Callback(() => blockPlacedCallCount++)
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.IsSupported(It.IsAny<IDimension>(), It.IsAny<BlockDescriptor>()))
-            .CallBase();
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.GetSupportDirection(It.IsAny<BlockDescriptor>()))
-            .CallBase();
+                         .CallBase();
 
-        BlockFace face = BlockFace.PositiveY;
+        var face = BlockFace.PositiveY;
         sbyte heldItemCount = 32;
-        short selectedSlot = 6;   // index into Hotbar.
-        ItemStack heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
-        ItemStack updatedHeldItem = heldItem;
+        short selectedSlot = 6; // index into Hotbar.
+        var heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
+        var updatedHeldItem = heldItem;
 
-        Mock<IServerSlot> mockSlot = new Mock<IServerSlot>(MockBehavior.Strict);
+        var mockSlot = new Mock<IServerSlot>(MockBehavior.Strict);
         mockSlot.SetupGet(x => x.Item).Returns(updatedHeldItem);
         mockSlot.SetupSet(x => x.Item = heldItem.GetReducedStack(1)).Verifiable();
 
-        Mock<ISlots<IServerSlot>> mockInventory = new Mock<ISlots<IServerSlot>>(MockBehavior.Strict);
+        var mockInventory = new Mock<ISlots<IServerSlot>>(MockBehavior.Strict);
         mockInventory.SetupGet(x => x[It.Is<int>(i => i == selectedSlot)]).Returns(mockSlot.Object);
 
-        Mock<IRemoteClient> mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
+        var mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
         mockUser.Setup(x => x.Inventory).Returns(mockInventory.Object);
         mockUser.Setup(x => x.SelectedSlot).Returns(selectedSlot);
 
@@ -458,11 +587,11 @@ public class BlockProviderTest
         //
         // Assertions
         //
-        Assert.AreEqual(1, dimension.SetBlockIDCount);
+        Assert.AreEqual(1, dimension.SetBlockIdCount);
         Assert.AreEqual(1, blockPlacedCallCount);
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates));
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates + Vector3i.Up));
-        mockSlot.Verify();    // Asserts that the held item count has been reduced by one.
+        mockSlot.Verify(); // Asserts that the held item count has been reduced by one.
     }
 
     /// <summary>
@@ -474,30 +603,43 @@ public class BlockProviderTest
         //
         // Setup
         //
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
         mockBlockRepository.Setup(x => x.GetBlockProvider(CobblestoneBlock.BlockID)).Returns(new CobblestoneBlock());
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
 
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(3, 5, 7);
-        FakeDimension dimension = new FakeDimension(mockBlockRepository.Object,
-            mockItemRepository.Object, mockEntityManager.Object);
+        var coordinates = new GlobalVoxelCoordinates(3, 5, 7);
+
+        var dimension = new FakeDimension(
+            mockBlockRepository.Object,
+            mockItemRepository.Object,
+            mockEntityManager.Object
+        );
+
         dimension.SetBlockID(coordinates, CobblestoneBlock.BlockID);
         dimension.SetBlockID(coordinates + Vector3i.Up, CobblestoneBlock.BlockID);
         dimension.ResetCounts();
 
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
-        testBlockProvider.Setup(x => x.ItemUsedOnBlock(It.IsAny<GlobalVoxelCoordinates>(),
-                It.IsAny<ItemStack>(), It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .CallBase();
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
 
-        BlockFace face = BlockFace.PositiveY;
+        testBlockProvider.Setup(
+                             x => x.ItemUsedOnBlock(
+                                 It.IsAny<GlobalVoxelCoordinates>(),
+                                 It.IsAny<ItemStack>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .CallBase();
+
+        var face = BlockFace.PositiveY;
         sbyte heldItemCount = 32;
-        ItemStack heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
+        var heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
 
-        Mock<IRemoteClient> mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
+        var mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
 
         //
         // Act
@@ -507,7 +649,7 @@ public class BlockProviderTest
         //
         // Assertions
         //
-        Assert.AreEqual(0, dimension.SetBlockIDCount);
+        Assert.AreEqual(0, dimension.SetBlockIdCount);
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates));
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates + Vector3i.Up));
     }
@@ -521,35 +663,50 @@ public class BlockProviderTest
         //
         // Setup
         //
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
         mockBlockRepository.Setup(x => x.GetBlockProvider(CobblestoneBlock.BlockID)).Returns(new CobblestoneBlock());
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IMobEntity> mockMob = new Mock<IMobEntity>(MockBehavior.Strict);
+        var mockMob = new Mock<IMobEntity>(MockBehavior.Strict);
         mockMob.Setup(x => x.BoundingBox).Returns(new BoundingBox(new Vector3(3, 6, 7), new Vector3(4, 8, 8)));
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
-        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
-            .Returns(new List<IEntity>() { mockMob.Object });
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
 
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(3, 5, 7);
-        FakeDimension dimension = new FakeDimension(mockBlockRepository.Object,
-            mockItemRepository.Object, mockEntityManager.Object);
+        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
+                         .Returns(new List<IEntity> { mockMob.Object });
+
+        var coordinates = new GlobalVoxelCoordinates(3, 5, 7);
+
+        var dimension = new FakeDimension(
+            mockBlockRepository.Object,
+            mockItemRepository.Object,
+            mockEntityManager.Object
+        );
+
         dimension.SetBlockID(coordinates, CobblestoneBlock.BlockID);
         dimension.ResetCounts();
 
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
-        testBlockProvider.Setup(x => x.ItemUsedOnBlock(It.IsAny<GlobalVoxelCoordinates>(),
-                It.IsAny<ItemStack>(), It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .CallBase();
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
+
+        testBlockProvider.Setup(
+                             x => x.ItemUsedOnBlock(
+                                 It.IsAny<GlobalVoxelCoordinates>(),
+                                 It.IsAny<ItemStack>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.BoundingBox).CallBase();
 
-        BlockFace face = BlockFace.PositiveY;
+        var face = BlockFace.PositiveY;
         sbyte heldItemCount = 32;
-        ItemStack heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
+        var heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
 
-        Mock<IRemoteClient> mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
+        var mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
 
         //
         // Act
@@ -559,7 +716,7 @@ public class BlockProviderTest
         //
         // Assertions
         //
-        Assert.AreEqual(0, dimension.SetBlockIDCount);
+        Assert.AreEqual(0, dimension.SetBlockIdCount);
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates));
         Assert.AreEqual(AirBlock.BlockID, dimension.GetBlockID(coordinates + Vector3i.Up));
     }
@@ -576,54 +733,82 @@ public class BlockProviderTest
         //
         // Setup
         //
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
         mockBlockRepository.Setup(x => x.GetBlockProvider(CobblestoneBlock.BlockID)).Returns(new CobblestoneBlock());
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
 
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(3, 5, 7);
-        FakeDimension dimension = new FakeDimension(mockBlockRepository.Object,
-            mockItemRepository.Object, mockEntityManager.Object);
+        var coordinates = new GlobalVoxelCoordinates(3, 5, 7);
+
+        var dimension = new FakeDimension(
+            mockBlockRepository.Object,
+            mockItemRepository.Object,
+            mockEntityManager.Object
+        );
+
         dimension.SetBlockID(coordinates, CobblestoneBlock.BlockID);
         dimension.ResetCounts();
 
-        ItemEntity itemEntity = new ItemEntity(dimension, mockEntityManager.Object,
-            new Vector3(3.375, 6, 7.375), new ItemStack(CobblestoneBlock.BlockID, 2));
-        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
-            .Returns(new List<IEntity>() { itemEntity });
+        var itemEntity = new ItemEntity(
+            dimension,
+            mockEntityManager.Object,
+            new Vector3(3.375, 6, 7.375),
+            new ItemStack(CobblestoneBlock.BlockID, 2)
+        );
 
-        int blockPlacedCallCount = 0;
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
-        testBlockProvider.Setup(x => x.ItemUsedOnBlock(It.IsAny<GlobalVoxelCoordinates>(),
-                It.IsAny<ItemStack>(), It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .CallBase();
+        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
+                         .Returns(new List<IEntity> { itemEntity });
+
+        var blockPlacedCallCount = 0;
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
+
+        testBlockProvider.Setup(
+                             x => x.ItemUsedOnBlock(
+                                 It.IsAny<GlobalVoxelCoordinates>(),
+                                 It.IsAny<ItemStack>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.BoundingBox).CallBase();
         testBlockProvider.SetupGet(x => x.ID).Returns(CobblestoneBlock.BlockID);
-        testBlockProvider.Setup(x => x.BlockPlaced(It.IsAny<BlockDescriptor>(),
-                It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .Callback(() => blockPlacedCallCount++)
-            .CallBase();
+
+        testBlockProvider.Setup(
+                             x => x.BlockPlaced(
+                                 It.IsAny<BlockDescriptor>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .Callback(() => blockPlacedCallCount++)
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.IsSupported(It.IsAny<IDimension>(), It.IsAny<BlockDescriptor>()))
-            .CallBase();
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.GetSupportDirection(It.IsAny<BlockDescriptor>()))
-            .CallBase();
+                         .CallBase();
 
-        BlockFace face = BlockFace.PositiveY;
+        var face = BlockFace.PositiveY;
         sbyte heldItemCount = 32;
-        short selectedSlot = 6;   // index into Hotbar.
-        ItemStack heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
-        ItemStack updatedHeldItem = heldItem;
+        short selectedSlot = 6; // index into Hotbar.
+        var heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
+        var updatedHeldItem = heldItem;
 
-        Mock<IServerSlot> mockSlot = new Mock<IServerSlot>(MockBehavior.Strict);
+        var mockSlot = new Mock<IServerSlot>(MockBehavior.Strict);
         mockSlot.SetupGet(x => x.Item).Returns(updatedHeldItem);
         mockSlot.SetupSet(x => x.Item = heldItem.GetReducedStack(1)).Verifiable();
 
-        Mock<ISlots<IServerSlot>> mockInventory = new Mock<ISlots<IServerSlot>>(MockBehavior.Strict);
+        var mockInventory = new Mock<ISlots<IServerSlot>>(MockBehavior.Strict);
         mockInventory.SetupGet(x => x[It.Is<int>(i => i == selectedSlot)]).Returns(mockSlot.Object);
 
-        Mock<IRemoteClient> mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
+        var mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
         mockUser.Setup(x => x.Inventory).Returns(mockInventory.Object);
         mockUser.Setup(x => x.SelectedSlot).Returns(selectedSlot);
 
@@ -635,11 +820,11 @@ public class BlockProviderTest
         //
         // Assertions
         //
-        Assert.AreEqual(1, dimension.SetBlockIDCount);
+        Assert.AreEqual(1, dimension.SetBlockIdCount);
         Assert.AreEqual(1, blockPlacedCallCount);
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates));
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates + Vector3i.Up));
-        mockSlot.Verify();    // Asserts that the held item count has been reduced by one.
+        mockSlot.Verify(); // Asserts that the held item count has been reduced by one.
     }
 
     /// <summary>
@@ -654,35 +839,50 @@ public class BlockProviderTest
         //
         // Setup
         //
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
         mockBlockRepository.Setup(x => x.GetBlockProvider(CobblestoneBlock.BlockID)).Returns(new CobblestoneBlock());
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IEntityManager> mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
+        var mockEntityManager = new Mock<IEntityManager>(MockBehavior.Strict);
 
-        GlobalVoxelCoordinates coordinates = new GlobalVoxelCoordinates(3, 5, 7);
-        FakeDimension dimension = new FakeDimension(mockBlockRepository.Object,
-            mockItemRepository.Object, mockEntityManager.Object);
+        var coordinates = new GlobalVoxelCoordinates(3, 5, 7);
+
+        var dimension = new FakeDimension(
+            mockBlockRepository.Object,
+            mockItemRepository.Object,
+            mockEntityManager.Object
+        );
+
         dimension.SetBlockID(coordinates, CobblestoneBlock.BlockID);
         dimension.ResetCounts();
 
-        PlayerEntity player = new PlayerEntity(dimension, mockEntityManager.Object, "Fred");
+        var player = new PlayerEntity(dimension, mockEntityManager.Object, "Fred");
         player.Position = new Vector3(3, 6, 7);
-        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
-            .Returns(new List<IEntity>() { player });
 
-        Mock<BlockProvider> testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
-        testBlockProvider.Setup(x => x.ItemUsedOnBlock(It.IsAny<GlobalVoxelCoordinates>(),
-                It.IsAny<ItemStack>(), It.IsAny<BlockFace>(), It.IsAny<IDimension>(), It.IsAny<IRemoteClient>()))
-            .CallBase();
+        mockEntityManager.Setup(x => x.EntitiesInRange(It.IsAny<Vector3>(), It.IsAny<float>()))
+                         .Returns(new List<IEntity> { player });
+
+        var testBlockProvider = new Mock<BlockProvider>(MockBehavior.Strict);
+
+        testBlockProvider.Setup(
+                             x => x.ItemUsedOnBlock(
+                                 It.IsAny<GlobalVoxelCoordinates>(),
+                                 It.IsAny<ItemStack>(),
+                                 It.IsAny<BlockFace>(),
+                                 It.IsAny<IDimension>(),
+                                 It.IsAny<IRemoteClient>()
+                             )
+                         )
+                         .CallBase();
+
         testBlockProvider.Setup(x => x.BoundingBox).CallBase();
 
-        BlockFace face = BlockFace.PositiveY;
+        var face = BlockFace.PositiveY;
         sbyte heldItemCount = 32;
-        ItemStack heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
+        var heldItem = new ItemStack(CobblestoneBlock.BlockID, heldItemCount);
 
-        Mock<IRemoteClient> mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
+        var mockUser = new Mock<IRemoteClient>(MockBehavior.Strict);
 
         //
         // Act
@@ -692,7 +892,7 @@ public class BlockProviderTest
         //
         // Assertions
         //
-        Assert.AreEqual(0, dimension.SetBlockIDCount);
+        Assert.AreEqual(0, dimension.SetBlockIdCount);
         Assert.AreEqual(CobblestoneBlock.BlockID, dimension.GetBlockID(coordinates));
         Assert.AreEqual(AirBlock.BlockID, dimension.GetBlockID(coordinates + Vector3i.Up));
     }

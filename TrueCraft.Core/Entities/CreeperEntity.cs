@@ -5,24 +5,11 @@ namespace TrueCraft.Core.Entities;
 
 public class CreeperEntity : MobEntity
 {
-    public CreeperEntity(IDimension dimension, IEntityManager entityManager) :
-        base(dimension, entityManager, 20, new Size(0.6, 1.8, 0.6))
-    {
-    }
+    public CreeperEntity(IDimension dimension, IEntityManager entityManager)
+        :
+        base(dimension, entityManager, 20, new Size(0.6, 1.8, 0.6)) { }
 
-    public override sbyte MobType
-    {
-        get
-        {
-            return 50;
-        }
-    }
+    public override sbyte MobType => 50;
 
-    public override bool Friendly
-    {
-        get
-        {
-            return false;
-        }
-    }
+    public override bool Friendly => false;
 }

@@ -11,7 +11,7 @@ public struct VertexPositionNormalColorTexture : IVertexType
     public Color Color;
     public Vector2 Texture;
 
-    public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(
+    public static readonly VertexDeclaration VertexDeclaration = new(
         new[]
         {
             new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
@@ -21,10 +21,7 @@ public struct VertexPositionNormalColorTexture : IVertexType
         }
     );
 
-    VertexDeclaration IVertexType.VertexDeclaration
-    {
-        get { return VertexDeclaration; }
-    }
+    VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
 
     public VertexPositionNormalColorTexture(Vector3 position, Vector3 normal, Color color, Vector2 texture)
     {
@@ -34,32 +31,23 @@ public struct VertexPositionNormalColorTexture : IVertexType
         Texture = texture;
     }
 
-    public static bool operator ==(VertexPositionNormalColorTexture value1, VertexPositionNormalColorTexture value2)
-    {
-        return value1.Equals(value2);
-    }
+    public static bool operator ==(VertexPositionNormalColorTexture value1, VertexPositionNormalColorTexture value2) => value1.Equals(value2);
 
-    public static bool operator !=(VertexPositionNormalColorTexture value1, VertexPositionNormalColorTexture value2)
-    {
-        return !value1.Equals(value2);
-    }
+    public static bool operator !=(VertexPositionNormalColorTexture value1, VertexPositionNormalColorTexture value2) => !value1.Equals(value2);
 
-    public bool Equals(VertexPositionNormalColorTexture other)
-    {
-        return Position == other.Position && Normal == other.Normal &&
-               Color == other.Color && Texture == other.Texture;
-    }
+    public bool Equals(VertexPositionNormalColorTexture other) => Position == other.Position && Normal == other.Normal &&
+                                                                  Color == other.Color && Texture == other.Texture;
 
     public override bool Equals(object? obj)
     {
-        if (obj is null || GetType() != obj.GetType()) return false;
+        if (obj is null || GetType() != obj.GetType())
+        {
+            return false;
+        }
 
-        return Equals((VertexPositionNormalColorTexture)obj);
+        return Equals((VertexPositionNormalColorTexture) obj);
     }
 
-    public override int GetHashCode()
-    {
-        return Position.GetHashCode() ^ Normal.GetHashCode() ^
-               Color.GetHashCode() ^ Texture.GetHashCode();
-    }
+    public override int GetHashCode() => Position.GetHashCode() ^ Normal.GetHashCode() ^
+                                         Color.GetHashCode() ^ Texture.GetHashCode();
 }

@@ -9,11 +9,16 @@ public class SignItem : ItemProvider
 {
     public static readonly short ItemID = 0x143;
 
-    public SignItem(XmlNode node) : base(node)
-    {
-    }
+    public SignItem(XmlNode node)
+        : base(node) { }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         if (face == BlockFace.PositiveY)
         {

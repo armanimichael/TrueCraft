@@ -8,126 +8,199 @@ namespace TrueCraft.Client.Modelling.Blocks;
 
 public class BlockModeller
 {
-    private static BlockModeller DefaultRenderer = new BlockModeller();
+    private static BlockModeller DefaultRenderer = new();
     private static BlockModeller[] Renderers = new BlockModeller[0x100];
 
-    public static void RegisterRenderer(byte id, BlockModeller renderer)
-    {
-        Renderers[id] = renderer;
-    }
+    public static void RegisterRenderer(byte id, BlockModeller renderer) => Renderers[id] = renderer;
 
-    public static VertexPositionNormalColorTexture[] RenderBlock(IBlockProvider provider, BlockDescriptor descriptor,
-        VisibleFaces faces, Vector3 offset, int indiciesOffset, out int[] indicies)
+    public static VertexPositionNormalColorTexture[] RenderBlock(
+        IBlockProvider provider,
+        BlockDescriptor descriptor,
+        VisibleFaces faces,
+        Vector3 offset,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
         var textureMap = provider.GetTextureMap(descriptor.Metadata);
+
         if (textureMap == null)
+        {
             textureMap = new Tuple<int, int>(0, 0); // TODO: handle this better
+        }
+
         return Renderers[descriptor.ID].Render(descriptor, offset, faces, textureMap, indiciesOffset, out indicies);
     }
 
-    public virtual VertexPositionNormalColorTexture[] Render(BlockDescriptor descriptor, Vector3 offset,
-        VisibleFaces faces, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    public virtual VertexPositionNormalColorTexture[] Render(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        VisibleFaces faces,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
         var texCoords = new Vector2(textureMap.Item1, textureMap.Item2);
+
         var texture = new[]
+                      {
+                          texCoords + Vector2.UnitX + Vector2.UnitY,
+                          texCoords + Vector2.UnitY,
+                          texCoords,
+                          texCoords + Vector2.UnitX
+                      };
+
+        for (var i = 0; i < texture.Length; i++)
         {
-            texCoords + Vector2.UnitX + Vector2.UnitY,
-            texCoords + Vector2.UnitY,
-            texCoords,
-            texCoords + Vector2.UnitX
-        };
-
-        for (int i = 0; i < texture.Length; i++)
             texture[i] *= new Vector2(16f / 256f);
+        }
 
-        int[] lighting = GetLighting(descriptor);
+        var lighting = GetLighting(descriptor);
 
         return CreateUniformCube(offset, texture, faces, indiciesOffset, out indicies, Color.White, lighting);
     }
 
-    public static VertexPositionNormalColorTexture[] RenderIcon(IBlockProvider provider, short metadata, out int[] indices)
+    public static VertexPositionNormalColorTexture[] RenderIcon(
+        IBlockProvider provider,
+        short metadata,
+        out int[] indices
+    )
     {
-        Tuple<int, int>? textureMap = provider.GetTextureMap((byte)metadata);
+        var textureMap = provider.GetTextureMap((byte) metadata);
+
         if (textureMap is null)
-            textureMap = new Tuple<int, int>(0, 0);   // TODO: Better default texture?
+        {
+            textureMap = new Tuple<int, int>(0, 0); // TODO: Better default texture?
+        }
 
         var texCoords = new Vector2(textureMap.Item1, textureMap.Item2);
+
         var texture = new[]
+                      {
+                          texCoords + Vector2.UnitX + Vector2.UnitY,
+                          texCoords + Vector2.UnitY,
+                          texCoords,
+                          texCoords + Vector2.UnitX
+                      };
+
+        for (var i = 0; i < texture.Length; i++)
         {
-            texCoords + Vector2.UnitX + Vector2.UnitY,
-            texCoords + Vector2.UnitY,
-            texCoords,
-            texCoords + Vector2.UnitX
-        };
-
-        for (int i = 0; i < texture.Length; i++)
             texture[i] *= new Vector2(16f / 256f);
+        }
 
-        Vector3 offset = new Vector3(-0.5f);
+        var offset = new Vector3(-0.5f);
 
         return Renderers[provider.ID].Render(metadata, offset, texture, out indices);
     }
 
-    public virtual VertexPositionNormalColorTexture[] Render(short metadata, Vector3 offset, Vector2[] texture, out int[] indices)
-    {
-        return CreateUniformCube(offset, texture, VisibleFaces.All, 0, out indices, Color.White);
-    }
+    public virtual VertexPositionNormalColorTexture[] Render(
+        short metadata,
+        Vector3 offset,
+        Vector2[] texture,
+        out int[] indices
+    ) => CreateUniformCube(offset, texture, VisibleFaces.All, 0, out indices, Color.White);
 
-    public static VertexPositionNormalColorTexture[] CreateUniformCube(Vector3 offset, Vector2[] texture,
-        VisibleFaces faces, int indiciesOffset, out int[] indicies, Color color, int[]? lighting = null)
+    public static VertexPositionNormalColorTexture[] CreateUniformCube(
+        Vector3 offset,
+        Vector2[] texture,
+        VisibleFaces faces,
+        int indiciesOffset,
+        out int[] indicies,
+        Color color,
+        int[]? lighting = null
+    )
     {
         faces = VisibleFaces.All; // Temporary
-        if (lighting is null)
-            lighting = DefaultLighting;
 
-        int totalFaces = 0;
-        uint f = (uint)faces;
+        if (lighting is null)
+        {
+            lighting = DefaultLighting;
+        }
+
+        var totalFaces = 0;
+        var f = (uint) faces;
+
         while (f != 0)
         {
             if ((f & 1) == 1)
+            {
                 totalFaces++;
+            }
+
             f >>= 1;
         }
 
         indicies = new int[6 * totalFaces];
         var verticies = new VertexPositionNormalColorTexture[4 * totalFaces];
         int[] _indicies;
-        int textureIndex = 0;
-        int sidesSoFar = 0;
-        for (int _side = 0; _side < 6; _side++)
+        var textureIndex = 0;
+        var sidesSoFar = 0;
+
+        for (var _side = 0; _side < 6; _side++)
         {
             if ((faces & VisibleForCubeFace[_side]) == 0)
             {
                 textureIndex += 4;
+
                 continue;
             }
+
             var lightColor = LightColor.ToVector3() * CubeBrightness[lighting[_side]];
 
-            var side = (CubeFace)_side;
-            var quad = CreateQuad(side, offset, texture, textureIndex % texture.Length, indiciesOffset,
-                out _indicies, new Color(lightColor * color.ToVector3()));
+            var side = (CubeFace) _side;
+
+            var quad = CreateQuad(
+                side,
+                offset,
+                texture,
+                textureIndex % texture.Length,
+                indiciesOffset,
+                out _indicies,
+                new Color(lightColor * color.ToVector3())
+            );
+
             Array.Copy(quad, 0, verticies, sidesSoFar * 4, 4);
             Array.Copy(_indicies, 0, indicies, sidesSoFar * 6, 6);
             textureIndex += 4;
             sidesSoFar++;
         }
+
         return verticies;
     }
 
-    protected static VertexPositionNormalColorTexture[] CreateQuad(CubeFace face, Vector3 offset,
-        Vector2[] texture, int textureOffset, int indiciesOffset, out int[] indicies, Color color)
+    protected static VertexPositionNormalColorTexture[] CreateQuad(
+        CubeFace face,
+        Vector3 offset,
+        Vector2[] texture,
+        int textureOffset,
+        int indiciesOffset,
+        out int[] indicies,
+        Color color
+    )
     {
         indicies = new[] { 0, 1, 3, 1, 2, 3 };
-        for (int i = 0; i < indicies.Length; i++)
-            indicies[i] += ((int)face * 4) + indiciesOffset;
-        var quad = new VertexPositionNormalColorTexture[4];
-        var unit = CubeMesh[(int)face];
-        var normal = CubeNormals[(int)face];
-        var faceColor = new Color(FaceBrightness[(int)face] * color.ToVector3());
-        for (int i = 0; i < 4; i++)
+
+        for (var i = 0; i < indicies.Length; i++)
         {
-            quad[i] = new VertexPositionNormalColorTexture(offset + unit[i], normal, faceColor, texture[textureOffset + i]);
+            indicies[i] += ((int) face * 4) + indiciesOffset;
         }
+
+        var quad = new VertexPositionNormalColorTexture[4];
+        var unit = CubeMesh[(int) face];
+        var normal = CubeNormals[(int) face];
+        var faceColor = new Color(FaceBrightness[(int) face] * color.ToVector3());
+
+        for (var i = 0; i < 4; i++)
+        {
+            quad[i] = new VertexPositionNormalColorTexture(
+                offset + unit[i],
+                normal,
+                faceColor,
+                texture[textureOffset + i]
+            );
+        }
+
         return quad;
     }
 
@@ -136,8 +209,7 @@ public class BlockModeller
     /// <summary>
     /// The per-vertex light color to apply to blocks.
     /// </summary>
-    protected static readonly Color LightColor =
-        new Color(245, 245, 225);
+    protected static readonly Color LightColor = new(245, 245, 225);
 
     /// <summary>
     /// The default lighting information for rendering a block;
@@ -158,9 +230,9 @@ public class BlockModeller
         {
             0.6f, 0.6f, // North / South
             0.8f, 0.8f, // East / West
-            1.0f, 0.5f  // Top / Bottom
+            1.0f, 0.5f // Top / Bottom
         };
-        
+
     /// <summary>
     /// The offset coordinates used to get the position of a block for a face.
     /// </summary>
@@ -190,10 +262,11 @@ public class BlockModeller
     /// <returns></returns>
     protected static int[] GetLighting(BlockDescriptor descriptor)
     {
-        int[] lighting = new int[(int)CubeFace.Count];
-        LocalVoxelCoordinates coords = (LocalVoxelCoordinates)descriptor.Coordinates;
+        var lighting = new int[(int) CubeFace.Count];
+        var coords = (LocalVoxelCoordinates) descriptor.Coordinates;
         int localX, localY, localZ;
-        for (int i = 0; i < (int)CubeFace.Count; i++)
+
+        for (var i = 0; i < (int) CubeFace.Count; i++)
         {
             localX = coords.X + FaceCoords[i].X;
             localY = coords.Y + FaceCoords[i].Y;
@@ -214,20 +287,26 @@ public class BlockModeller
     {
         // Handle top (and bottom) of the world.
         if (y < 0)
+        {
             return 0;
-        if (y >= WorldConstants.Height)
-            return 15;
+        }
 
-        // TODO: Have to return a proper value for light outside the local chunk.
-        //      This will require the Renderer to have access to the World object.
-        // Handle coordinates outside the chunk.
-        if ((x < 0) || (x >= WorldConstants.ChunkWidth) ||
-            (z < 0) || (z >= WorldConstants.ChunkDepth))
+        if (y >= WorldConstants.Height)
         {
             return 15;
         }
 
-        LocalVoxelCoordinates coords = new LocalVoxelCoordinates(x, y, z);
+        // TODO: Have to return a proper value for light outside the local chunk.
+        //      This will require the Renderer to have access to the World object.
+        // Handle coordinates outside the chunk.
+        if (x < 0 || x >= WorldConstants.ChunkWidth ||
+            z < 0 || z >= WorldConstants.ChunkDepth)
+        {
+            return 15;
+        }
+
+        var coords = new LocalVoxelCoordinates(x, y, z);
+
         return Math.Min(chunk.GetBlockLight(coords) + chunk.GetSkyLight(coords), 15);
     }
 
@@ -273,78 +352,79 @@ public class BlockModeller
 
     protected static readonly Vector3[] CubeNormals =
     {
-        new Vector3(0, 0, 1),
-        new Vector3(0, 0, -1),
-        new Vector3(1, 0, 0),
-        new Vector3(-1, 0, 0),
-        new Vector3(0, 1, 0),
-        new Vector3(0, -1, 0)
+        new(0, 0, 1),
+        new(0, 0, -1),
+        new(1, 0, 0),
+        new(-1, 0, 0),
+        new(0, 1, 0),
+        new(0, -1, 0)
     };
 
     static BlockModeller()
     {
-        for (int i = 0; i < Renderers.Length; i++)
+        for (var i = 0; i < Renderers.Length; i++)
         {
             Renderers[i] = DefaultRenderer;
         }
 
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        foreach (var type in assembly.GetTypes()
+                                     .Where(
+                                         t =>
+                                             typeof(BlockModeller).IsAssignableFrom(t) && !t.IsAbstract && t != typeof(BlockModeller)
+                                     ))
         {
-            foreach (var type in assembly.GetTypes().Where(t =>
-                         typeof(BlockModeller).IsAssignableFrom(t) && !t.IsAbstract && t != typeof(BlockModeller)))
-            {
-                Activator.CreateInstance(type); // This is just to call the static initializers
-            }
+            Activator.CreateInstance(type); // This is just to call the static initializers
         }
 
         CubeMesh = new Vector3[6][];
 
-        CubeMesh[(int)CubeFace.PositiveZ] = new[]
-        {
-            new Vector3(1, 0, 1),
-            new Vector3(0, 0, 1),
-            new Vector3(0, 1, 1),
-            new Vector3(1, 1, 1)
-        };
+        CubeMesh[(int) CubeFace.PositiveZ] = new[]
+                                             {
+                                                 new Vector3(1, 0, 1),
+                                                 new Vector3(0, 0, 1),
+                                                 new Vector3(0, 1, 1),
+                                                 new Vector3(1, 1, 1)
+                                             };
 
-        CubeMesh[(int)CubeFace.NegativeZ] = new[]
-        {
-            new Vector3(0, 0, 0),
-            new Vector3(1, 0, 0),
-            new Vector3(1, 1, 0),
-            new Vector3(0, 1, 0)
-        };
+        CubeMesh[(int) CubeFace.NegativeZ] = new[]
+                                             {
+                                                 new Vector3(0, 0, 0),
+                                                 new Vector3(1, 0, 0),
+                                                 new Vector3(1, 1, 0),
+                                                 new Vector3(0, 1, 0)
+                                             };
 
-        CubeMesh[(int)CubeFace.PositiveX] = new[]
-        {
-            new Vector3(1, 0, 0),
-            new Vector3(1, 0, 1),
-            new Vector3(1, 1, 1),
-            new Vector3(1, 1, 0)
-        };
+        CubeMesh[(int) CubeFace.PositiveX] = new[]
+                                             {
+                                                 new Vector3(1, 0, 0),
+                                                 new Vector3(1, 0, 1),
+                                                 new Vector3(1, 1, 1),
+                                                 new Vector3(1, 1, 0)
+                                             };
 
-        CubeMesh[(int)CubeFace.NegativeX] = new[]
-        {
-            new Vector3(0, 0, 1),
-            new Vector3(0, 0, 0),
-            new Vector3(0, 1, 0),
-            new Vector3(0, 1, 1)
-        };
+        CubeMesh[(int) CubeFace.NegativeX] = new[]
+                                             {
+                                                 new Vector3(0, 0, 1),
+                                                 new Vector3(0, 0, 0),
+                                                 new Vector3(0, 1, 0),
+                                                 new Vector3(0, 1, 1)
+                                             };
 
-        CubeMesh[(int)CubeFace.PositiveY] = new[]
-        {
-            new Vector3(1, 1, 1),
-            new Vector3(0, 1, 1),
-            new Vector3(0, 1, 0),
-            new Vector3(1, 1, 0)
-        };
+        CubeMesh[(int) CubeFace.PositiveY] = new[]
+                                             {
+                                                 new Vector3(1, 1, 1),
+                                                 new Vector3(0, 1, 1),
+                                                 new Vector3(0, 1, 0),
+                                                 new Vector3(1, 1, 0)
+                                             };
 
-        CubeMesh[(int)CubeFace.NegativeY] = new[]
-        {
-            new Vector3(1, 0, 0),
-            new Vector3(0, 0, 0),
-            new Vector3(0, 0, 1),
-            new Vector3(1, 0, 1)
-        };
+        CubeMesh[(int) CubeFace.NegativeY] = new[]
+                                             {
+                                                 new Vector3(1, 0, 0),
+                                                 new Vector3(0, 0, 0),
+                                                 new Vector3(0, 0, 1),
+                                                 new Vector3(1, 0, 1)
+                                             };
     }
 }

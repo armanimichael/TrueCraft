@@ -30,10 +30,10 @@ internal class Region : IDisposable, IRegion
     /// </summary>
     public RegionCoordinates Position { get; }
 
-    private HashSet<LocalChunkCoordinates> DirtyChunks { get; } = new HashSet<LocalChunkCoordinates>(Width * Depth);
+    private HashSet<LocalChunkCoordinates> DirtyChunks { get; } = new(Width * Depth);
 
     private Stream _regionFile;
-    private object _streamLock = new object();
+    private object _streamLock = new();
 
     public event EventHandler<ChunkLoadedEventArgs>? ChunkLoaded;
 
@@ -51,7 +51,7 @@ internal class Region : IDisposable, IRegion
 
         var regionPath = Path.Combine(baseDirectory, "region");
         var regionFileName = Path.Combine(regionPath, GetRegionFileName(position));
-            
+
         if (!Directory.Exists(regionPath))
         {
             Directory.CreateDirectory(regionPath);
@@ -73,23 +73,24 @@ internal class Region : IDisposable, IRegion
     {
         get
         {
-            List<IChunk> lst = new List<IChunk>();
-            for (int j = 0; j < Width; j++)
-            for (int k = 0; k < Depth; k++)
+            var lst = new List<IChunk>();
+
+            for (var j = 0; j < Width; j++)
+            for (var k = 0; k < Depth; k++)
             {
-                IChunk? chunk = _chunks[j, k];
+                var chunk = _chunks[j, k];
+
                 if (chunk is not null)
+                {
                     lst.Add(chunk);
+                }
             }
 
             return lst;
         }
     }
 
-    public bool IsChunkLoaded(LocalChunkCoordinates position)
-    {
-        return _chunks[position.X, position.Z] is not null;
-    }
+    public bool IsChunkLoaded(LocalChunkCoordinates position) => _chunks[position.X, position.Z] is not null;
 
     /// <summary>
     /// Retrieves the requested chunk from the region.
@@ -98,43 +99,49 @@ internal class Region : IDisposable, IRegion
     /// <param name="position">The position of the requested local chunk coordinates.</param>
     /// </params>
     /// <returns>The requested Chunk or null if no Chunk has been saved to disk at this position.</returns>
-    public IChunk? GetChunk(LocalChunkCoordinates position)
-    {
-        return _chunks[position.X, position.Z];
-    }
+    public IChunk? GetChunk(LocalChunkCoordinates position) => _chunks[position.X, position.Z];
 
     /// <inheritdoc />
     public IChunk? LoadChunk(LocalChunkCoordinates position)
     {
-        int chunkX = position.X;
-        int chunkZ = position.Z;
+        var chunkX = position.X;
+        var chunkZ = position.Z;
 
         if (_chunks[chunkX, chunkZ] is not null)
+        {
             return _chunks[chunkX, chunkZ];
+        }
 
-        Tuple<int, int>? tableEntry = GetChunkFromTable(position);
+        var tableEntry = GetChunkFromTable(position);
+
         if (tableEntry is null)
+        {
             return null;
+        }
 
-        int chunkDataOffset = tableEntry.Item1;
-        NbtFile nbt = new NbtFile();
+        var chunkDataOffset = tableEntry.Item1;
+        var nbt = new NbtFile();
+
         lock (_streamLock)
         {
             // Add 4 to the chunkDataOffset to skip reading the length.
             _regionFile.Seek(chunkDataOffset + 4, SeekOrigin.Begin);
-            int compressionMode = _regionFile.ReadByte();
+            var compressionMode = _regionFile.ReadByte();
+
             switch (compressionMode)
             {
                 case 1: // gzip
                     throw new NotImplementedException("gzipped chunks are not implemented");
                 case 2: // zlib
                     nbt.LoadFromStream(_regionFile, NbtCompression.ZLib, null);
+
                     break;
                 default:
                     throw new InvalidDataException("Invalid compression scheme provided by region file.");
             }
         }
-        IChunk chunk = Chunk.FromNbt(nbt);  // TODO remove dependency on Chunk class
+
+        IChunk chunk = Chunk.FromNbt(nbt); // TODO remove dependency on Chunk class
         _chunks[chunkX, chunkZ] = chunk;
 
         OnChunkLoaded(chunk);
@@ -142,19 +149,18 @@ internal class Region : IDisposable, IRegion
         return chunk;
     }
 
-    protected void OnChunkLoaded(IChunk chunk)
-    {
-        ChunkLoaded?.Invoke(this, new ChunkLoadedEventArgs(chunk));
-    }
+    protected void OnChunkLoaded(IChunk chunk) => ChunkLoaded?.Invoke(this, new ChunkLoadedEventArgs(chunk));
 
     /// <inheritdoc />
     public void AddChunk(IChunk chunk)
     {
-        LocalChunkCoordinates position = (LocalChunkCoordinates)chunk.Coordinates;
+        var position = (LocalChunkCoordinates) chunk.Coordinates;
 
 #if DEBUG
         if (_chunks[position.X, position.Z] is not null)
+        {
             throw new ApplicationException("Attempt to add a Chunk that is already loaded.");
+        }
 #endif
 
         _chunks[position.X, position.Z] = chunk;
@@ -167,31 +173,40 @@ internal class Region : IDisposable, IRegion
     {
         lock (_streamLock)
         {
-            for (int x = 0; x < Width; x++)
-            for (int z = 0; z < Depth; z ++)
+            for (var x = 0; x < Width; x++)
+            for (var z = 0; z < Depth; z++)
             {
-                IChunk? chunk = _chunks[x, z];
+                var chunk = _chunks[x, z];
+
                 if (chunk?.IsModified ?? false)
                 {
-                    NbtFile data = ((Chunk)chunk).ToNbt();  // TODO remove cast and dependency on Chunk class
-                    byte[] raw = data.SaveToBuffer(NbtCompression.ZLib);
+                    var data = ((Chunk) chunk).ToNbt(); // TODO remove cast and dependency on Chunk class
+                    var raw = data.SaveToBuffer(NbtCompression.ZLib);
 
                     // Locate/obtain storage for the Chunk
-                    LocalChunkCoordinates coords = new LocalChunkCoordinates(x, z);
+                    var coords = new LocalChunkCoordinates(x, z);
                     var header = GetChunkFromTable(coords);
+
                     if (header == null || header.Item2 > raw.Length)
+                    {
                         header = AllocateNewChunks(coords, raw.Length);
+                    }
 
                     // Write the Chunk
                     _regionFile.Seek(header.Item1, SeekOrigin.Begin);
-                    byte[] rawLength = BitConverter.GetBytes(raw.Length);
+                    var rawLength = BitConverter.GetBytes(raw.Length);
+
                     if (BitConverter.IsLittleEndian)
+                    {
                         rawLength.Reverse();
+                    }
+
                     _regionFile.Write(rawLength, 0, rawLength.Length);
                     _regionFile.WriteByte(2); // Compressed with zlib
                     _regionFile.Write(raw, 0, raw.Length);
                 }
             }
+
             _regionFile.Flush();
         }
     }
@@ -215,13 +230,13 @@ internal class Region : IDisposable, IRegion
     /// </returns>
     private Tuple<int, int>? GetChunkFromTable(LocalChunkCoordinates position) // <offset, length>
     {
-        int tableOffset = GetTableOffset(position);
+        var tableOffset = GetTableOffset(position);
 
         // The first three bytes at location tableOffset give a 24-bit
         // integer which specifies the offset from the beginning of the file
         // where the Chunk is stored.  This offset is in units of 4k "sectors".
-        int chunkOffset = HeaderCache[tableOffset] << 16 |
-                          HeaderCache[tableOffset + 1] << 8 |
+        var chunkOffset = (HeaderCache[tableOffset] << 16) |
+                          (HeaderCache[tableOffset + 1] << 8) |
                           HeaderCache[tableOffset + 2];
 
         // The length of the Chunk storage in 4k "sectors".
@@ -229,10 +244,14 @@ internal class Region : IDisposable, IRegion
 
         // Check if the Chunk has never been saved.
         if (chunkOffset == 0 || length == 0)
+        {
             return null;
+        }
 
-        return new Tuple<int, int>(chunkOffset * ChunkSizeMultiplier,
-            length * ChunkSizeMultiplier);
+        return new Tuple<int, int>(
+            chunkOffset * ChunkSizeMultiplier,
+            length * ChunkSizeMultiplier
+        );
     }
 
     private void CreateRegionHeader()
@@ -244,22 +263,22 @@ internal class Region : IDisposable, IRegion
 
     private Tuple<int, int> AllocateNewChunks(LocalChunkCoordinates position, int length)
     {
-        lock(_streamLock)
+        lock (_streamLock)
         {
             // Expand region file
             _regionFile.Seek(0, SeekOrigin.End);
-            int dataOffset = (int)_regionFile.Position;
+            var dataOffset = (int) _regionFile.Position;
 
             length /= ChunkSizeMultiplier;
             length++;
             _regionFile.Write(new byte[length * ChunkSizeMultiplier], 0, length * ChunkSizeMultiplier);
 
             // Write table entry
-            int tableOffset = GetTableOffset(position);
+            var tableOffset = GetTableOffset(position);
             _regionFile.Seek(tableOffset, SeekOrigin.Begin);
 
-            byte[] entry = BitConverter.GetBytes(dataOffset >> 4);
-            entry[0] = (byte)length;
+            var entry = BitConverter.GetBytes(dataOffset >> 4);
+            entry[0] = (byte) length;
             Array.Reverse(entry);
             _regionFile.Write(entry, 0, entry.Length);
             Buffer.BlockCopy(entry, 0, HeaderCache, tableOffset, 4);
@@ -274,17 +293,11 @@ internal class Region : IDisposable, IRegion
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns>
-    private int GetTableOffset(LocalChunkCoordinates pos)
-    {
-        return (pos.X + pos.Z * Width) * 4;
-    }
+    private static int GetTableOffset(LocalChunkCoordinates pos) => (pos.X + (pos.Z * Width)) * 4;
 
     #endregion
 
-    public static string GetRegionFileName(RegionCoordinates position)
-    {
-        return string.Format("r.{0}.{1}.mcr", position.X, position.Z);
-    }
+    public static string GetRegionFileName(RegionCoordinates position) => string.Format("r.{0}.{1}.mcr", position.X, position.Z);
 
     /// <summary>
     /// Determines whether or not a Region File already exists for the given
@@ -296,14 +309,17 @@ internal class Region : IDisposable, IRegion
     /// <returns>True if the file exists; false otherwise.</returns>
     public static bool DoesRegionExistOnDisk(RegionCoordinates position, string baseDirectory)
     {
-        string filename = Path.Combine(baseDirectory, "region", GetRegionFileName(position));
+        var filename = Path.Combine(baseDirectory, "region", GetRegionFileName(position));
+
         return File.Exists(filename);
     }
 
     public void Dispose()
     {
         if (_regionFile is null)
+        {
             return;
+        }
 
         _regionFile.Flush();
         _regionFile.Close();

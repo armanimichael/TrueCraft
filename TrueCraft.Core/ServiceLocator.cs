@@ -14,15 +14,26 @@ public class ServiceLocator : IServiceLocator
     /// <summary>
     /// Constructs a new instance of the Service Locator.
     /// </summary>
-    public ServiceLocator(IBlockRepository blockRepository,
-        IItemRepository itemRepository, ICraftingRepository craftingRepository)
+    public ServiceLocator(
+        IBlockRepository blockRepository,
+        IItemRepository itemRepository,
+        ICraftingRepository craftingRepository
+    )
     {
         if (blockRepository is null)
+        {
             throw new ArgumentNullException(nameof(blockRepository));
+        }
+
         if (itemRepository is null)
+        {
             throw new ArgumentNullException(nameof(itemRepository));
+        }
+
         if (craftingRepository is null)
+        {
             throw new ArgumentNullException(nameof(craftingRepository));
+        }
 
         _blockRepository = blockRepository;
         _itemRepository = itemRepository;
@@ -30,11 +41,11 @@ public class ServiceLocator : IServiceLocator
     }
 
     /// <inheritdoc />
-    public IBlockRepository BlockRepository { get => _blockRepository; }
+    public IBlockRepository BlockRepository => _blockRepository;
 
     /// <inheritdoc />
-    public IItemRepository ItemRepository { get => _itemRepository; }
+    public IItemRepository ItemRepository => _itemRepository;
 
     /// <inheritdoc />
-    public ICraftingRepository CraftingRepository { get => _craftingRepository; }
+    public ICraftingRepository CraftingRepository => _craftingRepository;
 }

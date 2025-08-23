@@ -3,7 +3,8 @@ using TrueCraft.Core.Logic;
 
 namespace TrueCraft.Core.Inventory;
 
-public interface ISlotFactory<T> where T : ISlot
+public interface ISlotFactory<T>
+    where T : ISlot
 {
     /// <summary>
     /// Gets an instance of ISlot.

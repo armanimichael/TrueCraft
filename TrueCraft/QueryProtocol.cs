@@ -45,25 +45,34 @@ public class QueryProtocol
 
     private void HandleReceive(IAsyncResult ar)
     {
-        if (_cToken.IsCancellationRequested) return;
-            
+        if (_cToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         try
         {
-            IPEndPoint clientEP = new IPEndPoint(IPAddress.Any, _port);
-            byte[] buffer = _udp.EndReceive(ar, ref clientEP!);
+            var clientEP = new IPEndPoint(IPAddress.Any, _port);
+            var buffer = _udp.EndReceive(ar, ref clientEP!);
 
             DoReverseEndian(buffer);
 
             if (CheckVersion(buffer))
             {
                 if (buffer[2] == Type_Handshake)
+                {
                     HandleHandshake(buffer, clientEP);
+                }
                 else if (buffer[2] == Type_Stat)
                 {
                     if (buffer.Length == 11)
+                    {
                         HandleBasicStat(buffer, clientEP);
+                    }
                     else if (buffer.Length == 15)
+                    {
                         HandleFullStat(buffer, clientEP);
+                    }
                 }
             }
         }
@@ -74,7 +83,11 @@ public class QueryProtocol
             //  2. When is such an Exception thrown?
             //  3. Why is it safe to ignore?
         }
-        if (_cToken.IsCancellationRequested) return;
+
+        if (_cToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         _udp.BeginReceive(HandleReceive, null);
     }
@@ -85,15 +98,18 @@ public class QueryProtocol
         {
             using (var stream = new BinaryReader(ms))
             {
-                int sessionId = GetSessionId(stream);
+                var sessionId = GetSessionId(stream);
 
                 var user = new QueryUser { SessionId = sessionId, ChallengeToken = _rnd.Next() };
 
                 if (_userList.ContainsKey(clientEP))
                 {
                     QueryUser u;
+
                     while (!_userList.TryRemove(clientEP, out u))
+                    {
                         Thread.Sleep(1);
+                    }
                 }
 
                 _userList[clientEP] = user;
@@ -108,7 +124,6 @@ public class QueryProtocol
                     }
                 }
             }
-
         }
     }
 
@@ -118,13 +133,18 @@ public class QueryProtocol
         {
             using (var stream = new BinaryReader(ms))
             {
-                int sessionId = GetSessionId(stream);
-                int token = GetToken(stream);
+                var sessionId = GetSessionId(stream);
+                var token = GetToken(stream);
 
                 var user = GetUser(clientEP);
-                if (user.ChallengeToken != token || user.SessionId != sessionId) throw new Exception("Invalid credentials");
+
+                if (user.ChallengeToken != token || user.SessionId != sessionId)
+                {
+                    throw new Exception("Invalid credentials");
+                }
 
                 var stats = GetStats();
+
                 using (var response = new MemoryStream())
                 {
                     using (var writer = new BinaryWriter(response))
@@ -134,8 +154,8 @@ public class QueryProtocol
                         WriteStringToStream(stats["gametype"], response);
                         WriteStringToStream(stats["numplayers"], response);
                         WriteStringToStream(stats["maxplayers"], response);
-                        byte[] hostport = BitConverter.GetBytes(ushort.Parse(stats["hostport"]));
-                        Array.Reverse(hostport);//The specification needs little endian short
+                        var hostport = BitConverter.GetBytes(ushort.Parse(stats["hostport"]));
+                        Array.Reverse(hostport); //The specification needs little endian short
                         writer.Write(hostport);
                         WriteStringToStream(stats["hostip"], response);
 
@@ -152,31 +172,42 @@ public class QueryProtocol
         {
             using (var reader = new BinaryReader(stream))
             {
-                int sessionId = GetSessionId(reader);
-                int token = GetToken(reader);
+                var sessionId = GetSessionId(reader);
+                var token = GetToken(reader);
 
                 var user = GetUser(clientEP);
-                if (user.ChallengeToken != token || user.SessionId != sessionId) throw new Exception("Invalid credentials");
+
+                if (user.ChallengeToken != token || user.SessionId != sessionId)
+                {
+                    throw new Exception("Invalid credentials");
+                }
 
                 var stats = GetStats();
+
                 using (var response = new MemoryStream())
                 {
                     using (var writer = new BinaryWriter(response))
                     {
                         WriteHead(Type_Stat, user, writer);
                         WriteStringToStream("SPLITNUM\0\0", response);
+
                         foreach (var pair in stats)
                         {
                             WriteStringToStream(pair.Key, response);
                             WriteStringToStream(pair.Value, response);
                         }
-                        writer.Write((byte)0x00);
-                        writer.Write((byte)0x01);
+
+                        writer.Write((byte) 0x00);
+                        writer.Write((byte) 0x01);
                         WriteStringToStream("player_\0", response);
                         var players = GetPlayers();
-                        foreach (string player in players)
+
+                        foreach (var player in players)
+                        {
                             WriteStringToStream(player, response);
-                        writer.Write((byte)0x00);
+                        }
+
+                        writer.Write((byte) 0x00);
 
                         SendResponse(response.ToArray(), clientEP);
                     }
@@ -185,82 +216,96 @@ public class QueryProtocol
         }
     }
 
-    private bool CheckVersion(byte[] ver)
-    {
-        return ver[0] == ProtocolVersion[0] && ver[1] == ProtocolVersion[1];
-    }
-    private int GetSessionId(BinaryReader stream)
+    private bool CheckVersion(byte[] ver) => ver[0] == ProtocolVersion[0] && ver[1] == ProtocolVersion[1];
+
+    private static int GetSessionId(BinaryReader stream)
     {
         stream.BaseStream.Position = 3;
-        return stream.ReadInt32();
-    }
-    private int GetToken(BinaryReader stream)
-    {
-        stream.BaseStream.Position = 7;
+
         return stream.ReadInt32();
     }
 
-    private void WriteHead(byte type, QueryUser user, BinaryWriter stream)
+    private static int GetToken(BinaryReader stream)
+    {
+        stream.BaseStream.Position = 7;
+
+        return stream.ReadInt32();
+    }
+
+    private static void WriteHead(byte type, QueryUser user, BinaryWriter stream)
     {
         stream.Write(type);
         stream.Write(user.SessionId);
     }
 
-    private void SendResponse(byte[] res, IPEndPoint destination)
-    {
-        _udp.Send(res, res.Length, destination);
-    }
+    private void SendResponse(byte[] res, IPEndPoint destination) => _udp.Send(res, res.Length, destination);
+
     private QueryUser GetUser(IPEndPoint ipe)
     {
         if (!_userList.ContainsKey(ipe))
+        {
             throw new Exception("Undefined user");
+        }
 
         return _userList[ipe];
     }
+
     private Dictionary<string, string> GetStats()
     {
         var stats = new Dictionary<string, string>
-        {
-            // TODO: why is a key called hostname storing the Message Of The Day???
-            {"hostname", Program.ServerConfiguration?.MOTD ?? String.Empty},
-            {"gametype", "SMP"},
-            {"game_id", "TRUECRAFT"},
-            {"version", "1.0"},
-            {"plugins", "TrueCraft"},
-            {"map", ((IWorld?)_server.World)?.Name ?? String.Empty },
-            {"numplayers", _server.Clients.Count.ToString()},
-            {"maxplayers", "64"},
-            {"hostport", (Program.ServerConfiguration?.ServerPort ?? ServerConfiguration.ServerPortDefault).ToString()},
-            {"hostip", Program.ServerConfiguration?.ServerAddress ?? "?" }
-        };
+                    {
+                        // TODO: why is a key called hostname storing the Message Of The Day???
+                        { "hostname", Program.ServerConfiguration?.MOTD ?? string.Empty },
+                        { "gametype", "SMP" },
+                        { "game_id", "TRUECRAFT" },
+                        { "version", "1.0" },
+                        { "plugins", "TrueCraft" },
+                        { "map", ((IWorld?) _server.World)?.Name ?? string.Empty },
+                        { "numplayers", _server.Clients.Count.ToString() },
+                        { "maxplayers", "64" },
+                        {
+                            "hostport",
+                            (Program.ServerConfiguration?.ServerPort ?? ServerConfiguration.ServerPortDefault).ToString()
+                        },
+                        { "hostip", Program.ServerConfiguration?.ServerAddress ?? "?" }
+                    };
+
         return stats;
     }
 
     private List<string> GetPlayers()
     {
         var names = new List<string>();
+
         lock (Program.Server!.ClientLock)
+        {
             foreach (var client in _server.Clients)
+            {
                 names.Add(client.Username ?? "n/a");
+            }
+        }
+
         return names;
     }
 
-    private void DoReverseEndian(byte[] buffer)
+    private static void DoReverseEndian(byte[] buffer)
     {
         if (buffer.Length >= 7)
         {
             Swap(ref buffer[3], ref buffer[6]);
             Swap(ref buffer[4], ref buffer[5]);
         }
+
         if (buffer.Length >= 11)
         {
             Swap(ref buffer[7], ref buffer[10]);
             Swap(ref buffer[8], ref buffer[9]);
         }
     }
-    private void Swap(ref byte a, ref byte b)
+
+    private static void Swap(ref byte a, ref byte b)
     {
-        byte c = a;
+        var c = a;
         a = b;
         b = c;
     }
@@ -272,21 +317,17 @@ public class QueryProtocol
         _udp.Close();
     }
 
-    private void ResetUserList(object? state)
-    {
-        _userList.Clear();
-    }
+    private void ResetUserList(object? state) => _userList.Clear();
 
-    struct QueryUser
+    private struct QueryUser
     {
         public int SessionId;
         public int ChallengeToken;
     }
 
-    private byte[] String0ToBytes(string s)
-    { return Encoding.UTF8.GetBytes(s + "\0"); }
-    private void WriteToStream(byte[] bytes, Stream stream)
-    { stream.Write(bytes, 0, bytes.Length); }
-    private void WriteStringToStream(string s, Stream stream)
-    { WriteToStream(String0ToBytes(s), stream); }
+    private static byte[] String0ToBytes(string s) => Encoding.UTF8.GetBytes(s + "\0");
+
+    private static void WriteToStream(byte[] bytes, Stream stream) => stream.Write(bytes, 0, bytes.Length);
+
+    private static void WriteStringToStream(string s, Stream stream) => WriteToStream(String0ToBytes(s), stream);
 }

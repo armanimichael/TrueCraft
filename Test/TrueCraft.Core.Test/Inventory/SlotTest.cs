@@ -10,37 +10,37 @@ namespace TrueCraft.Core.Test.Inventory;
 public class SlotTest
 {
     [Test]
-    public void ctor()
+    public void Ctor()
     {
-        Mock<IItemRepository> mock = new Mock<IItemRepository>(MockBehavior.Strict);
-        ISlot slot = new Slot(mock.Object);
+        var mock = new Mock<IItemRepository>(MockBehavior.Strict);
+        var slot = new Slot(mock.Object);
 
         Assert.AreEqual(ItemStack.EmptyStack, slot.Item);
     }
 
     [Test]
-    public void ctor_Throws()
-    {
-        Assert.Throws<ArgumentNullException>(() => new Slot(null!));
-    }
+    public void ctor_Throws() => Assert.Throws<ArgumentNullException>(() => new Slot(null!));
 
     [TestCase(280, 14, 0)]
     [TestCase(17, 12, 1)]
-    public void Item(short itemID, sbyte itemCount, short itemMetadata)
+    public void Item(short itemId, sbyte itemCount, short itemMetadata)
     {
-        Mock<IItemProvider> mockProvider = new Mock<IItemProvider>(MockBehavior.Strict);
+        var mockProvider = new Mock<IItemProvider>(MockBehavior.Strict);
         mockProvider.Setup((p) => p.MaximumStack).Returns(64);
-        Mock<IItemRepository> mockRepo = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockRepo = new Mock<IItemRepository>(MockBehavior.Strict);
         mockRepo.Setup(m => m.GetItemProvider(It.IsAny<short>())).Returns(mockProvider.Object);
 
-        ItemStack item = new ItemStack(itemID, itemCount, itemMetadata);
+        var item = new ItemStack(itemId, itemCount, itemMetadata);
 
-        ISlot slot = new Slot(mockRepo.Object);
-        bool itemChanged = false;
+        var slot = new Slot(mockRepo.Object);
+        var itemChanged = false;
+
         slot.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == "Item")
+            {
                 itemChanged = true;
+            }
         };
 
         slot.Item = item;
@@ -69,21 +69,28 @@ public class SlotTest
     [TestCase(16, 0x107, 48, 0, 0x107, 16, 0)]
     // Test adding compatible item (too much to fit)
     [TestCase(8, 17, 56, 0, 17, 24, 0)]
-    public void CanAccept(int expected, short itemID, sbyte itemCount, short itemMetadata,
-        short addID, sbyte addCount, short addMetadata)
+    public void CanAccept(
+        int expected,
+        short itemId,
+        sbyte itemCount,
+        short itemMetadata,
+        short addId,
+        sbyte addCount,
+        short addMetadata
+    )
     {
-        Mock<IItemProvider> mockProvider = new Mock<IItemProvider>(MockBehavior.Strict);
+        var mockProvider = new Mock<IItemProvider>(MockBehavior.Strict);
         mockProvider.Setup((p) => p.MaximumStack).Returns(64);
-        Mock<IItemRepository> mockRepo = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockRepo = new Mock<IItemRepository>(MockBehavior.Strict);
         mockRepo.Setup(m => m.GetItemProvider(It.IsAny<short>())).Returns(mockProvider.Object);
 
-        ItemStack item = new ItemStack(itemID, itemCount, itemMetadata);
-        ItemStack add = new ItemStack(addID, addCount, addMetadata);
+        var item = new ItemStack(itemId, itemCount, itemMetadata);
+        var add = new ItemStack(addId, addCount, addMetadata);
 
-        ISlot slot = new Slot(mockRepo.Object);
+        var slot = new Slot(mockRepo.Object);
 
         slot.Item = item;
-        int canAccept = slot.CanAccept(add);
+        var canAccept = slot.CanAccept(add);
 
         Assert.AreEqual(expected, canAccept);
     }

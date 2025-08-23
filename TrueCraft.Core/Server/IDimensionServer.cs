@@ -39,8 +39,13 @@ public interface IDimensionServer : IDimension
     event EventHandler<ChunkLoadedEventArgs> ChunkGenerated;
     event EventHandler<ChunkLoadedEventArgs> ChunkLoaded;
 
-    public delegate void ProgressNotification(double progress, string stage);
-    void Initialize(GlobalChunkCoordinates spawnChunk, IMultiplayerServer server, ProgressNotification? progressNotification);
+    delegate void ProgressNotification(double progress, string stage);
+
+    void Initialize(
+        GlobalChunkCoordinates spawnChunk,
+        IMultiplayerServer server,
+        ProgressNotification? progressNotification
+    );
 
     /// <summary>
     /// Gets the Entity Manager for this Dimension.

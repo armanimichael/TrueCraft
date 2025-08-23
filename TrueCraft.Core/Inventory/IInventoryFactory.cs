@@ -4,27 +4,48 @@ using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.Inventory;
 
-public interface IInventoryFactory<T> where T : ISlot
+public interface IInventoryFactory<T>
+    where T : ISlot
 {
-    public IWindow<T> NewInventoryWindow(IItemRepository itemRepository, ICraftingRepository craftingRepository,
+    IWindow<T> NewInventoryWindow(
+        IItemRepository itemRepository,
+        ICraftingRepository craftingRepository,
         ISlotFactory<T> slotFactory,
-        ISlots<T> mainInventory, ISlots<T> hotBar);
+        ISlots<T> mainInventory,
+        ISlots<T> hotBar
+    );
 
-    public ICraftingBenchWindow<T> NewCraftingBenchWindow(IItemRepository itemRepository,
+    ICraftingBenchWindow<T> NewCraftingBenchWindow(
+        IItemRepository itemRepository,
         ICraftingRepository craftingRepository,
         ISlotFactory<T> slotFactory,
         sbyte windowID,
-        ISlots<T> mainInventory, ISlots<T> hotBar,
-        string name, int width, int height);
+        ISlots<T> mainInventory,
+        ISlots<T> hotBar,
+        string name,
+        int width,
+        int height
+    );
 
-    public IChestWindow<T> NewChestWindow(IItemRepository itemRepository,
+    IChestWindow<T> NewChestWindow(
+        IItemRepository itemRepository,
         ISlotFactory<T> slotFactory,
-        sbyte windowID, ISlots<T> mainInventory, ISlots<T> hotBar,
+        sbyte windowID,
+        ISlots<T> mainInventory,
+        ISlots<T> hotBar,
         IDimension dimension,
-        GlobalVoxelCoordinates location, GlobalVoxelCoordinates? otherHalf);
+        GlobalVoxelCoordinates location,
+        GlobalVoxelCoordinates? otherHalf
+    );
 
-    public IFurnaceWindow<T> NewFurnaceWindow(IServiceLocator serviceLocator, ISlotFactory<T> slotFactory,
-        sbyte windowID, IFurnaceSlots furnaceSlots,
-        ISlots<T> mainInventory, ISlots<T> hotBar,
-        IDimension dimension, GlobalVoxelCoordinates location);
+    IFurnaceWindow<T> NewFurnaceWindow(
+        IServiceLocator serviceLocator,
+        ISlotFactory<T> slotFactory,
+        sbyte windowID,
+        IFurnaceSlots furnaceSlots,
+        ISlots<T> mainInventory,
+        ISlots<T> hotBar,
+        IDimension dimension,
+        GlobalVoxelCoordinates location
+    );
 }

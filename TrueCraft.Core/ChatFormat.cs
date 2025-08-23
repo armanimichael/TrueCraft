@@ -46,16 +46,19 @@ public static class ChatFormat
     public static bool IsValid(string code)
     {
         if (string.IsNullOrEmpty(code))
+        {
             return false;
+        }
 
         var comparison = StringComparison.InvariantCultureIgnoreCase;
+
         return
-            code.Equals(ChatFormat.Obfuscated, comparison) ||
-            code.Equals(ChatFormat.Bold, comparison) ||
-            code.Equals(ChatFormat.Strikethrough, comparison) ||
-            code.Equals(ChatFormat.Underline, comparison) ||
-            code.Equals(ChatFormat.Italic, comparison) ||
-            code.Equals(ChatFormat.Reset, comparison);
+            code.Equals(Obfuscated, comparison) ||
+            code.Equals(Bold, comparison) ||
+            code.Equals(Strikethrough, comparison) ||
+            code.Equals(Underline, comparison) ||
+            code.Equals(Italic, comparison) ||
+            code.Equals(Reset, comparison);
     }
 
     /// <summary>
@@ -66,22 +69,32 @@ public static class ChatFormat
     public static string Remove(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
 
         var builder = new StringBuilder(text.Length);
-        for (int i = 0; i < text.Length; i++)
+
+        for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '§')
             {
                 i++;
                 var code = new string('§', text[i]);
+
                 if (IsValid(code))
+                {
                     continue;
+                }
                 else
+                {
                     builder.Append(code);
+                }
             }
+
             builder.Append(text[i]);
         }
+
         return builder.ToString();
     }
 }

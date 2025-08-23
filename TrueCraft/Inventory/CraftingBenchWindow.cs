@@ -9,52 +9,60 @@ using TrueCraft.Core.Server;
 
 namespace TrueCraft.Inventory;
 
-public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<IServerSlot>,
+public class CraftingBenchWindow : CraftingBenchWindow<IServerSlot>,
     IServerWindow
 {
-    public CraftingBenchWindow(IItemRepository itemRepository,
-        ICraftingRepository craftingRepository, ISlotFactory<IServerSlot> slotFactory,
-        sbyte windowID, ISlots<IServerSlot> mainInventory, ISlots<IServerSlot> hotBar,
-        string name, int width, int height) :
-        base(itemRepository, craftingRepository, slotFactory, windowID, mainInventory, hotBar, name, width, height)
-    {
-    }
+    public CraftingBenchWindow(
+        IItemRepository itemRepository,
+        ICraftingRepository craftingRepository,
+        ISlotFactory<IServerSlot> slotFactory,
+        sbyte windowID,
+        ISlots<IServerSlot> mainInventory,
+        ISlots<IServerSlot> hotBar,
+        string name,
+        int width,
+        int height
+    )
+        :
+        base(itemRepository, craftingRepository, slotFactory, windowID, mainInventory, hotBar, name, width, height) { }
 
     /// <inheritdoc />
-    public CloseWindowPacket GetCloseWindowPacket()
-    {
-        return new CloseWindowPacket(WindowID);
-    }
+    public CloseWindowPacket GetCloseWindowPacket() => new(WindowID);
 
     public List<SetSlotPacket> GetDirtySetSlotPackets()
     {
-        int offset = 9;  // TODO hard-coded constant.  This is the offset within the Inventory Window of the Main Inventory.
-        List<SetSlotPacket> packets = ((IServerSlots)MainInventory).GetSetSlotPackets(0, (short)offset);
+        var
+            offset = 9; // TODO hard-coded constant.  This is the offset within the Inventory Window of the Main Inventory.
+
+        var packets = ((IServerSlots) MainInventory).GetSetSlotPackets(0, (short) offset);
         offset += MainInventory.Count;
 
-        packets.AddRange(((IServerSlots)Hotbar).GetSetSlotPackets(0, (short)offset));
+        packets.AddRange(((IServerSlots) Hotbar).GetSetSlotPackets(0, (short) offset));
 
         return packets;
     }
 
     public OpenWindowPacket GetOpenWindowPacket()
     {
-        int len = Count - MainInventory.Count - Hotbar.Count;
-        return new OpenWindowPacket(WindowID, Type, Name, (sbyte)len);
+        var len = Count - MainInventory.Count - Hotbar.Count;
+
+        return new OpenWindowPacket(WindowID, Type, Name, (sbyte) len);
     }
 
-    public WindowItemsPacket GetWindowItemsPacket()
-    {
-        return new WindowItemsPacket(WindowID, AllItems());
-    }
+    public WindowItemsPacket GetWindowItemsPacket() => new(WindowID, AllItems());
 
     public override void SetSlots(ItemStack[] slotContents)
     {
 #if DEBUG
         if (slotContents.Length != Count)
-            throw new ApplicationException($"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected.");
+        {
+            throw new ApplicationException(
+                $"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected."
+            );
+        }
 #endif
-        int index = 0;
+        var index = 0;
+
         for (int j = 0, jul = Slots.Length; j < jul; j++)
         for (int k = 0, kul = Slots[j].Count; k < kul; k++)
         {
@@ -67,27 +75,36 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
     public void HandleClick(IRemoteClient client, ClickWindowPacket packet)
     {
         int slotIndex = packet.SlotIndex;
-        ItemStack itemStaging = client.ItemStaging;
+        var itemStaging = client.ItemStaging;
         bool handled;
-
 
         if (packet.RightClick)
         {
             if (packet.Shift)
+            {
                 handled = HandleShiftRightClick(slotIndex, ref itemStaging);
+            }
             else
+            {
                 handled = HandleRightClick(slotIndex, ref itemStaging);
+            }
         }
         else
         {
             if (packet.Shift)
+            {
                 handled = HandleShiftLeftClick(slotIndex, ref itemStaging);
+            }
             else
+            {
                 handled = HandleLeftClick(slotIndex, ref itemStaging);
+            }
         }
 
         if (handled)
+        {
             client.ItemStaging = itemStaging;
+        }
 
         client.QueuePacket(new TransactionStatusPacket(packet.WindowID, packet.TransactionID, handled));
     }
@@ -102,25 +119,39 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
                 {
                     // The mouse pointer has some items in it, and they
                     // are compatible with the output
-                    sbyte maxItems = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;   // itemStaging is known to not be Empty
-                    int totalItems = itemStaging.Count + this[slotIndex].Count;
+                    var maxItems =
+                        ItemRepository.GetItemProvider(itemStaging.ID)!
+                                      .MaximumStack; // itemStaging is known to not be Empty
+
+                    var totalItems = itemStaging.Count + this[slotIndex].Count;
+
                     if (totalItems > maxItems)
-                    {   // There are too many items, so this is a No-Op.
+                    {
+                        // There are too many items, so this is a No-Op.
                         // It is assumed that this will follow the pattern of
                         // sending a Window Click packet and responding
                         // with accepted = true;
                         return true;
                     }
                     else
-                    {   // There's enough room to pick some up, so pick up o
+                    {
+                        // There's enough room to pick some up, so pick up o
                         // Recipe's worth.
-                        itemStaging = new ItemStack(itemStaging.ID, (sbyte)totalItems, itemStaging.Metadata, itemStaging.Nbt);
+                        itemStaging = new ItemStack(
+                            itemStaging.ID,
+                            (sbyte) totalItems,
+                            itemStaging.Metadata,
+                            itemStaging.Nbt
+                        );
+
                         CraftingGrid.TakeOutput();
+
                         return true;
                     }
                 }
                 else
-                {   // The mouse pointer contains an item incompatible with
+                {
+                    // The mouse pointer contains an item incompatible with
                     // the output, so this is a No-Op.
                     // Play-testing Beta 1.7.3 with tcpdump shows that the client
                     // sends a Window Click Packet, and the server responds
@@ -132,6 +163,7 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
             {
                 // The mouse pointer is empty.  Take one Recipe worth of output
                 itemStaging = CraftingGrid.TakeOutput();
+
                 return true;
             }
         }
@@ -142,35 +174,59 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
             if (itemStaging.CanMerge(this[slotIndex]))
             {
                 // How many Items can be placed?
-                sbyte maxItems = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;   // itemStaging is known to not be Empty
-                int totalItems = itemStaging.Count + this[slotIndex].Count;
-                ItemStack old = this[slotIndex];
+                var maxItems =
+                    ItemRepository.GetItemProvider(itemStaging.ID)!
+                                  .MaximumStack; // itemStaging is known to not be Empty
+
+                var totalItems = itemStaging.Count + this[slotIndex].Count;
+                var old = this[slotIndex];
+
                 if (totalItems > maxItems)
-                {   // Fill the Slot to the max, retaining remaining items.
+                {
+                    // Fill the Slot to the max, retaining remaining items.
                     this[slotIndex] = new ItemStack(old.ID, maxItems, old.Metadata, old.Nbt);
-                    itemStaging = new ItemStack(itemStaging.ID, (sbyte)(totalItems - maxItems), itemStaging.Metadata, itemStaging.Nbt);
+
+                    itemStaging = new ItemStack(
+                        itemStaging.ID,
+                        (sbyte) (totalItems - maxItems),
+                        itemStaging.Metadata,
+                        itemStaging.Nbt
+                    );
+
                     return true;
                 }
                 else
-                {   // Place all items, the mouse pointer becomes empty.
-                    this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)totalItems, itemStaging.Metadata, itemStaging.Nbt);
+                {
+                    // Place all items, the mouse pointer becomes empty.
+                    this[slotIndex] = new ItemStack(
+                        itemStaging.ID,
+                        (sbyte) totalItems,
+                        itemStaging.Metadata,
+                        itemStaging.Nbt
+                    );
+
                     itemStaging = ItemStack.EmptyStack;
+
                     return true;
                 }
             }
             else
-            {   // The slot is not compatible with the mouse pointer, so
+            {
+                // The slot is not compatible with the mouse pointer, so
                 // swap them.
-                ItemStack tmp = itemStaging;
+                var tmp = itemStaging;
                 itemStaging = this[slotIndex];
                 this[slotIndex] = tmp;
+
                 return true;
             }
         }
         else
-        {   // The mouse pointer is empty, so pick up everything.
+        {
+            // The mouse pointer is empty, so pick up everything.
             itemStaging = this[slotIndex];
             this[slotIndex] = ItemStack.EmptyStack;
+
             return true;
         }
     }
@@ -179,32 +235,39 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
     {
         if (IsOutputSlot(slotIndex))
         {
-            ItemStack output = this[slotIndex];
+            var output = this[slotIndex];
+
             if (output.Empty)
                 // This is a No-Op.
+            {
                 return true;
+            }
 
             // Q: What if we craft 4 sticks, but only have room for 2?
             // Play-testing this in Beta 1.7.3 shows that the excess sticks
             // simply disappeared.
 
             output = this[slotIndex];
-            ItemStack remaining = MainInventory.StoreItemStack(output, true);
+            var remaining = MainInventory.StoreItemStack(output, true);
             remaining = Hotbar.StoreItemStack(remaining, false);
             remaining = MainInventory.StoreItemStack(remaining, false);
+
             if (remaining.Count != output.Count)
+            {
                 CraftingGrid.TakeOutput();
+            }
 
             return true;
         }
 
         this[slotIndex] = MoveItemStack(slotIndex);
+
         return true;
     }
 
     private ItemStack MoveItemStack(int fromSlotIndex)
     {
-        AreaIndices src = (AreaIndices)GetAreaIndex(fromSlotIndex);
+        var src = (AreaIndices) GetAreaIndex(fromSlotIndex);
 
         if (src == AreaIndices.Main)
         {
@@ -216,13 +279,19 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
         }
         else
         {
-            ItemStack remaining = MainInventory.StoreItemStack(this[fromSlotIndex], true);
+            var remaining = MainInventory.StoreItemStack(this[fromSlotIndex], true);
+
             if (remaining.Empty)
+            {
                 return remaining;
+            }
 
             remaining = Hotbar.StoreItemStack(remaining, false);
+
             if (remaining.Empty)
+            {
                 return remaining;
+            }
 
             return MainInventory.StoreItemStack(remaining, false);
         }
@@ -232,30 +301,41 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
     {
         if (IsOutputSlot(slotIndex))
         {
-            ItemStack output = this[slotIndex];
+            var output = this[slotIndex];
+
             if (output.Empty)
                 // It looks odd, but beta 1.7.3 client really does send a
                 // window click packet, and the server responds with
                 // accepted = true.  This is a No-Op.
+            {
                 return true;
+            }
 
             // If the item is not compatible with the hand, do nothing
             if (!itemStaging.CanMerge(output))
                 // It looks odd, but beta 1.7.3 client really does send a
                 // window click packet, and the server responds with
                 // accepted = true.  This is a No-Op.
+            {
                 return true;
+            }
 
             // Pick up one Recipe's worth of output.
             // Q: do we have room for it?
-            IItemProvider itemInOutput = ItemRepository.GetItemProvider(output.ID)!;   // output is known to not be Empty
+            var itemInOutput = ItemRepository.GetItemProvider(output.ID)!; // output is known to not be Empty
             int maxHandStack = itemInOutput.MaximumStack;
 
             if (!output.Empty && itemStaging.CanMerge(output) && itemStaging.Count + output.Count <= maxHandStack)
             {
                 output = CraftingGrid.TakeOutput();
-                itemStaging = new ItemStack(output.ID, (sbyte)(output.Count + itemStaging.Count),
-                    output.Metadata, output.Nbt);
+
+                itemStaging = new ItemStack(
+                    output.ID,
+                    (sbyte) (output.Count + itemStaging.Count),
+                    output.Metadata,
+                    output.Nbt
+                );
+
                 return true;
             }
 
@@ -267,13 +347,24 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
             if (this[slotIndex].CanMerge(itemStaging))
             {
                 // The hand holds something, and the slot contents are compatible, place one item.
-                int maxStack = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;    // itemStaging is known to not be Empty
+                int maxStack =
+                    ItemRepository.GetItemProvider(itemStaging.ID)!
+                                  .MaximumStack; // itemStaging is known to not be Empty
+
                 if (maxStack > this[slotIndex].Count)
                 {
-                    this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)(this[slotIndex].Count + 1), itemStaging.Metadata, itemStaging.Nbt);
+                    this[slotIndex] = new ItemStack(
+                        itemStaging.ID,
+                        (sbyte) (this[slotIndex].Count + 1),
+                        itemStaging.Metadata,
+                        itemStaging.Nbt
+                    );
+
                     itemStaging = itemStaging.GetReducedStack(1);
+
                     return true;
                 }
+
                 // Right-clicking on a full compatible slot is a No-Op.
                 // The Beta 1.7.3 client does send a Window Click and it
                 // is acknowledged by the server.
@@ -283,37 +374,36 @@ public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<
             {
                 // The slot contents are not compatible with the items in hand.
                 // Swap them.
-                ItemStack tmp = this[slotIndex];
+                var tmp = this[slotIndex];
                 this[slotIndex] = itemStaging;
                 itemStaging = tmp;
+
                 return true;
             }
         }
         else
         {
             // If the hand is empty, pick up half the stack.
-            ItemStack slotContent = this[slotIndex];
+            var slotContent = this[slotIndex];
+
             if (slotContent.Empty)
                 // Right-clicking an empty hand on an empty slot is a No-Op.
                 // Beta 1.7.3 does send a Window Click and it is acknowledged
                 // by the server.
+            {
                 return true;
+            }
 
             int numToPickUp = slotContent.Count;
-            numToPickUp = numToPickUp / 2 + (numToPickUp & 0x0001);
-            itemStaging = new ItemStack(slotContent.ID, (sbyte)numToPickUp, slotContent.Metadata, slotContent.Nbt);
+            numToPickUp = (numToPickUp / 2) + (numToPickUp & 0x0001);
+            itemStaging = new ItemStack(slotContent.ID, (sbyte) numToPickUp, slotContent.Metadata, slotContent.Nbt);
             this[slotIndex] = slotContent.GetReducedStack(numToPickUp);
+
             return true;
         }
     }
 
-    protected bool HandleShiftRightClick(int slotIndex, ref ItemStack itemStaging)
-    {
-        return HandleShiftLeftClick(slotIndex, ref itemStaging);
-    }
+    protected bool HandleShiftRightClick(int slotIndex, ref ItemStack itemStaging) => HandleShiftLeftClick(slotIndex, ref itemStaging);
 
-    public void Save()
-    {
-        throw new NotImplementedException();
-    }
+    public void Save() => throw new NotImplementedException();
 }

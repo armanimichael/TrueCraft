@@ -5,7 +5,6 @@ using System.Threading;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Client.Events;
-using TrueCraft.Core.Logic;
 using System.ComponentModel;
 using System.IO;
 using TrueCraft.Core;
@@ -15,7 +14,6 @@ using TrueCraft.Core.Inventory;
 using TrueCraft.Client.Inventory;
 using TrueCraft.Client.World;
 using TrueCraft.Core.Entities;
-using System.Collections.Generic;
 
 namespace TrueCraft.Client;
 
@@ -41,36 +39,35 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
     public IDimension Dimension { get; set; }
 
     private IPhysicsEngine _physics;
-    public IPhysicsEngine Physics { get => _physics; }
+    public IPhysicsEngine Physics => _physics;
 
     public bool LoggedIn { get; internal set; }
-    public int EntityID { get => _entityID; internal set => _entityID = value; }
+
+    public int EntityID
+    {
+        get => _entityID;
+        internal set => _entityID = value;
+    }
 
     public IInventoryWindow<ISlot> InventoryWindow { get; }
     public ISlots<ISlot> Inventory { get; private set; }
     public ISlots<ISlot> Hotbar { get; private set; }
-    public ISlots<ISlot> Armor { get => InventoryWindow.Armor; }
-    public ISlots<ISlot> CraftingGrid { get => InventoryWindow.CraftingGrid; }
+    public ISlots<ISlot> Armor => InventoryWindow.Armor;
+    public ISlots<ISlot> CraftingGrid => InventoryWindow.CraftingGrid;
 
     public int Health { get; set; }
 
     public IWindow<ISlot>? CurrentWindow { get; set; }
 
-    public bool Connected
-    {
-        get
-        {
-            return Interlocked.Read(ref connected) == 1;
-        }
-    }
+    public bool Connected => Interlocked.Read(ref connected) == 1;
 
     public int HotbarSelection
     {
-        get { return hotbarSelection; }
+        get => hotbarSelection;
         set
         {
             hotbarSelection = value;
-            QueuePacket(new ChangeHeldItemPacket((short)value));
+            QueuePacket(new ChangeHeldItemPacket((short) value));
         }
     }
 
@@ -98,29 +95,44 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
         connected = 0;
         Health = 20;
 
-        ISlotFactory<ISlot> slotFactory = new SlotFactory<ISlot>();
-        IItemRepository itemRepository = serviceLocator.ItemRepository;
-        Inventory = new Slots<ISlot>(itemRepository, slotFactory.GetSlots(itemRepository, 27), 9);   // TODO hard-coded constants
-        Hotbar = new Slots<ISlot>(itemRepository, slotFactory.GetSlots(itemRepository,9), 9);        // TODO hard-coded constants
+        var slotFactory = new SlotFactory<ISlot>();
+        var itemRepository = serviceLocator.ItemRepository;
 
-        IInventoryFactory<ISlot> factory = new InventoryFactory<ISlot>();
-        InventoryWindow = (InventoryWindow)factory.NewInventoryWindow(itemRepository,
-            serviceLocator.CraftingRepository, slotFactory, Inventory, Hotbar);
+        Inventory = new Slots<ISlot>(
+            itemRepository,
+            slotFactory.GetSlots(itemRepository, 27),
+            9
+        ); // TODO hard-coded constants
+
+        Hotbar = new Slots<ISlot>(
+            itemRepository,
+            slotFactory.GetSlots(itemRepository, 9),
+            9
+        ); // TODO hard-coded constants
+
+        var factory = new InventoryFactory<ISlot>();
+
+        InventoryWindow = (InventoryWindow) factory.NewInventoryWindow(
+            itemRepository,
+            serviceLocator.CraftingRepository,
+            slotFactory,
+            Inventory,
+            Hotbar
+        );
     }
 
-    public void RegisterPacketHandler(byte packetId, PacketHandler handler)
-    {
-        PacketHandlers[packetId] = handler;
-    }
+    public void RegisterPacketHandler(byte packetId, PacketHandler handler) => PacketHandlers[packetId] = handler;
 
     public void Connect(IPEndPoint endPoint)
     {
-        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        var args = new SocketAsyncEventArgs();
         args.Completed += Connection_Completed;
         args.RemoteEndPoint = endPoint;
 
         if (!_client.Client.ConnectAsync(args))
+        {
             Connection_Completed(this, args);
+        }
     }
 
     private void Connection_Completed(object? sender, SocketAsyncEventArgs e)
@@ -150,52 +162,63 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
     public void Disconnect()
     {
         if (!Connected)
+        {
             return;
+        }
 
         QueuePacket(new DisconnectPacket("Disconnecting"));
-            
+
         Interlocked.CompareExchange(ref connected, 0, 1);
     }
 
     public void SendMessage(string message)
     {
         var parts = message.Split('\n');
+
         foreach (var part in parts)
+        {
             QueuePacket(new ChatMessagePacket(part));
+        }
     }
 
     public void QueuePacket(IPacket packet)
     {
         if (!Connected || (_client != null && !_client.Connected))
-            return;
-
-        using (MemoryStream writeStream = new MemoryStream())
         {
-            using (MinecraftStream ms = new MinecraftStream(writeStream))
+            return;
+        }
+
+        using (var writeStream = new MemoryStream())
+        {
+            using (var ms = new MinecraftStream(writeStream))
             {
                 ms.WriteUInt8(packet.ID);
                 packet.WritePacket(ms);
             }
 
-            byte[] buffer = writeStream.ToArray();
+            var buffer = writeStream.ToArray();
 
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+            var args = new SocketAsyncEventArgs();
             args.UserToken = packet;
             args.Completed += OperationCompleted;
             args.SetBuffer(buffer, 0, buffer.Length);
 
             if (_client != null && !_client.Client.SendAsync(args))
+            {
                 OperationCompleted(this, args);
+            }
         }
     }
 
     private void StartReceive()
     {
-        SocketAsyncEventArgs args = _socketPool.Get();
+        var args = _socketPool.Get();
         args.Completed += OperationCompleted;
 
         if (!_client.Client.ReceiveAsync(args))
+        {
             OperationCompleted(this, args);
+        }
     }
 
     private void OperationCompleted(object? sender, SocketAsyncEventArgs e)
@@ -208,6 +231,7 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
                 ProcessNetwork(e);
 
                 _socketPool.Add(e);
+
                 break;
             case SocketAsyncOperation.Send:
                 if (e.UserToken is DisconnectPacket)
@@ -217,6 +241,7 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
                 }
 
                 e.SetBuffer(null, 0, 0);
+
                 break;
         }
     }
@@ -226,16 +251,21 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
         if (e.SocketError != SocketError.Success || e.BytesTransferred == 0)
         {
             Disconnect();
+
             return;
         }
 
         if (e.Buffer is not null)
         {
-            IEnumerable<IPacket> packets = _packetReader.ReadPackets(this, e.Buffer, e.Offset, e.BytesTransferred, false);
+            var packets = _packetReader.ReadPackets(this, e.Buffer, e.Offset, e.BytesTransferred, false);
 
-            foreach (IPacket packet in packets)
+            foreach (var packet in packets)
+            {
                 if (PacketHandlers[packet.ID] != null)
+                {
                     PacketHandlers[packet.ID](packet, this);
+                }
+            }
         }
 
         StartReceive();
@@ -243,27 +273,42 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
 
     protected internal void OnChatMessage(ChatMessageEventArgs e)
     {
-        if (ChatMessage != null) ChatMessage(this, e);
+        if (ChatMessage != null)
+        {
+            ChatMessage(this, e);
+        }
     }
 
     protected internal void OnChunkLoaded(ChunkEventArgs e)
     {
-        if (ChunkLoaded != null) ChunkLoaded(this, e);
+        if (ChunkLoaded != null)
+        {
+            ChunkLoaded(this, e);
+        }
     }
 
     protected internal void OnChunkUnloaded(ChunkEventArgs e)
     {
-        if (ChunkUnloaded != null) ChunkUnloaded(this, e);
+        if (ChunkUnloaded != null)
+        {
+            ChunkUnloaded(this, e);
+        }
     }
 
     protected internal void OnChunkModified(ChunkEventArgs e)
     {
-        if (ChunkModified != null) ChunkModified(this, e);
+        if (ChunkModified != null)
+        {
+            ChunkModified(this, e);
+        }
     }
 
     protected internal void OnBlockChanged(BlockChangeEventArgs e)
     {
-        if (BlockChanged != null) BlockChanged(this, e);
+        if (BlockChanged != null)
+        {
+            BlockChanged(this, e);
+        }
     }
 
     #region IEntity implementation
@@ -282,102 +327,118 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
         get
         {
             var pos = Position - new Vector3(Width / 2, 0, Depth / 2);
+
             return new BoundingBox(pos, pos + Size);
         }
     }
 
-    public Size Size
-    {
-        get { return new Size(Width, Height, Depth); }
-    }
+    public Size Size => new(Width, Height, Depth);
 
     /// <inheritdoc />
-    public bool BeginUpdate()
-    {
-        return true;
-    }
+    public bool BeginUpdate() => true;
 
     /// <inheritdoc />
     public void EndUpdate(Vector3 newPosition, Vector3 newVelocity)
     {
-        bool positionChanged = (newPosition != _position);
-        bool velocityChanged = (newVelocity != _velocity);
+        var positionChanged = newPosition != _position;
+        var velocityChanged = newVelocity != _velocity;
 
         if (positionChanged)
+        {
             _position = newPosition;
+        }
+
         if (velocityChanged)
+        {
             _velocity = newVelocity;
+        }
 
         if (positionChanged)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Position)));
+        }
+
         if (velocityChanged)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Velocity)));
+        }
     }
 
     public float Yaw { get; set; }
     public float Pitch { get; set; }
 
     private Vector3 _position;
+
     public Vector3 Position
     {
-        get
-        {
-            return _position;
-        }
+        get => _position;
         set
         {
             if (_position == value)
+            {
                 return;
+            }
 
             _position = value;
-            QueuePacket(new PlayerPositionAndLookPacket(value.X, value.Y, value.Y + Height,
-                value.Z, Yaw, Pitch, false));
+
+            QueuePacket(
+                new PlayerPositionAndLookPacket(
+                    value.X,
+                    value.Y,
+                    value.Y + Height,
+                    value.Z,
+                    Yaw,
+                    Pitch,
+                    false
+                )
+            );
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Position)));
         }
     }
 
     private Vector3 _velocity;
+
     public Vector3 Velocity
     {
         get => _velocity;
         set
         {
             if (value == _velocity)
+            {
                 return;
+            }
+
             _velocity = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Velocity)));
         }
     }
 
-    public float AccelerationDueToGravity
-    {
-        get
-        {
-            return (float)GameConstants.AccelerationDueToGravity;
-        }
-    }
+    public float AccelerationDueToGravity => (float) GameConstants.AccelerationDueToGravity;
 
-    public float Drag
-    {
-        get
-        {
-            return 0.40f;
-        }
-    }
+    public float Drag => 0.40f;
 
-    public float TerminalVelocity
-    {
-        get
-        {
-            return (float)GameConstants.TerminalVelocity;
-        }
-    }
+    public float TerminalVelocity => (float) GameConstants.TerminalVelocity;
 
     public IPacket SpawnPacket => throw new NotImplementedException();
 
-    int IEntity.EntityID { get => _entityID; set => _entityID = value; }
-    public bool Despawned { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-    public DateTime SpawnTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    int IEntity.EntityID
+    {
+        get => _entityID;
+        set => _entityID = value;
+    }
+
+    public bool Despawned
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
+
+    public DateTime SpawnTime
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
 
     public MetadataDictionary Metadata => throw new NotImplementedException();
 
@@ -385,18 +446,20 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
 
     public bool SendMetadataToClients => throw new NotImplementedException();
 
-    public void Update(Core.Server.IEntityManager entityManager)
-    {
-        throw new NotImplementedException();
-    }
+    public void Update(Core.Server.IEntityManager entityManager) => throw new NotImplementedException();
 
     #endregion
 
     #region IDisposable implementation
+
     private bool _disposed = false;
+
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
 
         _disposed = true;
         Dispose(true);
@@ -421,5 +484,6 @@ public class MultiplayerClient : IEntity, INotifyPropertyChanged, IDisposable //
     {
         Dispose(false);
     }
+
     #endregion
 }

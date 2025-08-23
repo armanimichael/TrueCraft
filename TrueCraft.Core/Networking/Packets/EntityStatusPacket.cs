@@ -15,7 +15,7 @@ public struct EntityStatusPacket : IPacket
         EatingAccepted = 9 // what
     }
 
-    public byte ID { get { return 0x26; } }
+    public byte ID => 0x26;
 
     public int EntityID;
     public EntityStatus Status;
@@ -23,12 +23,12 @@ public struct EntityStatusPacket : IPacket
     public void ReadPacket(IMinecraftStream stream)
     {
         EntityID = stream.ReadInt32();
-        Status = (EntityStatus)stream.ReadInt8();
+        Status = (EntityStatus) stream.ReadInt8();
     }
 
     public void WritePacket(IMinecraftStream stream)
     {
         stream.WriteInt32(EntityID);
-        stream.WriteInt8((sbyte)Status);
+        stream.WriteInt8((sbyte) Status);
     }
 }

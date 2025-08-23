@@ -5,16 +5,10 @@ namespace TrueCraft.Core.Entities;
 
 public class SheepEntity : MobEntity
 {
-    public SheepEntity(IDimension dimension, IEntityManager entityManager) :
-        base(dimension, entityManager, 8, new Size(0.9, 1.3, 0.9))  // TODO: sheep is taller than long?
-    {
-    }
+    public SheepEntity(IDimension dimension, IEntityManager entityManager)
+        :
+        base(dimension, entityManager, 8, new Size(0.9, 1.3, 0.9)) // TODO: sheep is taller than long?
+    { }
 
-    public override sbyte MobType
-    {
-        get
-        {
-            return 91;
-        }
-    }
+    public override sbyte MobType => 91;
 }

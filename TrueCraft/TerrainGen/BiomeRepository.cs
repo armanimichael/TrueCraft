@@ -19,29 +19,26 @@ public class BiomeRepository : IBiomeRepository
     {
         // TODO: this will only load Biomes from already loaded Assemblies.
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        foreach (var type in assembly.GetTypes()
+                                     .Where(t => typeof(IBiomeProvider).IsAssignableFrom(t) && !t.IsAbstract))
         {
-            foreach (var type in assembly.GetTypes().Where(t => typeof(IBiomeProvider).IsAssignableFrom(t) && !t.IsAbstract))
+            var instance = (IBiomeProvider?) Activator.CreateInstance(type);
+
+            if (instance is not null)
             {
-                IBiomeProvider? instance = (IBiomeProvider?)Activator.CreateInstance(type);
-                if (instance is not null)
-                    RegisterBiomeProvider(instance);
+                RegisterBiomeProvider(instance);
             }
         }
     }
 
-    public void RegisterBiomeProvider(IBiomeProvider provider)
-    {
-        BiomeProviders[provider.ID] = provider;
-    }
+    public void RegisterBiomeProvider(IBiomeProvider provider) => BiomeProviders[provider.ID] = provider;
 
-    public IBiomeProvider GetBiome(Biome id)
-    {
-        return BiomeProviders[(byte)id];
-    }
+    public IBiomeProvider GetBiome(Biome id) => BiomeProviders[(byte) id];
 
     public IBiomeProvider GetBiome(double temperature, double rainfall, bool spawn)
     {
-        List<IBiomeProvider> temperatureResults = new List<IBiomeProvider>();
+        var temperatureResults = new List<IBiomeProvider>();
+
         foreach (var biome in BiomeProviders)
         {
             if (biome != null && biome.Temperature.Equals(temperature))
@@ -53,21 +50,26 @@ public class BiomeRepository : IBiomeRepository
         if (temperatureResults.Count.Equals(0))
         {
             IBiomeProvider? provider = null;
-            float temperatureDifference = 100.0f;
+            var temperatureDifference = 100.0f;
+
             foreach (var biome in BiomeProviders)
             {
                 if (biome != null)
                 {
                     var Difference = Math.Abs(temperature - biome.Temperature);
+
                     if (provider == null || Difference < temperatureDifference)
                     {
                         provider = biome;
-                        temperatureDifference = (float)Difference;
+                        temperatureDifference = (float) Difference;
                     }
                 }
             }
+
             if (provider is not null)
+            {
                 temperatureResults.Add(provider);
+            }
         }
 
         foreach (var biome in BiomeProviders)
@@ -82,21 +84,24 @@ public class BiomeRepository : IBiomeRepository
         }
 
         IBiomeProvider? biomeProvider = null;
-        float rainfallDifference = 100.0f;
+        var rainfallDifference = 100.0f;
+
         foreach (var biome in BiomeProviders)
         {
             if (biome != null)
             {
                 // TODO: why take the difference in temperature when we are checking Rainfall?
                 var difference = Math.Abs(temperature - biome.Temperature);
+
                 if ((biomeProvider == null || difference < rainfallDifference)
                     && (!spawn || biome.Spawn))
                 {
                     biomeProvider = biome;
-                    rainfallDifference = (float)difference;
+                    rainfallDifference = (float) difference;
                 }
             }
         }
+
         return biomeProvider ?? new PlainsBiome();
     }
 }

@@ -17,32 +17,42 @@ public class SugarCaneDecorator : IChunkDecorator
         var noise = new Perlin(seed);
         var chanceNoise = new ClampNoise(noise);
         chanceNoise.MaxValue = 1;
-        for (int x = 0; x < Chunk.Width; x++)
+
+        for (var x = 0; x < Chunk.Width; x++)
+        for (var z = 0; z < Chunk.Depth; z++)
         {
-            for (int z = 0; z < Chunk.Depth; z++)
+            var biome = biomes.GetBiome(chunk.GetBiome(x, z));
+            var height = chunk.GetHeight(x, z);
+            var blockX = MathHelper.ChunkToBlockX(x, chunk.Coordinates.X);
+            var blockZ = MathHelper.ChunkToBlockZ(z, chunk.Coordinates.Z);
+
+            if (biome.Plants.Contains(PlantSpecies.SugarCane))
             {
-                IBiomeProvider biome = biomes.GetBiome(chunk.GetBiome(x, z));
-                int height = chunk.GetHeight(x, z);
-                int blockX = MathHelper.ChunkToBlockX(x, chunk.Coordinates.X);
-                int blockZ = MathHelper.ChunkToBlockZ(z, chunk.Coordinates.Z);
-                if (biome.Plants.Contains(PlantSpecies.SugarCane))
+                if (noise.Value2D(blockX, blockZ) > 0.65)
                 {
-                    if (noise.Value2D(blockX, blockZ) > 0.65)
+                    var blockLocation = new LocalVoxelCoordinates(x, height, z);
+                    var sugarCaneLocation = new LocalVoxelCoordinates(x, height + 1, z);
+
+                    var neighborsWater = Decoration.NeighboursBlock(chunk, blockLocation, WaterBlock.BlockID) ||
+                                         Decoration.NeighboursBlock(chunk, blockLocation, StationaryWaterBlock.BlockID);
+
+                    if ((chunk.GetBlockID(blockLocation).Equals(GrassBlock.BlockID) && neighborsWater) ||
+                        (chunk.GetBlockID(blockLocation).Equals(SandBlock.BlockID) && neighborsWater))
                     {
-                        LocalVoxelCoordinates blockLocation = new LocalVoxelCoordinates(x, height, z);
-                        LocalVoxelCoordinates sugarCaneLocation = new LocalVoxelCoordinates(x, height + 1, z);
-                        var neighborsWater = Decoration.NeighboursBlock(chunk, blockLocation, WaterBlock.BlockID) || Decoration.NeighboursBlock(chunk, blockLocation, StationaryWaterBlock.BlockID);
-                        if (chunk.GetBlockID(blockLocation).Equals(GrassBlock.BlockID) && neighborsWater || chunk.GetBlockID(blockLocation).Equals(SandBlock.BlockID) && neighborsWater)
+                        var random = new Random(seed);
+                        var heightChance = random.NextDouble();
+                        var caneHeight = 3;
+
+                        if (heightChance < 0.05)
                         {
-                            var random = new Random(seed);
-                            double heightChance = random.NextDouble();
-                            int caneHeight = 3;
-                            if (heightChance < 0.05)
-                                caneHeight = 4;
-                            else if (heightChance > 0.1 && height < 0.25)
-                                caneHeight = 2;
-                            Decoration.GenerateColumn(chunk, sugarCaneLocation, caneHeight, SugarcaneBlock.BlockID);
+                            caneHeight = 4;
                         }
+                        else if (heightChance > 0.1 && height < 0.25)
+                        {
+                            caneHeight = 2;
+                        }
+
+                        Decoration.GenerateColumn(chunk, sugarCaneLocation, caneHeight, SugarcaneBlock.BlockID);
                     }
                 }
             }

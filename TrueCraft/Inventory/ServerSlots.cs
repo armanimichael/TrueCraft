@@ -9,16 +9,18 @@ namespace TrueCraft.Inventory;
 
 public class ServerSlots : Slots<IServerSlot>, IServerSlots
 {
-    public ServerSlots(IItemRepository itemRepository, List<IServerSlot> slots) :
-        base(itemRepository, slots)
-    {
-    }
+    public ServerSlots(IItemRepository itemRepository, List<IServerSlot> slots)
+        :
+        base(itemRepository, slots) { }
 
     public static ServerSlots GetServerSlots(IItemRepository itemRepository, int count)
     {
-        List<IServerSlot> slots = new List<IServerSlot>(count);
-        for (int j = 0; j < count; j++)
+        var slots = new List<IServerSlot>(count);
+
+        for (var j = 0; j < count; j++)
+        {
             slots.Add(new ServerSlot(itemRepository, j));
+        }
 
         return new ServerSlots(itemRepository, slots);
     }
@@ -26,23 +28,20 @@ public class ServerSlots : Slots<IServerSlot>, IServerSlots
     /// <inheritdoc />
     public virtual List<SetSlotPacket> GetSetSlotPackets(sbyte windowID, short baseIndex)
     {
-        List<SetSlotPacket> rv = new List<SetSlotPacket>();
-        foreach (IServerSlot j in this)
+        var rv = new List<SetSlotPacket>();
+
+        foreach (var j in this)
+        {
             if (j.Dirty)
             {
-                SetSlotPacket packet = j.GetSetSlotPacket(windowID);
+                var packet = j.GetSetSlotPacket(windowID);
                 packet.SlotIndex += baseIndex;
                 rv.Add(packet);
             }
+        }
 
         return rv;
     }
 
-    public override int Width
-    {
-        get
-        {
-            throw new ApplicationException("The server should never call Width.");
-        }
-    }
+    public override int Width => throw new ApplicationException("The server should never call Width.");
 }

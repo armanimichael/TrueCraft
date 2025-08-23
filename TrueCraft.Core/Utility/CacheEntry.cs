@@ -25,17 +25,17 @@ public class CacheEntry<T>
     /// <summary>
     /// Gets the Value cached in this CacheEntry
     /// </summary>
-    public T Value { get => _cachedItem; }
+    public T Value => _cachedItem;
 
     /// <summary>
     /// Gets the metadata that identifies this CacheEntry.
     /// </summary>
-    public short Metadata { get => _metadata; }
+    public short Metadata => _metadata;
 
     /// <summary>
     /// Gets the next entry in the Cache.
     /// </summary>
-    public CacheEntry<T>? Next { get => _next; }
+    public CacheEntry<T>? Next => _next;
 
     /// <summary>
     /// Appends the item to be cached to this cache.
@@ -44,9 +44,12 @@ public class CacheEntry<T>
     /// <param name="metadata">The metadata to be used to retrieve the item.</param>
     public void Append(T cachedItem, short metadata)
     {
-        CacheEntry<T> last = this;
+        var last = this;
+
         while (last._next != null)
+        {
             last = last._next;
+        }
 
         last._next = new CacheEntry<T>(cachedItem, metadata);
     }
@@ -62,12 +65,20 @@ public class CacheEntry<T>
     /// </remarks>
     public CacheEntry<T> Find(short metadata)
     {
-        CacheEntry<T>? rv = this;
+        var rv = this;
+
         while (rv._metadata != metadata && rv._next != null)
+        {
             rv = rv._next;
+        }
+
         if (rv is null || rv._metadata != metadata)
+        {
             return this;
+        }
         else
+        {
             return rv;
+        }
     }
 }

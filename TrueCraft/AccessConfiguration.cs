@@ -18,7 +18,7 @@ public class AccessConfiguration : Configuration, IAccessConfiguration
 
     [YamlMember(Alias = "whitelist")]
     public IList<string> Whitelist { get; private set; }
-        
+
     [YamlMember(Alias = "ops")]
     public IList<string> Oplist { get; private set; }
 }

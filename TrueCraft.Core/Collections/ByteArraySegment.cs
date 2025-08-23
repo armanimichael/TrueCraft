@@ -18,73 +18,39 @@ public class ByteArraySegment : ICollection<byte>
         this.count = count;
     }
 
-    public void Add(byte item)
-    {
-        throw new NotImplementedException();
-    }
+    public void Add(byte item) => throw new NotImplementedException();
 
-    public void Clear()
-    {
-        throw new NotImplementedException();
-    }
+    public void Clear() => throw new NotImplementedException();
 
-    public bool Contains(byte item)
-    {
-        return array.Contains(item);
-    }
+    public bool Contains(byte item) => array.Contains(item);
 
-    public void CopyTo(byte[] target, int index)
-    {
-        Buffer.BlockCopy(array, start, target, index, count);
-    }
+    public void CopyTo(byte[] target, int index) => Buffer.BlockCopy(array, start, target, index, count);
 
-    public bool Remove(byte item)
-    {
-        throw new NotImplementedException();
-    }
+    public bool Remove(byte item) => throw new NotImplementedException();
 
-    public int Count
-    {
-        get
-        {
-            return count;
-        }
-    }
+    public int Count => count;
 
-    public bool IsReadOnly
-    {
-        get
-        {
-            return true;
-        }
-    }
+    public bool IsReadOnly => true;
 
     public byte this[int index]
     {
-        get
-        {
-            return array[index];
-        }
+        get => array[index];
         set
         {
             if (index > array.Length)
+            {
                 throw new ArgumentOutOfRangeException("value");
+            }
 
             array[index] = value;
         }
     }
 
-    public IEnumerator<byte> GetEnumerator()
-    {
-        return new ByteArraySegmentEnumerator(this);
-    }
+    public IEnumerator<byte> GetEnumerator() => new ByteArraySegmentEnumerator(this);
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    class ByteArraySegmentEnumerator : IEnumerator<byte>
+    private class ByteArraySegmentEnumerator : IEnumerator<byte>
     {
         private byte current;
         private int pos;
@@ -100,34 +66,21 @@ public class ByteArraySegment : ICollection<byte>
         public bool MoveNext()
         {
             if (pos >= _segment.Count)
+            {
                 return false;
+            }
 
             current = _segment.array[++pos];
 
             return true;
         }
 
-        public void Reset()
-        {
-            pos = _segment.start;
-        }
+        public void Reset() => pos = _segment.start;
 
-        public byte Current
-        {
-            get
-            {
-                return current;
-            }
-        }
+        public byte Current => current;
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
-        object IEnumerator.Current
-        {
-            get { return Current; }
-        }
-
+        object IEnumerator.Current => Current;
     }
 }

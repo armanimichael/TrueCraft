@@ -12,17 +12,11 @@ public struct EnvironmentStatePacket : IPacket
         EndRaining = 2
     }
 
-    public byte ID { get { return 0x46; } }
+    public byte ID => 0x46;
 
     public EnvironmentState State;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        State = (EnvironmentState)stream.ReadInt8();
-    }
+    public void ReadPacket(IMinecraftStream stream) => State = (EnvironmentState) stream.ReadInt8();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteInt8((sbyte)State);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteInt8((sbyte) State);
 }

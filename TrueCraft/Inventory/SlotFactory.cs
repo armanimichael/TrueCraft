@@ -7,20 +7,16 @@ namespace TrueCraft.Inventory;
 
 public class SlotFactory : ISlotFactory<IServerSlot>
 {
-    public SlotFactory()
-    {
-    }
-
-    public IServerSlot GetSlot(IItemRepository itemRepository)
-    {
-        return new ServerSlot(itemRepository);
-    }
+    public IServerSlot GetSlot(IItemRepository itemRepository) => new ServerSlot(itemRepository);
 
     public List<IServerSlot> GetSlots(IItemRepository itemRepository, int count)
     {
-        List<IServerSlot> rv = new List<IServerSlot>(count);
-        for (int j = 0; j < count; j++)
+        var rv = new List<IServerSlot>(count);
+
+        for (var j = 0; j < count; j++)
+        {
             rv.Add(new ServerSlot(itemRepository, j));
+        }
 
         return rv;
     }

@@ -19,11 +19,5 @@ public class OverworldSpawnRules : ISpawnRule
         // TODO
     }
 
-    public int ChunkSpawnChance
-    {
-        get
-        {
-            return 10;
-        }
-    }
+    public int ChunkSpawnChance => 10;
 }

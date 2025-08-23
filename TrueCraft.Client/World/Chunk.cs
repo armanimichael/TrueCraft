@@ -8,7 +8,7 @@ using TrueCraft.Core.World;
 
 namespace TrueCraft.Client.World;
 
-public class Chunk : IChunk
+public sealed class Chunk : IChunk
 {
     private readonly GlobalChunkCoordinates _coordinates;
     private readonly byte[] _blockIDs;
@@ -21,12 +21,14 @@ public class Chunk : IChunk
 
     public Chunk(ChunkDataPacket packet)
     {
-        _coordinates = new GlobalChunkCoordinates(packet.X / WorldConstants.ChunkWidth, packet.Z / WorldConstants.ChunkDepth);
-        int blockCount = WorldConstants.ChunkDepth * WorldConstants.ChunkWidth * WorldConstants.Height * 5 / 2;
+        _coordinates =
+            new GlobalChunkCoordinates(packet.X / WorldConstants.ChunkWidth, packet.Z / WorldConstants.ChunkDepth);
+
+        var blockCount = WorldConstants.ChunkDepth * WorldConstants.ChunkWidth * WorldConstants.Height * 5 / 2;
         _blockIDs = new byte[blockCount];
 
-        using (MemoryStream memoryStream = new MemoryStream(packet.CompressedData))
-        using (ZlibStream stream = new ZlibStream(memoryStream, CompressionMode.Decompress))
+        using (var memoryStream = new MemoryStream(packet.CompressedData))
+        using (var stream = new ZlibStream(memoryStream, CompressionMode.Decompress))
         {
             stream.Read(_blockIDs, 0, blockCount);
             _metaData = new NybbleArray(stream, blockCount);
@@ -39,22 +41,30 @@ public class Chunk : IChunk
     }
 
     /// <inheritdoc />
-    public int X { get => _coordinates.X; }
+    public int X => _coordinates.X;
 
     /// <inheritdoc />
-    public int Z { get => _coordinates.Z; }
+    public int Z => _coordinates.Z;
 
     /// <inheritdoc />
-    public GlobalChunkCoordinates Coordinates { get => _coordinates; }
+    public GlobalChunkCoordinates Coordinates => _coordinates;
 
     // TODO: this should be server-side only
     public bool IsModified => throw new NotImplementedException();
 
-    public DateTime LastAccessed { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public DateTime LastAccessed
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
 
     public byte[] Data => throw new NotImplementedException();
 
-    public bool TerrainPopulated { get => true; set => throw new NotImplementedException(); }
+    public bool TerrainPopulated
+    {
+        get => true;
+        set => throw new NotImplementedException();
+    }
 
     /// <inheritdoc />
     public NybbleArray Metadata => throw new NotImplementedException();
@@ -67,31 +77,25 @@ public class Chunk : IChunk
 
     public event EventHandler? Disposed;
 
-    public void Dispose()
-    {
-        Disposed?.Invoke(this, EventArgs.Empty);
-    }
+    public void Dispose() => Disposed?.Invoke(this, EventArgs.Empty);
 
-    public Biome GetBiome(int x, int z)
-    {
-        throw new NotImplementedException();
-    }
+    public Biome GetBiome(int x, int z) => throw new NotImplementedException();
 
     /// <summary>
     /// Converts Local Voxel Coordinates into an index into the internal arrays.
     /// </summary>
     /// <param name="coordinates">The Coordinates to convert</param>
     /// <returns>The index into the internal arrays.</returns>
-    private int CoordinatesToIndex(LocalVoxelCoordinates coordinates)
-    {
-        return (coordinates.X * WorldConstants.ChunkWidth + coordinates.Z) * WorldConstants.Height + coordinates.Y;
-    }
+    private static int CoordinatesToIndex(LocalVoxelCoordinates coordinates) => (((coordinates.X * WorldConstants.ChunkWidth) + coordinates.Z) * WorldConstants.Height) + coordinates.Y;
 
     /// <inheritdoc />
     public byte GetBlockID(LocalVoxelCoordinates coordinates)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return Core.Logic.Blocks.AirBlock.BlockID;
+        }
+
         return _blockIDs[CoordinatesToIndex(coordinates)];
     }
 
@@ -99,7 +103,10 @@ public class Chunk : IChunk
     public void SetBlockID(LocalVoxelCoordinates coordinates, byte value)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return;
+        }
+
         _blockIDs[CoordinatesToIndex(coordinates)] = value;
     }
 
@@ -107,7 +114,10 @@ public class Chunk : IChunk
     public byte GetMetadata(LocalVoxelCoordinates coordinates)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return 0;
+        }
+
         return _metaData[CoordinatesToIndex(coordinates)];
     }
 
@@ -115,7 +125,10 @@ public class Chunk : IChunk
     public void SetMetadata(LocalVoxelCoordinates coordinates, byte value)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return;
+        }
+
         _metaData[CoordinatesToIndex(coordinates)] = value;
     }
 
@@ -123,7 +136,10 @@ public class Chunk : IChunk
     public byte GetBlockLight(LocalVoxelCoordinates coordinates)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return 0;
+        }
+
         // TODO: fix return of light values
         //return _blockLight[CoordinatesToIndex(coordinates)];
         return 15;
@@ -133,7 +149,10 @@ public class Chunk : IChunk
     public void SetBlockLight(LocalVoxelCoordinates coordinates, byte value)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return;
+        }
+
         _blockLight[CoordinatesToIndex(coordinates)] = value;
     }
 
@@ -141,7 +160,10 @@ public class Chunk : IChunk
     public byte GetSkyLight(LocalVoxelCoordinates coordinates)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return 15;
+        }
+
         // TODO: fix return of light values
         //return _skyLight[CoordinatesToIndex(coordinates)];
         return 15;
@@ -151,54 +173,57 @@ public class Chunk : IChunk
     public void SetSkyLight(LocalVoxelCoordinates coordinates, byte value)
     {
         if (coordinates.Y < 0 || coordinates.Y >= WorldConstants.Height)
+        {
             return;
+        }
+
         _skyLight[CoordinatesToIndex(coordinates)] = value;
     }
 
     /// <inheritdoc />
-    public NbtCompound? GetTileEntity(LocalVoxelCoordinates coordinates)
-    {
+    public NbtCompound? GetTileEntity(LocalVoxelCoordinates coordinates) => throw
         // TODO: this should be server-side only
-        throw new NotImplementedException();
-    }
+        new NotImplementedException();
 
     /// <inheritdoc />
-    public void SetTileEntity(LocalVoxelCoordinates coordinates, NbtCompound? value)
-    {
+    public void SetTileEntity(LocalVoxelCoordinates coordinates, NbtCompound? value) => throw
         // TODO: this should be server-side only
-        throw new NotImplementedException();
-    }
+        new NotImplementedException();
 
     /// <inheritdoc />
     public void UpdateHeightMap()
     {
         int blockIndex;
-        int heightMapIndex = 0;
-        int maxHeight = 0;
-        for (int x = 0; x < WorldConstants.ChunkWidth; x ++)
-        for (int z = 0; z < WorldConstants.ChunkDepth; z ++)
+        var heightMapIndex = 0;
+        var maxHeight = 0;
+
+        for (var x = 0; x < WorldConstants.ChunkWidth; x++)
+        for (var z = 0; z < WorldConstants.ChunkDepth; z++)
         {
-            int y = WorldConstants.Height - 1;
-            blockIndex = (x * WorldConstants.ChunkWidth + z) * WorldConstants.ChunkDepth + y;
+            var y = WorldConstants.Height - 1;
+            blockIndex = (((x * WorldConstants.ChunkWidth) + z) * WorldConstants.ChunkDepth) + y;
+
             while (y > 0 && _blockIDs[blockIndex] == 0)
             {
                 y--;
                 blockIndex--;
             }
-            _heightMap[heightMapIndex] = (byte)y;
+
+            _heightMap[heightMapIndex] = (byte) y;
             heightMapIndex++;
+
             if (y > maxHeight)
+            {
                 maxHeight = y;
+            }
         }
+
         _maxHeight = maxHeight;
     }
 
     /// <inheritdoc />
-    public int GetHeight(int x, int z)
-    {
-        return _heightMap[x * WorldConstants.ChunkWidth + z];
-    }
+    public int GetHeight(int x, int z) => _heightMap[(x * WorldConstants.ChunkWidth) + z];
 
     /// <inheritdoc />
-    public int MaxHeight { get => _maxHeight; }
+    public int MaxHeight => _maxHeight;
 }

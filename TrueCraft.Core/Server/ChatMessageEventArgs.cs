@@ -14,6 +14,7 @@ public class ChatMessageEventArgs : EventArgs
 
     public IRemoteClient Client { get; set; }
     public string Message { get; set; }
+
     /// <summary>
     /// If set to true, the server won't send the default message back to the client.
     /// </summary>

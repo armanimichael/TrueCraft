@@ -6,7 +6,7 @@ namespace TrueCraft.TerrainGen.Decorations;
 
 public class BalloonOakTree : Decoration
 {
-    const int LeafRadius = 2;
+    private const int LeafRadius = 2;
 
     public override bool ValidLocation(LocalVoxelCoordinates location)
     {
@@ -18,19 +18,23 @@ public class BalloonOakTree : Decoration
         {
             return false;
         }
+
         return true;
     }
 
     public override bool GenerateAt(int seed, IChunk chunk, LocalVoxelCoordinates location)
     {
         if (!ValidLocation(location))
+        {
             return false;
+        }
 
-        Random random = new Random(seed);
-        int height = random.Next(4, 5);
+        var random = new Random(seed);
+        var height = random.Next(4, 5);
         GenerateColumn(chunk, location, height, WoodBlock.BlockID, 0x0);
-        LocalVoxelCoordinates leafLocation = new LocalVoxelCoordinates(location.X, location.Y + height, location.Z);
+        var leafLocation = new LocalVoxelCoordinates(location.X, location.Y + height, location.Z);
         GenerateSphere(chunk, leafLocation, LeafRadius, LeavesBlock.BlockID, 0x0);
+
         return true;
     }
 }

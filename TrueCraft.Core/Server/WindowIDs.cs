@@ -8,6 +8,7 @@ public static class WindowIDs
     public static sbyte GetWindowID()
     {
         _curID++;
+
         return _curID;
     }
 }

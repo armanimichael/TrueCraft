@@ -32,25 +32,41 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="m42">A fourth row and second column value.</param>
     /// <param name="m43">A fourth row and third column value.</param>
     /// <param name="m44">A fourth row and fourth column value.</param>
-    public Matrix(double m11, double m12, double m13, double m14, double m21, double m22, double m23, double m24, double m31,
-        double m32, double m33, double m34, double m41, double m42, double m43, double m44)
+    public Matrix(
+        double m11,
+        double m12,
+        double m13,
+        double m14,
+        double m21,
+        double m22,
+        double m23,
+        double m24,
+        double m31,
+        double m32,
+        double m33,
+        double m34,
+        double m41,
+        double m42,
+        double m43,
+        double m44
+    )
     {
-        this.M11 = m11;
-        this.M12 = m12;
-        this.M13 = m13;
-        this.M14 = m14;
-        this.M21 = m21;
-        this.M22 = m22;
-        this.M23 = m23;
-        this.M24 = m24;
-        this.M31 = m31;
-        this.M32 = m32;
-        this.M33 = m33;
-        this.M34 = m34;
-        this.M41 = m41;
-        this.M42 = m42;
-        this.M43 = m43;
-        this.M44 = m44;
+        M11 = m11;
+        M12 = m12;
+        M13 = m13;
+        M14 = m14;
+        M21 = m21;
+        M22 = m22;
+        M23 = m23;
+        M24 = m24;
+        M31 = m31;
+        M32 = m32;
+        M33 = m33;
+        M34 = m34;
+        M41 = m41;
+        M42 = m42;
+        M43 = m43;
+        M44 = m44;
     }
 
     #endregion
@@ -164,6 +180,7 @@ public struct Matrix : IEquatable<Matrix>
                 case 14: return M43;
                 case 15: return M44;
             }
+
             throw new ArgumentOutOfRangeException();
         }
 
@@ -194,24 +211,34 @@ public struct Matrix : IEquatable<Matrix>
 
     public double this[int row, int column]
     {
-        get
-        {
-            return this[(row * 4) + column];
-        }
+        get => this[(row * 4) + column];
 
-        set
-        {
-            this[(row * 4) + column] = value;
-        }
+        set => this[(row * 4) + column] = value;
     }
 
     #endregion
 
     #region Private Members
-    private static Matrix identity = new Matrix(1f, 0f, 0f, 0f, 
-        0f, 1f, 0f, 0f, 
-        0f, 0f, 1f, 0f, 
-        0f, 0f, 0f, 1f);
+
+    private static Matrix identity = new(
+        1f,
+        0f,
+        0f,
+        0f,
+        0f,
+        1f,
+        0f,
+        0f,
+        0f,
+        0f,
+        1f,
+        0f,
+        0f,
+        0f,
+        0f,
+        1f
+    );
+
     #endregion
 
     #region Public Properties
@@ -221,15 +248,12 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Backward
     {
-        get
-        {
-            return new Vector3(this.M31, this.M32, this.M33);
-        }
+        get => new(M31, M32, M33);
         set
         {
-            this.M31 = value.X;
-            this.M32 = value.Y;
-            this.M33 = value.Z;
+            M31 = value.X;
+            M32 = value.Y;
+            M33 = value.Z;
         }
     }
 
@@ -238,15 +262,12 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Down
     {
-        get
-        {
-            return new Vector3(-this.M21, -this.M22, -this.M23);
-        }
+        get => new(-M21, -M22, -M23);
         set
         {
-            this.M21 = -value.X;
-            this.M22 = -value.Y;
-            this.M23 = -value.Z;
+            M21 = -value.X;
+            M22 = -value.Y;
+            M23 = -value.Z;
         }
     }
 
@@ -255,40 +276,31 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Forward
     {
-        get
-        {
-            return new Vector3(-this.M31, -this.M32, -this.M33);
-        }
+        get => new(-M31, -M32, -M33);
         set
         {
-            this.M31 = -value.X;
-            this.M32 = -value.Y;
-            this.M33 = -value.Z;
+            M31 = -value.X;
+            M32 = -value.Y;
+            M33 = -value.Z;
         }
     }
 
     /// <summary>
     /// Returns the identity matrix.
     /// </summary>
-    public static Matrix Identity
-    {
-        get { return identity; }
-    }
+    public static Matrix Identity => identity;
 
     /// <summary>
     /// The left vector formed from the first row -M11, -M12, -M13 elements.
     /// </summary>
     public Vector3 Left
     {
-        get
-        {
-            return new Vector3(-this.M11, -this.M12, -this.M13);
-        }
+        get => new(-M11, -M12, -M13);
         set
         {
-            this.M11 = -value.X;
-            this.M12 = -value.Y;
-            this.M13 = -value.Z;
+            M11 = -value.X;
+            M12 = -value.Y;
+            M13 = -value.Z;
         }
     }
 
@@ -297,15 +309,12 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Right
     {
-        get
-        {
-            return new Vector3(this.M11, this.M12, this.M13);
-        }
+        get => new(M11, M12, M13);
         set
         {
-            this.M11 = value.X;
-            this.M12 = value.Y;
-            this.M13 = value.Z;
+            M11 = value.X;
+            M12 = value.Y;
+            M13 = value.Z;
         }
     }
 
@@ -314,15 +323,12 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Translation
     {
-        get
-        {
-            return new Vector3(this.M41, this.M42, this.M43);
-        }
+        get => new(M41, M42, M43);
         set
         {
-            this.M41 = value.X;
-            this.M42 = value.Y;
-            this.M43 = value.Z;
+            M41 = value.X;
+            M42 = value.Y;
+            M43 = value.Z;
         }
     }
 
@@ -331,15 +337,12 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Scale
     {
-        get
-        {
-            return new Vector3(this.M11, this.M22, this.M33);
-        }
+        get => new(M11, M22, M33);
         set
         {
-            this.M11 = value.X;
-            this.M22 = value.Y;
-            this.M33 = value.Z;
+            M11 = value.X;
+            M22 = value.Y;
+            M33 = value.Z;
         }
     }
 
@@ -348,17 +351,15 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public Vector3 Up
     {
-        get
-        {
-            return new Vector3(this.M21, this.M22, this.M23);
-        }
+        get => new(M21, M22, M23);
         set
         {
-            this.M21 = value.X;
-            this.M22 = value.Y;
-            this.M23 = value.Z;
+            M21 = value.X;
+            M22 = value.Y;
+            M23 = value.Z;
         }
     }
+
     #endregion
 
     #region Public Methods
@@ -387,6 +388,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 += matrix2.M42;
         matrix1.M43 += matrix2.M43;
         matrix1.M44 += matrix2.M44;
+
         return matrix1;
     }
 
@@ -414,7 +416,6 @@ public struct Matrix : IEquatable<Matrix>
         result.M42 = matrix1.M42 + matrix2.M42;
         result.M43 = matrix1.M43 + matrix2.M43;
         result.M44 = matrix1.M44 + matrix2.M44;
-
     }
 
     /// <summary>
@@ -426,6 +427,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateRotationX(radians, out result);
+
         return result;
     }
 
@@ -436,11 +438,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="result">The rotation <see cref="Matrix"/> around X axis as an output parameter.</param>
     public static void CreateRotationX(double radians, out Matrix result)
     {
-        result = Matrix.Identity;
+        result = Identity;
 
-        var val1 = (double)Math.Cos(radians);
-        var val2 = (double)Math.Sin(radians);
-            
+        var val1 = (double) Math.Cos(radians);
+        var val2 = (double) Math.Sin(radians);
+
         result.M22 = val1;
         result.M23 = val2;
         result.M32 = -val2;
@@ -456,6 +458,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateRotationY(radians, out result);
+
         return result;
     }
 
@@ -466,11 +469,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="result">The rotation <see cref="Matrix"/> around Y axis as an output parameter.</param>
     public static void CreateRotationY(double radians, out Matrix result)
     {
-        result = Matrix.Identity;
+        result = Identity;
 
-        var val1 = (double)Math.Cos(radians);
-        var val2 = (double)Math.Sin(radians);
-            
+        var val1 = (double) Math.Cos(radians);
+        var val2 = (double) Math.Sin(radians);
+
         result.M11 = val1;
         result.M13 = -val2;
         result.M31 = val2;
@@ -486,6 +489,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateRotationZ(radians, out result);
+
         return result;
     }
 
@@ -496,11 +500,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="result">The rotation <see cref="Matrix"/> around Z axis as an output parameter.</param>
     public static void CreateRotationZ(double radians, out Matrix result)
     {
-        result = Matrix.Identity;
+        result = Identity;
 
-        var val1 = (double)Math.Cos(radians);
-        var val2 = (double)Math.Sin(radians);
-            
+        var val1 = (double) Math.Cos(radians);
+        var val2 = (double) Math.Sin(radians);
+
         result.M11 = val1;
         result.M12 = val2;
         result.M21 = -val2;
@@ -516,6 +520,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateScale(scale, scale, scale, out result);
+
         return result;
     }
 
@@ -524,10 +529,7 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     /// <param name="scale">Scale value for all three axises.</param>
     /// <param name="result">The scaling <see cref="Matrix"/> as an output parameter.</param>
-    public static void CreateScale(double scale, out Matrix result)
-    {
-        CreateScale(scale, scale, scale, out result);
-    }
+    public static void CreateScale(double scale, out Matrix result) => CreateScale(scale, scale, scale, out result);
 
     /// <summary>
     /// Creates a new scaling <see cref="Matrix"/>.
@@ -540,6 +542,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateScale(xScale, yScale, zScale, out result);
+
         return result;
     }
 
@@ -579,6 +582,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateScale(ref scales, out result);
+
         return result;
     }
 
@@ -607,7 +611,6 @@ public struct Matrix : IEquatable<Matrix>
         result.M44 = 1;
     }
 
-        
     /// <summary>
     /// Creates a new translation <see cref="Matrix"/>.
     /// </summary>
@@ -619,6 +622,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateTranslation(xPosition, yPosition, zPosition, out result);
+
         return result;
     }
 
@@ -656,6 +660,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         CreateTranslation(ref position, out result);
+
         return result;
     }
 
@@ -694,29 +699,33 @@ public struct Matrix : IEquatable<Matrix>
     /// </remarks>
     public double Determinant()
     {
-        double num22 = this.M11;
-        double num21 = this.M12;
-        double num20 = this.M13;
-        double num19 = this.M14;
-        double num12 = this.M21;
-        double num11 = this.M22;
-        double num10 = this.M23;
-        double num9 = this.M24;
-        double num8 = this.M31;
-        double num7 = this.M32;
-        double num6 = this.M33;
-        double num5 = this.M34;
-        double num4 = this.M41;
-        double num3 = this.M42;
-        double num2 = this.M43;
-        double num = this.M44;
-        double num18 = (num6 * num) - (num5 * num2);
-        double num17 = (num7 * num) - (num5 * num3);
-        double num16 = (num7 * num2) - (num6 * num3);
-        double num15 = (num8 * num) - (num5 * num4);
-        double num14 = (num8 * num2) - (num6 * num4);
-        double num13 = (num8 * num3) - (num7 * num4);
-        return ((((num22 * (((num11 * num18) - (num10 * num17)) + (num9 * num16))) - (num21 * (((num12 * num18) - (num10 * num15)) + (num9 * num14)))) + (num20 * (((num12 * num17) - (num11 * num15)) + (num9 * num13)))) - (num19 * (((num12 * num16) - (num11 * num14)) + (num10 * num13))));
+        var num22 = M11;
+        var num21 = M12;
+        var num20 = M13;
+        var num19 = M14;
+        var num12 = M21;
+        var num11 = M22;
+        var num10 = M23;
+        var num9 = M24;
+        var num8 = M31;
+        var num7 = M32;
+        var num6 = M33;
+        var num5 = M34;
+        var num4 = M41;
+        var num3 = M42;
+        var num2 = M43;
+        var num = M44;
+        var num18 = (num6 * num) - (num5 * num2);
+        var num17 = (num7 * num) - (num5 * num3);
+        var num16 = (num7 * num2) - (num6 * num3);
+        var num15 = (num8 * num) - (num5 * num4);
+        var num14 = (num8 * num2) - (num6 * num4);
+        var num13 = (num8 * num3) - (num7 * num4);
+
+        return (num22 * ((num11 * num18) - (num10 * num17) + (num9 * num16))) -
+               (num21 * ((num12 * num18) - (num10 * num15) + (num9 * num14))) +
+               (num20 * ((num12 * num17) - (num11 * num15) + (num9 * num13))) -
+               (num19 * ((num12 * num16) - (num11 * num14) + (num10 * num13)));
     }
 
     /// <summary>
@@ -743,6 +752,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 / matrix2.M42;
         matrix1.M43 = matrix1.M43 / matrix2.M43;
         matrix1.M44 = matrix1.M44 / matrix2.M44;
+
         return matrix1;
     }
 
@@ -780,7 +790,7 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>The result of dividing a matrix by a scalar.</returns>
     public static Matrix Divide(Matrix matrix1, double divider)
     {
-        double num = 1f / divider;
+        var num = 1f / divider;
         matrix1.M11 = matrix1.M11 * num;
         matrix1.M12 = matrix1.M12 * num;
         matrix1.M13 = matrix1.M13 * num;
@@ -797,6 +807,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 * num;
         matrix1.M43 = matrix1.M43 * num;
         matrix1.M44 = matrix1.M44 * num;
+
         return matrix1;
     }
 
@@ -808,7 +819,7 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="result">The result of dividing a matrix by a scalar as an output parameter.</param>
     public static void Divide(ref Matrix matrix1, double divider, out Matrix result)
     {
-        double num = 1f / divider;
+        var num = 1f / divider;
         result.M11 = matrix1.M11 * num;
         result.M12 = matrix1.M12 * num;
         result.M13 = matrix1.M13 * num;
@@ -832,10 +843,10 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     /// <param name="other">The <see cref="Matrix"/> to compare.</param>
     /// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
-    public bool Equals(Matrix other)
-    {
-        return ((((((this.M11 == other.M11) && (this.M22 == other.M22)) && ((this.M33 == other.M33) && (this.M44 == other.M44))) && (((this.M12 == other.M12) && (this.M13 == other.M13)) && ((this.M14 == other.M14) && (this.M21 == other.M21)))) && ((((this.M23 == other.M23) && (this.M24 == other.M24)) && ((this.M31 == other.M31) && (this.M32 == other.M32))) && (((this.M34 == other.M34) && (this.M41 == other.M41)) && (this.M42 == other.M42)))) && (this.M43 == other.M43));
-    }
+    public bool Equals(Matrix other) => M11 == other.M11 && M22 == other.M22 && M33 == other.M33 && M44 == other.M44 && M12 == other.M12 &&
+                                        M13 == other.M13 && M14 == other.M14 && M21 == other.M21 && M23 == other.M23 && M24 == other.M24 &&
+                                        M31 == other.M31 && M32 == other.M32 && M34 == other.M34 && M41 == other.M41 && M42 == other.M42 &&
+                                        M43 == other.M43;
 
     /// <summary>
     /// Compares whether current instance is equal to specified <see cref="Object"/> without any tolerance.
@@ -845,13 +856,17 @@ public struct Matrix : IEquatable<Matrix>
     public override bool Equals(object? obj)
     {
         if (obj is null)
+        {
             return false;
+        }
 
-        bool flag = false;
+        var flag = false;
+
         if (obj is Matrix)
         {
-            flag = this.Equals((Matrix) obj);
+            flag = Equals((Matrix) obj);
         }
+
         return flag;
     }
 
@@ -859,10 +874,10 @@ public struct Matrix : IEquatable<Matrix>
     /// Gets the hash code of this <see cref="Matrix"/>.
     /// </summary>
     /// <returns>Hash code of this <see cref="Matrix"/>.</returns>
-    public override int GetHashCode()
-    {
-        return (((((((((((((((this.M11.GetHashCode() + this.M12.GetHashCode()) + this.M13.GetHashCode()) + this.M14.GetHashCode()) + this.M21.GetHashCode()) + this.M22.GetHashCode()) + this.M23.GetHashCode()) + this.M24.GetHashCode()) + this.M31.GetHashCode()) + this.M32.GetHashCode()) + this.M33.GetHashCode()) + this.M34.GetHashCode()) + this.M41.GetHashCode()) + this.M42.GetHashCode()) + this.M43.GetHashCode()) + this.M44.GetHashCode());
-    }
+    public override int GetHashCode() => M11.GetHashCode() + M12.GetHashCode() + M13.GetHashCode() + M14.GetHashCode() + M21.GetHashCode() +
+                                         M22.GetHashCode() + M23.GetHashCode() + M24.GetHashCode() + M31.GetHashCode() + M32.GetHashCode() +
+                                         M33.GetHashCode() + M34.GetHashCode() + M41.GetHashCode() + M42.GetHashCode() + M43.GetHashCode() +
+                                         M44.GetHashCode();
 
     /// <summary>
     /// Creates a new <see cref="Matrix"/> which contains inversion of the specified matrix. 
@@ -873,6 +888,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix result;
         Invert(ref matrix, out result);
+
         return result;
     }
 
@@ -883,64 +899,111 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="result">The inverted matrix as output parameter.</param>
     public static void Invert(ref Matrix matrix, out Matrix result)
     {
-        double num1 = matrix.M11;
-        double num2 = matrix.M12;
-        double num3 = matrix.M13;
-        double num4 = matrix.M14;
-        double num5 = matrix.M21;
-        double num6 = matrix.M22;
-        double num7 = matrix.M23;
-        double num8 = matrix.M24;
-        double num9 = matrix.M31;
-        double num10 = matrix.M32;
-        double num11 = matrix.M33;
-        double num12 = matrix.M34;
-        double num13 = matrix.M41;
-        double num14 = matrix.M42;
-        double num15 = matrix.M43;
-        double num16 = matrix.M44;
-        double num17 = (double) ((double) num11 * (double) num16 - (double) num12 * (double) num15);
-        double num18 = (double) ((double) num10 * (double) num16 - (double) num12 * (double) num14);
-        double num19 = (double) ((double) num10 * (double) num15 - (double) num11 * (double) num14);
-        double num20 = (double) ((double) num9 * (double) num16 - (double) num12 * (double) num13);
-        double num21 = (double) ((double) num9 * (double) num15 - (double) num11 * (double) num13);
-        double num22 = (double) ((double) num9 * (double) num14 - (double) num10 * (double) num13);
-        double num23 = (double) ((double) num6 * (double) num17 - (double) num7 * (double) num18 + (double) num8 * (double) num19);
-        double num24 = (double) -((double) num5 * (double) num17 - (double) num7 * (double) num20 + (double) num8 * (double) num21);
-        double num25 = (double) ((double) num5 * (double) num18 - (double) num6 * (double) num20 + (double) num8 * (double) num22);
-        double num26 = (double) -((double) num5 * (double) num19 - (double) num6 * (double) num21 + (double) num7 * (double) num22);
-        double num27 = (double) (1.0 / ((double) num1 * (double) num23 + (double) num2 * (double) num24 + (double) num3 * (double) num25 + (double) num4 * (double) num26));
-            
+        var num1 = matrix.M11;
+        var num2 = matrix.M12;
+        var num3 = matrix.M13;
+        var num4 = matrix.M14;
+        var num5 = matrix.M21;
+        var num6 = matrix.M22;
+        var num7 = matrix.M23;
+        var num8 = matrix.M24;
+        var num9 = matrix.M31;
+        var num10 = matrix.M32;
+        var num11 = matrix.M33;
+        var num12 = matrix.M34;
+        var num13 = matrix.M41;
+        var num14 = matrix.M42;
+        var num15 = matrix.M43;
+        var num16 = matrix.M44;
+        var num17 = (double) (((double) num11 * (double) num16) - ((double) num12 * (double) num15));
+        var num18 = (double) (((double) num10 * (double) num16) - ((double) num12 * (double) num14));
+        var num19 = (double) (((double) num10 * (double) num15) - ((double) num11 * (double) num14));
+        var num20 = (double) (((double) num9 * (double) num16) - ((double) num12 * (double) num13));
+        var num21 = (double) (((double) num9 * (double) num15) - ((double) num11 * (double) num13));
+        var num22 = (double) (((double) num9 * (double) num14) - ((double) num10 * (double) num13));
+
+        var num23 = (double) (((double) num6 * (double) num17) - ((double) num7 * (double) num18) +
+                              ((double) num8 * (double) num19));
+
+        var num24 =
+            (double) -(((double) num5 * (double) num17) - ((double) num7 * (double) num20) + ((double) num8 * (double) num21));
+
+        var num25 = (double) (((double) num5 * (double) num18) - ((double) num6 * (double) num20) +
+                              ((double) num8 * (double) num22));
+
+        var num26 =
+            (double) -(((double) num5 * (double) num19) - ((double) num6 * (double) num21) + ((double) num7 * (double) num22));
+
+        var num27 = (double) (1.0 / (((double) num1 * (double) num23) + ((double) num2 * (double) num24) +
+                                     ((double) num3 * (double) num25) + ((double) num4 * (double) num26)));
+
         result.M11 = num23 * num27;
         result.M21 = num24 * num27;
         result.M31 = num25 * num27;
         result.M41 = num26 * num27;
-        result.M12 = (double) -((double) num2 * (double) num17 - (double) num3 * (double) num18 + (double) num4 * (double) num19) * num27;
-        result.M22 = (double) ((double) num1 * (double) num17 - (double) num3 * (double) num20 + (double) num4 * (double) num21) * num27;
-        result.M32 = (double) -((double) num1 * (double) num18 - (double) num2 * (double) num20 + (double) num4 * (double) num22) * num27;
-        result.M42 = (double) ((double) num1 * (double) num19 - (double) num2 * (double) num21 + (double) num3 * (double) num22) * num27;
-        double num28 = (double) ((double) num7 * (double) num16 - (double) num8 * (double) num15);
-        double num29 = (double) ((double) num6 * (double) num16 - (double) num8 * (double) num14);
-        double num30 = (double) ((double) num6 * (double) num15 - (double) num7 * (double) num14);
-        double num31 = (double) ((double) num5 * (double) num16 - (double) num8 * (double) num13);
-        double num32 = (double) ((double) num5 * (double) num15 - (double) num7 * (double) num13);
-        double num33 = (double) ((double) num5 * (double) num14 - (double) num6 * (double) num13);
-        result.M13 = (double) ((double) num2 * (double) num28 - (double) num3 * (double) num29 + (double) num4 * (double) num30) * num27;
-        result.M23 = (double) -((double) num1 * (double) num28 - (double) num3 * (double) num31 + (double) num4 * (double) num32) * num27;
-        result.M33 = (double) ((double) num1 * (double) num29 - (double) num2 * (double) num31 + (double) num4 * (double) num33) * num27;
-        result.M43 = (double) -((double) num1 * (double) num30 - (double) num2 * (double) num32 + (double) num3 * (double) num33) * num27;
-        double num34 = (double) ((double) num7 * (double) num12 - (double) num8 * (double) num11);
-        double num35 = (double) ((double) num6 * (double) num12 - (double) num8 * (double) num10);
-        double num36 = (double) ((double) num6 * (double) num11 - (double) num7 * (double) num10);
-        double num37 = (double) ((double) num5 * (double) num12 - (double) num8 * (double) num9);
-        double num38 = (double) ((double) num5 * (double) num11 - (double) num7 * (double) num9);
-        double num39 = (double) ((double) num5 * (double) num10 - (double) num6 * (double) num9);
-        result.M14 = (double) -((double) num2 * (double) num34 - (double) num3 * (double) num35 + (double) num4 * (double) num36) * num27;
-        result.M24 = (double) ((double) num1 * (double) num34 - (double) num3 * (double) num37 + (double) num4 * (double) num38) * num27;
-        result.M34 = (double) -((double) num1 * (double) num35 - (double) num2 * (double) num37 + (double) num4 * (double) num39) * num27;
-        result.M44 = (double) ((double) num1 * (double) num36 - (double) num2 * (double) num38 + (double) num3 * (double) num39) * num27;
-            
-            
+
+        result.M12 =
+            (double) -(((double) num2 * (double) num17) - ((double) num3 * (double) num18) + ((double) num4 * (double) num19)) *
+            num27;
+
+        result.M22 =
+            (double) (((double) num1 * (double) num17) - ((double) num3 * (double) num20) + ((double) num4 * (double) num21)) *
+            num27;
+
+        result.M32 =
+            (double) -(((double) num1 * (double) num18) - ((double) num2 * (double) num20) + ((double) num4 * (double) num22)) *
+            num27;
+
+        result.M42 =
+            (double) (((double) num1 * (double) num19) - ((double) num2 * (double) num21) + ((double) num3 * (double) num22)) *
+            num27;
+
+        var num28 = (double) (((double) num7 * (double) num16) - ((double) num8 * (double) num15));
+        var num29 = (double) (((double) num6 * (double) num16) - ((double) num8 * (double) num14));
+        var num30 = (double) (((double) num6 * (double) num15) - ((double) num7 * (double) num14));
+        var num31 = (double) (((double) num5 * (double) num16) - ((double) num8 * (double) num13));
+        var num32 = (double) (((double) num5 * (double) num15) - ((double) num7 * (double) num13));
+        var num33 = (double) (((double) num5 * (double) num14) - ((double) num6 * (double) num13));
+
+        result.M13 =
+            (double) (((double) num2 * (double) num28) - ((double) num3 * (double) num29) + ((double) num4 * (double) num30)) *
+            num27;
+
+        result.M23 =
+            (double) -(((double) num1 * (double) num28) - ((double) num3 * (double) num31) + ((double) num4 * (double) num32)) *
+            num27;
+
+        result.M33 =
+            (double) (((double) num1 * (double) num29) - ((double) num2 * (double) num31) + ((double) num4 * (double) num33)) *
+            num27;
+
+        result.M43 =
+            (double) -(((double) num1 * (double) num30) - ((double) num2 * (double) num32) + ((double) num3 * (double) num33)) *
+            num27;
+
+        var num34 = (double) (((double) num7 * (double) num12) - ((double) num8 * (double) num11));
+        var num35 = (double) (((double) num6 * (double) num12) - ((double) num8 * (double) num10));
+        var num36 = (double) (((double) num6 * (double) num11) - ((double) num7 * (double) num10));
+        var num37 = (double) (((double) num5 * (double) num12) - ((double) num8 * (double) num9));
+        var num38 = (double) (((double) num5 * (double) num11) - ((double) num7 * (double) num9));
+        var num39 = (double) (((double) num5 * (double) num10) - ((double) num6 * (double) num9));
+
+        result.M14 =
+            (double) -(((double) num2 * (double) num34) - ((double) num3 * (double) num35) + ((double) num4 * (double) num36)) *
+            num27;
+
+        result.M24 =
+            (double) (((double) num1 * (double) num34) - ((double) num3 * (double) num37) + ((double) num4 * (double) num38)) *
+            num27;
+
+        result.M34 =
+            (double) -(((double) num1 * (double) num35) - ((double) num2 * (double) num37) + ((double) num4 * (double) num39)) *
+            num27;
+
+        result.M44 =
+            (double) (((double) num1 * (double) num36) - ((double) num2 * (double) num38) + ((double) num3 * (double) num39)) *
+            num27;
+
         /*
 
 
@@ -1006,6 +1069,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 + ((matrix2.M42 - matrix1.M42) * amount);
         matrix1.M43 = matrix1.M43 + ((matrix2.M43 - matrix1.M43) * amount);
         matrix1.M44 = matrix1.M44 + ((matrix2.M44 - matrix1.M44) * amount);
+
         return matrix1;
     }
 
@@ -1044,22 +1108,54 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>Result of the matrix multiplication.</returns>
     public static Matrix Multiply(Matrix matrix1, Matrix matrix2)
     {
-        var m11 = (((matrix1.M11 * matrix2.M11) + (matrix1.M12 * matrix2.M21)) + (matrix1.M13 * matrix2.M31)) + (matrix1.M14 * matrix2.M41);
-        var m12 = (((matrix1.M11 * matrix2.M12) + (matrix1.M12 * matrix2.M22)) + (matrix1.M13 * matrix2.M32)) + (matrix1.M14 * matrix2.M42);
-        var m13 = (((matrix1.M11 * matrix2.M13) + (matrix1.M12 * matrix2.M23)) + (matrix1.M13 * matrix2.M33)) + (matrix1.M14 * matrix2.M43);
-        var m14 = (((matrix1.M11 * matrix2.M14) + (matrix1.M12 * matrix2.M24)) + (matrix1.M13 * matrix2.M34)) + (matrix1.M14 * matrix2.M44);
-        var m21 = (((matrix1.M21 * matrix2.M11) + (matrix1.M22 * matrix2.M21)) + (matrix1.M23 * matrix2.M31)) + (matrix1.M24 * matrix2.M41);
-        var m22 = (((matrix1.M21 * matrix2.M12) + (matrix1.M22 * matrix2.M22)) + (matrix1.M23 * matrix2.M32)) + (matrix1.M24 * matrix2.M42);
-        var m23 = (((matrix1.M21 * matrix2.M13) + (matrix1.M22 * matrix2.M23)) + (matrix1.M23 * matrix2.M33)) + (matrix1.M24 * matrix2.M43);
-        var m24 = (((matrix1.M21 * matrix2.M14) + (matrix1.M22 * matrix2.M24)) + (matrix1.M23 * matrix2.M34)) + (matrix1.M24 * matrix2.M44);
-        var m31 = (((matrix1.M31 * matrix2.M11) + (matrix1.M32 * matrix2.M21)) + (matrix1.M33 * matrix2.M31)) + (matrix1.M34 * matrix2.M41);
-        var m32 = (((matrix1.M31 * matrix2.M12) + (matrix1.M32 * matrix2.M22)) + (matrix1.M33 * matrix2.M32)) + (matrix1.M34 * matrix2.M42);
-        var m33 = (((matrix1.M31 * matrix2.M13) + (matrix1.M32 * matrix2.M23)) + (matrix1.M33 * matrix2.M33)) + (matrix1.M34 * matrix2.M43);
-        var m34 = (((matrix1.M31 * matrix2.M14) + (matrix1.M32 * matrix2.M24)) + (matrix1.M33 * matrix2.M34)) + (matrix1.M34 * matrix2.M44);
-        var m41 = (((matrix1.M41 * matrix2.M11) + (matrix1.M42 * matrix2.M21)) + (matrix1.M43 * matrix2.M31)) + (matrix1.M44 * matrix2.M41);
-        var m42 = (((matrix1.M41 * matrix2.M12) + (matrix1.M42 * matrix2.M22)) + (matrix1.M43 * matrix2.M32)) + (matrix1.M44 * matrix2.M42);
-        var m43 = (((matrix1.M41 * matrix2.M13) + (matrix1.M42 * matrix2.M23)) + (matrix1.M43 * matrix2.M33)) + (matrix1.M44 * matrix2.M43);
-        var m44 = (((matrix1.M41 * matrix2.M14) + (matrix1.M42 * matrix2.M24)) + (matrix1.M43 * matrix2.M34)) + (matrix1.M44 * matrix2.M44);
+        var m11 = (matrix1.M11 * matrix2.M11) + (matrix1.M12 * matrix2.M21) + (matrix1.M13 * matrix2.M31) +
+                  (matrix1.M14 * matrix2.M41);
+
+        var m12 = (matrix1.M11 * matrix2.M12) + (matrix1.M12 * matrix2.M22) + (matrix1.M13 * matrix2.M32) +
+                  (matrix1.M14 * matrix2.M42);
+
+        var m13 = (matrix1.M11 * matrix2.M13) + (matrix1.M12 * matrix2.M23) + (matrix1.M13 * matrix2.M33) +
+                  (matrix1.M14 * matrix2.M43);
+
+        var m14 = (matrix1.M11 * matrix2.M14) + (matrix1.M12 * matrix2.M24) + (matrix1.M13 * matrix2.M34) +
+                  (matrix1.M14 * matrix2.M44);
+
+        var m21 = (matrix1.M21 * matrix2.M11) + (matrix1.M22 * matrix2.M21) + (matrix1.M23 * matrix2.M31) +
+                  (matrix1.M24 * matrix2.M41);
+
+        var m22 = (matrix1.M21 * matrix2.M12) + (matrix1.M22 * matrix2.M22) + (matrix1.M23 * matrix2.M32) +
+                  (matrix1.M24 * matrix2.M42);
+
+        var m23 = (matrix1.M21 * matrix2.M13) + (matrix1.M22 * matrix2.M23) + (matrix1.M23 * matrix2.M33) +
+                  (matrix1.M24 * matrix2.M43);
+
+        var m24 = (matrix1.M21 * matrix2.M14) + (matrix1.M22 * matrix2.M24) + (matrix1.M23 * matrix2.M34) +
+                  (matrix1.M24 * matrix2.M44);
+
+        var m31 = (matrix1.M31 * matrix2.M11) + (matrix1.M32 * matrix2.M21) + (matrix1.M33 * matrix2.M31) +
+                  (matrix1.M34 * matrix2.M41);
+
+        var m32 = (matrix1.M31 * matrix2.M12) + (matrix1.M32 * matrix2.M22) + (matrix1.M33 * matrix2.M32) +
+                  (matrix1.M34 * matrix2.M42);
+
+        var m33 = (matrix1.M31 * matrix2.M13) + (matrix1.M32 * matrix2.M23) + (matrix1.M33 * matrix2.M33) +
+                  (matrix1.M34 * matrix2.M43);
+
+        var m34 = (matrix1.M31 * matrix2.M14) + (matrix1.M32 * matrix2.M24) + (matrix1.M33 * matrix2.M34) +
+                  (matrix1.M34 * matrix2.M44);
+
+        var m41 = (matrix1.M41 * matrix2.M11) + (matrix1.M42 * matrix2.M21) + (matrix1.M43 * matrix2.M31) +
+                  (matrix1.M44 * matrix2.M41);
+
+        var m42 = (matrix1.M41 * matrix2.M12) + (matrix1.M42 * matrix2.M22) + (matrix1.M43 * matrix2.M32) +
+                  (matrix1.M44 * matrix2.M42);
+
+        var m43 = (matrix1.M41 * matrix2.M13) + (matrix1.M42 * matrix2.M23) + (matrix1.M43 * matrix2.M33) +
+                  (matrix1.M44 * matrix2.M43);
+
+        var m44 = (matrix1.M41 * matrix2.M14) + (matrix1.M42 * matrix2.M24) + (matrix1.M43 * matrix2.M34) +
+                  (matrix1.M44 * matrix2.M44);
+
         matrix1.M11 = m11;
         matrix1.M12 = m12;
         matrix1.M13 = m13;
@@ -1076,6 +1172,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = m42;
         matrix1.M43 = m43;
         matrix1.M44 = m44;
+
         return matrix1;
     }
 
@@ -1087,22 +1184,54 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="result">Result of the matrix multiplication as an output parameter.</param>
     public static void Multiply(ref Matrix matrix1, ref Matrix matrix2, out Matrix result)
     {
-        var m11 = (((matrix1.M11 * matrix2.M11) + (matrix1.M12 * matrix2.M21)) + (matrix1.M13 * matrix2.M31)) + (matrix1.M14 * matrix2.M41);
-        var m12 = (((matrix1.M11 * matrix2.M12) + (matrix1.M12 * matrix2.M22)) + (matrix1.M13 * matrix2.M32)) + (matrix1.M14 * matrix2.M42);
-        var m13 = (((matrix1.M11 * matrix2.M13) + (matrix1.M12 * matrix2.M23)) + (matrix1.M13 * matrix2.M33)) + (matrix1.M14 * matrix2.M43);
-        var m14 = (((matrix1.M11 * matrix2.M14) + (matrix1.M12 * matrix2.M24)) + (matrix1.M13 * matrix2.M34)) + (matrix1.M14 * matrix2.M44);
-        var m21 = (((matrix1.M21 * matrix2.M11) + (matrix1.M22 * matrix2.M21)) + (matrix1.M23 * matrix2.M31)) + (matrix1.M24 * matrix2.M41);
-        var m22 = (((matrix1.M21 * matrix2.M12) + (matrix1.M22 * matrix2.M22)) + (matrix1.M23 * matrix2.M32)) + (matrix1.M24 * matrix2.M42);
-        var m23 = (((matrix1.M21 * matrix2.M13) + (matrix1.M22 * matrix2.M23)) + (matrix1.M23 * matrix2.M33)) + (matrix1.M24 * matrix2.M43);
-        var m24 = (((matrix1.M21 * matrix2.M14) + (matrix1.M22 * matrix2.M24)) + (matrix1.M23 * matrix2.M34)) + (matrix1.M24 * matrix2.M44);
-        var m31 = (((matrix1.M31 * matrix2.M11) + (matrix1.M32 * matrix2.M21)) + (matrix1.M33 * matrix2.M31)) + (matrix1.M34 * matrix2.M41);
-        var m32 = (((matrix1.M31 * matrix2.M12) + (matrix1.M32 * matrix2.M22)) + (matrix1.M33 * matrix2.M32)) + (matrix1.M34 * matrix2.M42);
-        var m33 = (((matrix1.M31 * matrix2.M13) + (matrix1.M32 * matrix2.M23)) + (matrix1.M33 * matrix2.M33)) + (matrix1.M34 * matrix2.M43);
-        var m34 = (((matrix1.M31 * matrix2.M14) + (matrix1.M32 * matrix2.M24)) + (matrix1.M33 * matrix2.M34)) + (matrix1.M34 * matrix2.M44);
-        var m41 = (((matrix1.M41 * matrix2.M11) + (matrix1.M42 * matrix2.M21)) + (matrix1.M43 * matrix2.M31)) + (matrix1.M44 * matrix2.M41);
-        var m42 = (((matrix1.M41 * matrix2.M12) + (matrix1.M42 * matrix2.M22)) + (matrix1.M43 * matrix2.M32)) + (matrix1.M44 * matrix2.M42);
-        var m43 = (((matrix1.M41 * matrix2.M13) + (matrix1.M42 * matrix2.M23)) + (matrix1.M43 * matrix2.M33)) + (matrix1.M44 * matrix2.M43);
-        var m44 = (((matrix1.M41 * matrix2.M14) + (matrix1.M42 * matrix2.M24)) + (matrix1.M43 * matrix2.M34)) + (matrix1.M44 * matrix2.M44);
+        var m11 = (matrix1.M11 * matrix2.M11) + (matrix1.M12 * matrix2.M21) + (matrix1.M13 * matrix2.M31) +
+                  (matrix1.M14 * matrix2.M41);
+
+        var m12 = (matrix1.M11 * matrix2.M12) + (matrix1.M12 * matrix2.M22) + (matrix1.M13 * matrix2.M32) +
+                  (matrix1.M14 * matrix2.M42);
+
+        var m13 = (matrix1.M11 * matrix2.M13) + (matrix1.M12 * matrix2.M23) + (matrix1.M13 * matrix2.M33) +
+                  (matrix1.M14 * matrix2.M43);
+
+        var m14 = (matrix1.M11 * matrix2.M14) + (matrix1.M12 * matrix2.M24) + (matrix1.M13 * matrix2.M34) +
+                  (matrix1.M14 * matrix2.M44);
+
+        var m21 = (matrix1.M21 * matrix2.M11) + (matrix1.M22 * matrix2.M21) + (matrix1.M23 * matrix2.M31) +
+                  (matrix1.M24 * matrix2.M41);
+
+        var m22 = (matrix1.M21 * matrix2.M12) + (matrix1.M22 * matrix2.M22) + (matrix1.M23 * matrix2.M32) +
+                  (matrix1.M24 * matrix2.M42);
+
+        var m23 = (matrix1.M21 * matrix2.M13) + (matrix1.M22 * matrix2.M23) + (matrix1.M23 * matrix2.M33) +
+                  (matrix1.M24 * matrix2.M43);
+
+        var m24 = (matrix1.M21 * matrix2.M14) + (matrix1.M22 * matrix2.M24) + (matrix1.M23 * matrix2.M34) +
+                  (matrix1.M24 * matrix2.M44);
+
+        var m31 = (matrix1.M31 * matrix2.M11) + (matrix1.M32 * matrix2.M21) + (matrix1.M33 * matrix2.M31) +
+                  (matrix1.M34 * matrix2.M41);
+
+        var m32 = (matrix1.M31 * matrix2.M12) + (matrix1.M32 * matrix2.M22) + (matrix1.M33 * matrix2.M32) +
+                  (matrix1.M34 * matrix2.M42);
+
+        var m33 = (matrix1.M31 * matrix2.M13) + (matrix1.M32 * matrix2.M23) + (matrix1.M33 * matrix2.M33) +
+                  (matrix1.M34 * matrix2.M43);
+
+        var m34 = (matrix1.M31 * matrix2.M14) + (matrix1.M32 * matrix2.M24) + (matrix1.M33 * matrix2.M34) +
+                  (matrix1.M34 * matrix2.M44);
+
+        var m41 = (matrix1.M41 * matrix2.M11) + (matrix1.M42 * matrix2.M21) + (matrix1.M43 * matrix2.M31) +
+                  (matrix1.M44 * matrix2.M41);
+
+        var m42 = (matrix1.M41 * matrix2.M12) + (matrix1.M42 * matrix2.M22) + (matrix1.M43 * matrix2.M32) +
+                  (matrix1.M44 * matrix2.M42);
+
+        var m43 = (matrix1.M41 * matrix2.M13) + (matrix1.M42 * matrix2.M23) + (matrix1.M43 * matrix2.M33) +
+                  (matrix1.M44 * matrix2.M43);
+
+        var m44 = (matrix1.M41 * matrix2.M14) + (matrix1.M42 * matrix2.M24) + (matrix1.M43 * matrix2.M34) +
+                  (matrix1.M44 * matrix2.M44);
+
         result.M11 = m11;
         result.M12 = m12;
         result.M13 = m13;
@@ -1145,6 +1274,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 *= scaleFactor;
         matrix1.M43 *= scaleFactor;
         matrix1.M44 *= scaleFactor;
+
         return matrix1;
     }
 
@@ -1172,7 +1302,6 @@ public struct Matrix : IEquatable<Matrix>
         result.M42 = matrix1.M42 * scaleFactor;
         result.M43 = matrix1.M43 * scaleFactor;
         result.M44 = matrix1.M44 * scaleFactor;
-
     }
 
     /// <summary>
@@ -1185,12 +1314,14 @@ public struct Matrix : IEquatable<Matrix>
     /// </remarks>
     public static double[] TodoubleArray(Matrix matrix)
     {
-        double[] matarray = {
+        double[] matarray =
+        {
             matrix.M11, matrix.M12, matrix.M13, matrix.M14,
             matrix.M21, matrix.M22, matrix.M23, matrix.M24,
             matrix.M31, matrix.M32, matrix.M33, matrix.M34,
             matrix.M41, matrix.M42, matrix.M43, matrix.M44
         };
+
         return matarray;
     }
 
@@ -1217,6 +1348,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix.M42 = -matrix.M42;
         matrix.M43 = -matrix.M43;
         matrix.M44 = -matrix.M44;
+
         return matrix;
     }
 
@@ -1269,6 +1401,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 + matrix2.M42;
         matrix1.M43 = matrix1.M43 + matrix2.M43;
         matrix1.M44 = matrix1.M44 + matrix2.M44;
+
         return matrix1;
     }
 
@@ -1296,6 +1429,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 / matrix2.M42;
         matrix1.M43 = matrix1.M43 / matrix2.M43;
         matrix1.M44 = matrix1.M44 / matrix2.M44;
+
         return matrix1;
     }
 
@@ -1307,7 +1441,7 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>The result of dividing a matrix by a scalar.</returns>
     public static Matrix operator /(Matrix matrix, double divider)
     {
-        double num = 1f / divider;
+        var num = 1f / divider;
         matrix.M11 = matrix.M11 * num;
         matrix.M12 = matrix.M12 * num;
         matrix.M13 = matrix.M13 * num;
@@ -1324,6 +1458,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix.M42 = matrix.M42 * num;
         matrix.M43 = matrix.M43 * num;
         matrix.M44 = matrix.M44 * num;
+
         return matrix;
     }
 
@@ -1333,27 +1468,22 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="matrix1">Source <see cref="Matrix"/> on the left of the equal sign.</param>
     /// <param name="matrix2">Source <see cref="Matrix"/> on the right of the equal sign.</param>
     /// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
-    public static bool operator ==(Matrix matrix1, Matrix matrix2)
-    {
-        return (
-            matrix1.M11 == matrix2.M11 &&
-            matrix1.M12 == matrix2.M12 &&
-            matrix1.M13 == matrix2.M13 &&
-            matrix1.M14 == matrix2.M14 &&
-            matrix1.M21 == matrix2.M21 &&
-            matrix1.M22 == matrix2.M22 &&
-            matrix1.M23 == matrix2.M23 &&
-            matrix1.M24 == matrix2.M24 &&
-            matrix1.M31 == matrix2.M31 &&
-            matrix1.M32 == matrix2.M32 &&
-            matrix1.M33 == matrix2.M33 &&
-            matrix1.M34 == matrix2.M34 &&
-            matrix1.M41 == matrix2.M41 &&
-            matrix1.M42 == matrix2.M42 &&
-            matrix1.M43 == matrix2.M43 &&
-            matrix1.M44 == matrix2.M44                  
-        );
-    }
+    public static bool operator ==(Matrix matrix1, Matrix matrix2) => matrix1.M11 == matrix2.M11 &&
+                                                                      matrix1.M12 == matrix2.M12 &&
+                                                                      matrix1.M13 == matrix2.M13 &&
+                                                                      matrix1.M14 == matrix2.M14 &&
+                                                                      matrix1.M21 == matrix2.M21 &&
+                                                                      matrix1.M22 == matrix2.M22 &&
+                                                                      matrix1.M23 == matrix2.M23 &&
+                                                                      matrix1.M24 == matrix2.M24 &&
+                                                                      matrix1.M31 == matrix2.M31 &&
+                                                                      matrix1.M32 == matrix2.M32 &&
+                                                                      matrix1.M33 == matrix2.M33 &&
+                                                                      matrix1.M34 == matrix2.M34 &&
+                                                                      matrix1.M41 == matrix2.M41 &&
+                                                                      matrix1.M42 == matrix2.M42 &&
+                                                                      matrix1.M43 == matrix2.M43 &&
+                                                                      matrix1.M44 == matrix2.M44;
 
     /// <summary>
     /// Compares whether two <see cref="Matrix"/> instances are not equal without any tolerance.
@@ -1361,27 +1491,22 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="matrix1">Source <see cref="Matrix"/> on the left of the not equal sign.</param>
     /// <param name="matrix2">Source <see cref="Matrix"/> on the right of the not equal sign.</param>
     /// <returns><c>true</c> if the instances are not equal; <c>false</c> otherwise.</returns>
-    public static bool operator !=(Matrix matrix1, Matrix matrix2)
-    {
-        return (
-            matrix1.M11 != matrix2.M11 ||
-            matrix1.M12 != matrix2.M12 ||
-            matrix1.M13 != matrix2.M13 ||
-            matrix1.M14 != matrix2.M14 ||
-            matrix1.M21 != matrix2.M21 ||
-            matrix1.M22 != matrix2.M22 ||
-            matrix1.M23 != matrix2.M23 ||
-            matrix1.M24 != matrix2.M24 ||
-            matrix1.M31 != matrix2.M31 ||
-            matrix1.M32 != matrix2.M32 ||
-            matrix1.M33 != matrix2.M33 ||
-            matrix1.M34 != matrix2.M34 || 
-            matrix1.M41 != matrix2.M41 ||
-            matrix1.M42 != matrix2.M42 ||
-            matrix1.M43 != matrix2.M43 ||
-            matrix1.M44 != matrix2.M44                  
-        );
-    }
+    public static bool operator !=(Matrix matrix1, Matrix matrix2) => matrix1.M11 != matrix2.M11 ||
+                                                                      matrix1.M12 != matrix2.M12 ||
+                                                                      matrix1.M13 != matrix2.M13 ||
+                                                                      matrix1.M14 != matrix2.M14 ||
+                                                                      matrix1.M21 != matrix2.M21 ||
+                                                                      matrix1.M22 != matrix2.M22 ||
+                                                                      matrix1.M23 != matrix2.M23 ||
+                                                                      matrix1.M24 != matrix2.M24 ||
+                                                                      matrix1.M31 != matrix2.M31 ||
+                                                                      matrix1.M32 != matrix2.M32 ||
+                                                                      matrix1.M33 != matrix2.M33 ||
+                                                                      matrix1.M34 != matrix2.M34 ||
+                                                                      matrix1.M41 != matrix2.M41 ||
+                                                                      matrix1.M42 != matrix2.M42 ||
+                                                                      matrix1.M43 != matrix2.M43 ||
+                                                                      matrix1.M44 != matrix2.M44;
 
     /// <summary>
     /// Multiplies two matrixes.
@@ -1394,22 +1519,54 @@ public struct Matrix : IEquatable<Matrix>
     /// </remarks>
     public static Matrix operator *(Matrix matrix1, Matrix matrix2)
     {
-        var m11 = (((matrix1.M11 * matrix2.M11) + (matrix1.M12 * matrix2.M21)) + (matrix1.M13 * matrix2.M31)) + (matrix1.M14 * matrix2.M41);
-        var m12 = (((matrix1.M11 * matrix2.M12) + (matrix1.M12 * matrix2.M22)) + (matrix1.M13 * matrix2.M32)) + (matrix1.M14 * matrix2.M42);
-        var m13 = (((matrix1.M11 * matrix2.M13) + (matrix1.M12 * matrix2.M23)) + (matrix1.M13 * matrix2.M33)) + (matrix1.M14 * matrix2.M43);
-        var m14 = (((matrix1.M11 * matrix2.M14) + (matrix1.M12 * matrix2.M24)) + (matrix1.M13 * matrix2.M34)) + (matrix1.M14 * matrix2.M44);
-        var m21 = (((matrix1.M21 * matrix2.M11) + (matrix1.M22 * matrix2.M21)) + (matrix1.M23 * matrix2.M31)) + (matrix1.M24 * matrix2.M41);
-        var m22 = (((matrix1.M21 * matrix2.M12) + (matrix1.M22 * matrix2.M22)) + (matrix1.M23 * matrix2.M32)) + (matrix1.M24 * matrix2.M42);
-        var m23 = (((matrix1.M21 * matrix2.M13) + (matrix1.M22 * matrix2.M23)) + (matrix1.M23 * matrix2.M33)) + (matrix1.M24 * matrix2.M43);
-        var m24 = (((matrix1.M21 * matrix2.M14) + (matrix1.M22 * matrix2.M24)) + (matrix1.M23 * matrix2.M34)) + (matrix1.M24 * matrix2.M44);
-        var m31 = (((matrix1.M31 * matrix2.M11) + (matrix1.M32 * matrix2.M21)) + (matrix1.M33 * matrix2.M31)) + (matrix1.M34 * matrix2.M41);
-        var m32 = (((matrix1.M31 * matrix2.M12) + (matrix1.M32 * matrix2.M22)) + (matrix1.M33 * matrix2.M32)) + (matrix1.M34 * matrix2.M42);
-        var m33 = (((matrix1.M31 * matrix2.M13) + (matrix1.M32 * matrix2.M23)) + (matrix1.M33 * matrix2.M33)) + (matrix1.M34 * matrix2.M43);
-        var m34 = (((matrix1.M31 * matrix2.M14) + (matrix1.M32 * matrix2.M24)) + (matrix1.M33 * matrix2.M34)) + (matrix1.M34 * matrix2.M44);
-        var m41 = (((matrix1.M41 * matrix2.M11) + (matrix1.M42 * matrix2.M21)) + (matrix1.M43 * matrix2.M31)) + (matrix1.M44 * matrix2.M41);
-        var m42 = (((matrix1.M41 * matrix2.M12) + (matrix1.M42 * matrix2.M22)) + (matrix1.M43 * matrix2.M32)) + (matrix1.M44 * matrix2.M42);
-        var m43 = (((matrix1.M41 * matrix2.M13) + (matrix1.M42 * matrix2.M23)) + (matrix1.M43 * matrix2.M33)) + (matrix1.M44 * matrix2.M43);
-        var m44 = (((matrix1.M41 * matrix2.M14) + (matrix1.M42 * matrix2.M24)) + (matrix1.M43 * matrix2.M34)) + (matrix1.M44 * matrix2.M44);
+        var m11 = (matrix1.M11 * matrix2.M11) + (matrix1.M12 * matrix2.M21) + (matrix1.M13 * matrix2.M31) +
+                  (matrix1.M14 * matrix2.M41);
+
+        var m12 = (matrix1.M11 * matrix2.M12) + (matrix1.M12 * matrix2.M22) + (matrix1.M13 * matrix2.M32) +
+                  (matrix1.M14 * matrix2.M42);
+
+        var m13 = (matrix1.M11 * matrix2.M13) + (matrix1.M12 * matrix2.M23) + (matrix1.M13 * matrix2.M33) +
+                  (matrix1.M14 * matrix2.M43);
+
+        var m14 = (matrix1.M11 * matrix2.M14) + (matrix1.M12 * matrix2.M24) + (matrix1.M13 * matrix2.M34) +
+                  (matrix1.M14 * matrix2.M44);
+
+        var m21 = (matrix1.M21 * matrix2.M11) + (matrix1.M22 * matrix2.M21) + (matrix1.M23 * matrix2.M31) +
+                  (matrix1.M24 * matrix2.M41);
+
+        var m22 = (matrix1.M21 * matrix2.M12) + (matrix1.M22 * matrix2.M22) + (matrix1.M23 * matrix2.M32) +
+                  (matrix1.M24 * matrix2.M42);
+
+        var m23 = (matrix1.M21 * matrix2.M13) + (matrix1.M22 * matrix2.M23) + (matrix1.M23 * matrix2.M33) +
+                  (matrix1.M24 * matrix2.M43);
+
+        var m24 = (matrix1.M21 * matrix2.M14) + (matrix1.M22 * matrix2.M24) + (matrix1.M23 * matrix2.M34) +
+                  (matrix1.M24 * matrix2.M44);
+
+        var m31 = (matrix1.M31 * matrix2.M11) + (matrix1.M32 * matrix2.M21) + (matrix1.M33 * matrix2.M31) +
+                  (matrix1.M34 * matrix2.M41);
+
+        var m32 = (matrix1.M31 * matrix2.M12) + (matrix1.M32 * matrix2.M22) + (matrix1.M33 * matrix2.M32) +
+                  (matrix1.M34 * matrix2.M42);
+
+        var m33 = (matrix1.M31 * matrix2.M13) + (matrix1.M32 * matrix2.M23) + (matrix1.M33 * matrix2.M33) +
+                  (matrix1.M34 * matrix2.M43);
+
+        var m34 = (matrix1.M31 * matrix2.M14) + (matrix1.M32 * matrix2.M24) + (matrix1.M33 * matrix2.M34) +
+                  (matrix1.M34 * matrix2.M44);
+
+        var m41 = (matrix1.M41 * matrix2.M11) + (matrix1.M42 * matrix2.M21) + (matrix1.M43 * matrix2.M31) +
+                  (matrix1.M44 * matrix2.M41);
+
+        var m42 = (matrix1.M41 * matrix2.M12) + (matrix1.M42 * matrix2.M22) + (matrix1.M43 * matrix2.M32) +
+                  (matrix1.M44 * matrix2.M42);
+
+        var m43 = (matrix1.M41 * matrix2.M13) + (matrix1.M42 * matrix2.M23) + (matrix1.M43 * matrix2.M33) +
+                  (matrix1.M44 * matrix2.M43);
+
+        var m44 = (matrix1.M41 * matrix2.M14) + (matrix1.M42 * matrix2.M24) + (matrix1.M43 * matrix2.M34) +
+                  (matrix1.M44 * matrix2.M44);
+
         matrix1.M11 = m11;
         matrix1.M12 = m12;
         matrix1.M13 = m13;
@@ -1426,6 +1583,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = m42;
         matrix1.M43 = m43;
         matrix1.M44 = m44;
+
         return matrix1;
     }
 
@@ -1453,6 +1611,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix.M42 = matrix.M42 * scaleFactor;
         matrix.M43 = matrix.M43 * scaleFactor;
         matrix.M44 = matrix.M44 * scaleFactor;
+
         return matrix;
     }
 
@@ -1480,6 +1639,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 - matrix2.M42;
         matrix1.M43 = matrix1.M43 - matrix2.M43;
         matrix1.M44 = matrix1.M44 - matrix2.M44;
+
         return matrix1;
     }
 
@@ -1506,6 +1666,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix.M42 = -matrix.M42;
         matrix.M43 = -matrix.M43;
         matrix.M44 = -matrix.M44;
+
         return matrix;
     }
 
@@ -1533,6 +1694,7 @@ public struct Matrix : IEquatable<Matrix>
         matrix1.M42 = matrix1.M42 - matrix2.M42;
         matrix1.M43 = matrix1.M43 - matrix2.M43;
         matrix1.M44 = matrix1.M44 - matrix2.M44;
+
         return matrix1;
     }
 
@@ -1570,13 +1732,10 @@ public struct Matrix : IEquatable<Matrix>
     /// {M41:[<see cref="M41"/>] M42:[<see cref="M42"/>] M43:[<see cref="M43"/>] M44:[<see cref="M44"/>]}
     /// </summary>
     /// <returns>A <see cref="String"/> representation of this <see cref="Matrix"/>.</returns>
-    public override string ToString()
-    {
-        return "{M11:" + M11 + " M12:" + M12 + " M13:" + M13 + " M14:" + M14 + "}"
-               + " {M21:" + M21 + " M22:" + M22 + " M23:" + M23 + " M24:" + M24 + "}"
-               + " {M31:" + M31 + " M32:" + M32 + " M33:" + M33 + " M34:" + M34 + "}"
-               + " {M41:" + M41 + " M42:" + M42 + " M43:" + M43 + " M44:" + M44 + "}";
-    }
+    public override string ToString() => "{M11:" + M11 + " M12:" + M12 + " M13:" + M13 + " M14:" + M14 + "}"
+                                         + " {M21:" + M21 + " M22:" + M22 + " M23:" + M23 + " M24:" + M24 + "}"
+                                         + " {M31:" + M31 + " M32:" + M32 + " M33:" + M33 + " M34:" + M34 + "}"
+                                         + " {M41:" + M41 + " M42:" + M42 + " M43:" + M43 + " M44:" + M44 + "}";
 
     /// <summary>
     /// Swap the matrix rows and columns.
@@ -1587,6 +1746,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         Matrix ret;
         Transpose(ref matrix, out ret);
+
         return ret;
     }
 
@@ -1598,7 +1758,7 @@ public struct Matrix : IEquatable<Matrix>
     public static void Transpose(ref Matrix matrix, out Matrix result)
     {
         Matrix ret;
-            
+
         ret.M11 = matrix.M11;
         ret.M12 = matrix.M21;
         ret.M13 = matrix.M31;
@@ -1618,48 +1778,62 @@ public struct Matrix : IEquatable<Matrix>
         ret.M42 = matrix.M24;
         ret.M43 = matrix.M34;
         ret.M44 = matrix.M44;
-            
+
         result = ret;
     }
+
     #endregion
-        
+
     #region Private Static Methods
-        
+
     /// <summary>
     /// Helper method for using the Laplace expansion theorem using two rows expansions to calculate major and 
     /// minor determinants of a 4x4 matrix. This method is used for inverting a matrix.
     /// </summary>
-    private static void FindDeterminants(ref Matrix matrix, out double major, 
-        out double minor1, out double minor2, out double minor3, out double minor4, out double minor5, out double minor6,
-        out double minor7, out double minor8, out double minor9, out double minor10, out double minor11, out double minor12)
+    private static void FindDeterminants(
+        ref Matrix matrix,
+        out double major,
+        out double minor1,
+        out double minor2,
+        out double minor3,
+        out double minor4,
+        out double minor5,
+        out double minor6,
+        out double minor7,
+        out double minor8,
+        out double minor9,
+        out double minor10,
+        out double minor11,
+        out double minor12
+    )
     {
-        double det1 = (double)matrix.M11 * (double)matrix.M22 - (double)matrix.M12 * (double)matrix.M21;
-        double det2 = (double)matrix.M11 * (double)matrix.M23 - (double)matrix.M13 * (double)matrix.M21;
-        double det3 = (double)matrix.M11 * (double)matrix.M24 - (double)matrix.M14 * (double)matrix.M21;
-        double det4 = (double)matrix.M12 * (double)matrix.M23 - (double)matrix.M13 * (double)matrix.M22;
-        double det5 = (double)matrix.M12 * (double)matrix.M24 - (double)matrix.M14 * (double)matrix.M22;
-        double det6 = (double)matrix.M13 * (double)matrix.M24 - (double)matrix.M14 * (double)matrix.M23;
-        double det7 = (double)matrix.M31 * (double)matrix.M42 - (double)matrix.M32 * (double)matrix.M41;
-        double det8 = (double)matrix.M31 * (double)matrix.M43 - (double)matrix.M33 * (double)matrix.M41;
-        double det9 = (double)matrix.M31 * (double)matrix.M44 - (double)matrix.M34 * (double)matrix.M41;
-        double det10 = (double)matrix.M32 * (double)matrix.M43 - (double)matrix.M33 * (double)matrix.M42;
-        double det11 = (double)matrix.M32 * (double)matrix.M44 - (double)matrix.M34 * (double)matrix.M42;
-        double det12 = (double)matrix.M33 * (double)matrix.M44 - (double)matrix.M34 * (double)matrix.M43;
-                
-        major = (double)(det1*det12 - det2*det11 + det3*det10 + det4*det9 - det5*det8 + det6*det7);
-        minor1 = (double)det1;
-        minor2 = (double)det2;
-        minor3 = (double)det3;
-        minor4 = (double)det4;
-        minor5 = (double)det5;
-        minor6 = (double)det6;
-        minor7 = (double)det7;
-        minor8 = (double)det8;
-        minor9 = (double)det9;
-        minor10 = (double)det10;
-        minor11 = (double)det11;
-        minor12 = (double)det12;
+        var det1 = ((double) matrix.M11 * (double) matrix.M22) - ((double) matrix.M12 * (double) matrix.M21);
+        var det2 = ((double) matrix.M11 * (double) matrix.M23) - ((double) matrix.M13 * (double) matrix.M21);
+        var det3 = ((double) matrix.M11 * (double) matrix.M24) - ((double) matrix.M14 * (double) matrix.M21);
+        var det4 = ((double) matrix.M12 * (double) matrix.M23) - ((double) matrix.M13 * (double) matrix.M22);
+        var det5 = ((double) matrix.M12 * (double) matrix.M24) - ((double) matrix.M14 * (double) matrix.M22);
+        var det6 = ((double) matrix.M13 * (double) matrix.M24) - ((double) matrix.M14 * (double) matrix.M23);
+        var det7 = ((double) matrix.M31 * (double) matrix.M42) - ((double) matrix.M32 * (double) matrix.M41);
+        var det8 = ((double) matrix.M31 * (double) matrix.M43) - ((double) matrix.M33 * (double) matrix.M41);
+        var det9 = ((double) matrix.M31 * (double) matrix.M44) - ((double) matrix.M34 * (double) matrix.M41);
+        var det10 = ((double) matrix.M32 * (double) matrix.M43) - ((double) matrix.M33 * (double) matrix.M42);
+        var det11 = ((double) matrix.M32 * (double) matrix.M44) - ((double) matrix.M34 * (double) matrix.M42);
+        var det12 = ((double) matrix.M33 * (double) matrix.M44) - ((double) matrix.M34 * (double) matrix.M43);
+
+        major = (double) ((det1 * det12) - (det2 * det11) + (det3 * det10) + (det4 * det9) - (det5 * det8) + (det6 * det7));
+        minor1 = (double) det1;
+        minor2 = (double) det2;
+        minor3 = (double) det3;
+        minor4 = (double) det4;
+        minor5 = (double) det5;
+        minor6 = (double) det6;
+        minor7 = (double) det7;
+        minor8 = (double) det8;
+        minor9 = (double) det9;
+        minor10 = (double) det10;
+        minor11 = (double) det11;
+        minor12 = (double) det12;
     }
-        
+
     #endregion
 }

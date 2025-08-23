@@ -9,7 +9,8 @@ namespace TrueCraft.Core.Inventory;
 /// The backing store for the contents of a Window.
 /// Eg. the Inventory Window, or the Crafting Table
 /// </summary>
-public abstract class Window<T> : IWindow<T> where T : ISlot
+public abstract class Window<T> : IWindow<T>
+    where T : ISlot
 {
     private readonly IItemRepository _itemRepository;
     private readonly sbyte _windowID;
@@ -31,7 +32,13 @@ public abstract class Window<T> : IWindow<T> where T : ISlot
     /// The MainInventory must be the second last item.
     /// The Hotbar must be the last item.
     /// </param>
-    protected Window(IItemRepository itemRepository,sbyte windowID, WindowType windowType, string name, ISlots<T>[] slots)
+    protected Window(
+        IItemRepository itemRepository,
+        sbyte windowID,
+        WindowType windowType,
+        string name,
+        ISlots<T>[] slots
+    )
     {
         _itemRepository = itemRepository;
         _windowID = windowID;
@@ -43,24 +50,21 @@ public abstract class Window<T> : IWindow<T> where T : ISlot
         _hotbarIndex = _slots.Length - 1;
     }
 
-    protected IItemRepository ItemRepository { get => _itemRepository; }
+    protected IItemRepository ItemRepository => _itemRepository;
 
     public event EventHandler<WindowClosedEventArgs>? WindowClosed;
 
-    protected void OnWindowClosed()
-    {
-        WindowClosed?.Invoke(this, new WindowClosedEventArgs(_windowID));
-    }
+    protected void OnWindowClosed() => WindowClosed?.Invoke(this, new WindowClosedEventArgs(_windowID));
 
-    public sbyte WindowID { get => _windowID; }
+    public sbyte WindowID => _windowID;
 
-    public string Name { get => _name; }
+    public string Name => _name;
 
-    public WindowType Type { get => _windowType; }
+    public WindowType Type => _windowType;
 
-    public int Count { get => _count; }
+    public int Count => _count;
 
-    protected ISlots<T>[] Slots { get => _slots; }
+    protected ISlots<T>[] Slots => _slots;
 
     /// <summary>
     /// Gets the index within Slots of the ISlots instance containing the given slotIndex.
@@ -71,13 +75,18 @@ public abstract class Window<T> : IWindow<T> where T : ISlot
     /// an index within the returned ISlots instance.</remarks>
     protected int GetAreaIndex(int slotIndex)
     {
-        int rv = 0;
-        int count = 0;
+        var rv = 0;
+        var count = 0;
+
         while (count < _count && slotIndex >= count)
         {
             count += _slots[rv].Count;
+
             if (slotIndex < count)
+            {
                 return rv;
+            }
+
             rv++;
         }
 
@@ -85,25 +94,13 @@ public abstract class Window<T> : IWindow<T> where T : ISlot
     }
 
     /// <inheritdoc />
-    public virtual ISlots<T> MainInventory
-    {
-        get
-        {
-            return _slots[_mainInventoryIndex];
-        }
-    }
+    public virtual ISlots<T> MainInventory => _slots[_mainInventoryIndex];
 
     /// <inheritdoc />
     public virtual int MainSlotIndex { get; protected set; }
 
     /// <inheritdoc />
-    public virtual ISlots<T> Hotbar
-    {
-        get
-        {
-            return _slots[_hotbarIndex];
-        }
-    }
+    public virtual ISlots<T> Hotbar => _slots[_hotbarIndex];
 
     /// <inheritdoc />
     public virtual int HotbarSlotIndex { get; protected set; }
@@ -112,27 +109,36 @@ public abstract class Window<T> : IWindow<T> where T : ISlot
     {
         get
         {
-            int startIndex = 0;
-            foreach (ISlots<T> area in _slots)
+            var startIndex = 0;
+
+            foreach (var area in _slots)
             {
                 if (index >= startIndex && index < startIndex + area.Count)
+                {
                     return area[index - startIndex].Item;
+                }
+
                 startIndex += area.Count;
             }
+
             throw new IndexOutOfRangeException($"{nameof(index)} = {index} is outside the valid range of [0,{_count})");
         }
         set
         {
-            int startIndex = 0;
+            var startIndex = 0;
+
             foreach (var area in _slots)
             {
                 if (index >= startIndex && index < startIndex + area.Count)
                 {
                     area[index - startIndex].Item = value;
+
                     return;
                 }
+
                 startIndex += area.Count;
             }
+
             throw new IndexOutOfRangeException($"{nameof(index)} = {index} is outside the valid range of [0,{_count})");
         }
     }
@@ -145,21 +151,23 @@ public abstract class Window<T> : IWindow<T> where T : ISlot
 
     public virtual ItemStack StoreItemStack(ItemStack items)
     {
-        ItemStack remaining = Hotbar.StoreItemStack(items, true);
+        var remaining = Hotbar.StoreItemStack(items, true);
         remaining = MainInventory.StoreItemStack(remaining, true);
         remaining = Hotbar.StoreItemStack(remaining, false);
+
         return MainInventory.StoreItemStack(remaining, false);
     }
 
-
     protected ItemStack[] AllItems()
     {
-        int jul = this.Count;
-        ItemStack[] rv = new ItemStack[jul];
-        for (int j = 0; j < jul; j++)
+        var jul = Count;
+        var rv = new ItemStack[jul];
+
+        for (var j = 0; j < jul; j++)
+        {
             rv[j] = this[j];
+        }
 
         return rv;
     }
-
 }

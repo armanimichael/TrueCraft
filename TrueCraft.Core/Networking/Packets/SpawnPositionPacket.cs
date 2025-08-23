@@ -6,7 +6,7 @@
 /// </summary>
 public struct SpawnPositionPacket : IPacket
 {
-    public byte ID { get { return 0x06; } }
+    public byte ID => 0x06;
 
     public SpawnPositionPacket(int x, int y, int z)
     {

@@ -39,9 +39,7 @@ public sealed class MouseHandler : GameComponent
     /// </summary>
     /// <param name="game">The parent game for the component.</param>
     public MouseHandler(Game game)
-        : base(game)
-    {
-    }
+        : base(game) { }
 
     /// <summary>
     /// Initializes this mouse component.
@@ -74,19 +72,30 @@ public sealed class MouseHandler : GameComponent
     private void Process(MouseState newState, MouseState oldState)
     {
         // Movement.
-        if ((newState.X != oldState.X) || (newState.Y != oldState.Y))
+        if (newState.X != oldState.X || newState.Y != oldState.Y)
         {
-            var args = new MouseMoveEventArgs(newState.X, newState.Y, (newState.X - oldState.X), (newState.Y - oldState.Y));
+            var args = new MouseMoveEventArgs(newState.X, newState.Y, newState.X - oldState.X, newState.Y - oldState.Y);
+
             if (Move != null)
+            {
                 Move(this, args);
+            }
         }
 
         // Scrolling.
         if (newState.ScrollWheelValue != oldState.ScrollWheelValue)
         {
-            var args = new MouseScrollEventArgs(newState.X, newState.Y, newState.ScrollWheelValue, (newState.ScrollWheelValue - oldState.ScrollWheelValue));
+            var args = new MouseScrollEventArgs(
+                newState.X,
+                newState.Y,
+                newState.ScrollWheelValue,
+                newState.ScrollWheelValue - oldState.ScrollWheelValue
+            );
+
             if (Scroll != null)
+            {
                 Scroll(this, args);
+            }
         }
 
         // A bit of code duplication here, shame XNA doesn't expose button state through an enumeration...
@@ -94,48 +103,78 @@ public sealed class MouseHandler : GameComponent
         // Left button.
         if (newState.LeftButton != oldState.LeftButton)
         {
-            var args = new MouseButtonEventArgs(newState.X, newState.Y, MouseButton.Left, (newState.LeftButton == ButtonState.Pressed));
+            var args = new MouseButtonEventArgs(
+                newState.X,
+                newState.Y,
+                MouseButton.Left,
+                newState.LeftButton == ButtonState.Pressed
+            );
+
             if (args.IsPressed)
             {
                 if (ButtonDown != null)
+                {
                     ButtonDown(this, args);
+                }
             }
             else
             {
                 if (ButtonUp != null)
+                {
                     ButtonUp(this, args);
+                }
             }
         }
 
         // Right button.
         if (newState.RightButton != oldState.RightButton)
         {
-            var args = new MouseButtonEventArgs(newState.X, newState.Y, MouseButton.Right, (newState.RightButton == ButtonState.Pressed));
+            var args = new MouseButtonEventArgs(
+                newState.X,
+                newState.Y,
+                MouseButton.Right,
+                newState.RightButton == ButtonState.Pressed
+            );
+
             if (args.IsPressed)
             {
                 if (ButtonDown != null)
+                {
                     ButtonDown(this, args);
+                }
             }
             else
             {
                 if (ButtonUp != null)
+                {
                     ButtonUp(this, args);
+                }
             }
         }
 
         // Middle button.
         if (newState.MiddleButton != oldState.MiddleButton)
         {
-            var args = new MouseButtonEventArgs(newState.X, newState.Y, MouseButton.Middle, (newState.MiddleButton == ButtonState.Pressed));
+            var args = new MouseButtonEventArgs(
+                newState.X,
+                newState.Y,
+                MouseButton.Middle,
+                newState.MiddleButton == ButtonState.Pressed
+            );
+
             if (args.IsPressed)
             {
                 if (ButtonDown != null)
+                {
                     ButtonDown(this, args);
+                }
             }
             else
             {
                 if (ButtonUp != null)
+                {
                     ButtonUp(this, args);
+                }
             }
         }
     }

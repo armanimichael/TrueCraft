@@ -23,18 +23,22 @@ public class Worlds : IEnumerable<WorldInfo>
     public Worlds(string baseDirectory)
     {
         if (!Directory.Exists(baseDirectory))
+        {
             Directory.CreateDirectory(Paths.Worlds);
+        }
 
         _baseDirectory = baseDirectory;
 
-        string[] directories = Directory.GetDirectories(baseDirectory);
+        var directories = Directory.GetDirectories(baseDirectory);
         _savedWorlds = new List<WorldInfo>(directories.Length);
-        foreach (string d in directories)
+
+        foreach (var d in directories)
         {
-            string manifestFile = Path.Combine(d, "manifest.nbt");
+            var manifestFile = Path.Combine(d, "manifest.nbt");
+
             if (File.Exists(manifestFile))
             {
-                NbtFile file = new NbtFile(manifestFile);
+                var file = new NbtFile(manifestFile);
                 _savedWorlds.Add(new WorldInfo(d, file));
             }
         }
@@ -43,7 +47,7 @@ public class Worlds : IEnumerable<WorldInfo>
     /// <summary>
     /// Gets the Base Directory where the Worlds in this list are stored.
     /// </summary>
-    public string BaseDirectory { get => _baseDirectory; }
+    public string BaseDirectory => _baseDirectory;
 
     /// <summary>
     /// Creates a new World.
@@ -54,16 +58,17 @@ public class Worlds : IEnumerable<WorldInfo>
     public WorldInfo CreateNewWorld(string name, string seed)
     {
         int s;
+
         if (!int.TryParse(seed, out s))
-        {
             // TODO: Hash seed string
+        {
             s = MathHelper.Random.Next();
         }
 
-        string newWorldFolder = TrueCraft.World.World.CreateWorld(s, Paths.Worlds , name);
-        string manifestFile = Path.Combine(newWorldFolder, "manifest.nbt");
+        var newWorldFolder = World.World.CreateWorld(s, Paths.Worlds, name);
+        var manifestFile = Path.Combine(newWorldFolder, "manifest.nbt");
 
-        WorldInfo worldInfo = new WorldInfo(newWorldFolder, new NbtFile(manifestFile));
+        var worldInfo = new WorldInfo(newWorldFolder, new NbtFile(manifestFile));
         _savedWorlds.Add(worldInfo);
 
         return worldInfo;
@@ -75,20 +80,20 @@ public class Worlds : IEnumerable<WorldInfo>
     /// <param name="directory"></param>
     public void Remove(string directory)
     {
-        int j = 0;
+        var j = 0;
+
         while (j < _savedWorlds.Count && _savedWorlds[j].Directory != directory)
+        {
             j++;
+        }
+
         if (j < _savedWorlds.Count)
+        {
             _savedWorlds.RemoveAt(j);
+        }
     }
 
-    public IEnumerator<WorldInfo> GetEnumerator()
-    {
-        return _savedWorlds.GetEnumerator();
-    }
+    public IEnumerator<WorldInfo> GetEnumerator() => _savedWorlds.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _savedWorlds.GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => _savedWorlds.GetEnumerator();
 }

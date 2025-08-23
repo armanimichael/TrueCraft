@@ -22,38 +22,42 @@ public class PlayerEntity : LivingEntity
     private bool _isSprinting;
     private bool _isCrouching;
 
-    public PlayerEntity(IDimension dimension, IEntityManager entityManager,
-        string username) :
-        base(dimension, entityManager, 20,   // Max Health
+    public PlayerEntity(
+        IDimension dimension,
+        IEntityManager entityManager,
+        string username
+    )
+        :
+        base(
+            dimension,
+            entityManager,
+            20, // Max Health
             new Size(Width, Height, Depth),
-            1.6f,                           // Acceleration Due To Gravity
-            0.4f,                           // Drag
-            78.4f)                          // Terminal Velocity
+            1.6f, // Acceleration Due To Gravity
+            0.4f, // Drag
+            78.4f
+        ) // Terminal Velocity
     {
         _username = username;
         _isSprinting = false;
         _isCrouching = false;
     }
 
+    public override IPacket SpawnPacket =>
+        new SpawnPlayerPacket(
+            EntityID,
+            _username,
+            MathHelper.CreateAbsoluteInt(Position.X),
+            MathHelper.CreateAbsoluteInt(Position.Y),
+            MathHelper.CreateAbsoluteInt(Position.Z),
+            MathHelper.CreateRotationByte(Yaw),
+            MathHelper.CreateRotationByte(Pitch),
+            0 /* Note: current item is set through other means */
+        );
 
-    public override IPacket SpawnPacket
-    {
-        get
-        {
-            return new SpawnPlayerPacket(EntityID, _username,
-                MathHelper.CreateAbsoluteInt(Position.X),
-                MathHelper.CreateAbsoluteInt(Position.Y),
-                MathHelper.CreateAbsoluteInt(Position.Z),
-                MathHelper.CreateRotationByte(Yaw),
-                MathHelper.CreateRotationByte(Pitch), 0 /* Note: current item is set through other means */);
-        }
-    }
-
-    public override Size Size
-    {
+    public override Size Size =>
         // TODO: This will change when Crouching.
-        get { return new Size(Width, Height, Depth); }
-    }
+        new(Width, Height, Depth);
 
     public bool IsSprinting
     {
@@ -61,7 +65,10 @@ public class PlayerEntity : LivingEntity
         set
         {
             if (_isSprinting == value)
+            {
                 return;
+            }
+
             _isSprinting = value;
             OnPropertyChanged();
         }
@@ -73,7 +80,10 @@ public class PlayerEntity : LivingEntity
         set
         {
             if (_isCrouching == value)
+            {
                 return;
+            }
+
             _isCrouching = value;
             OnPropertyChanged();
         }
@@ -81,14 +91,14 @@ public class PlayerEntity : LivingEntity
 
     public Vector3 OldPosition
     {
-        get
-        {
-            return _oldPosition;
-        }
+        get => _oldPosition;
         private set
         {
             if (_oldPosition == value)
+            {
                 return;
+            }
+
             _oldPosition = value;
             OnPropertyChanged();
         }
@@ -96,14 +106,14 @@ public class PlayerEntity : LivingEntity
 
     public override Vector3 Position
     {
-        get
-        {
-            return _position;
-        }
+        get => _position;
         set
         {
             if (_position == value)
+            {
                 return;
+            }
+
             base.Position = value;
             OldPosition = _position;
         }
@@ -111,11 +121,14 @@ public class PlayerEntity : LivingEntity
 
     public short SelectedSlot
     {
-        get { return _selectedSlot; }
+        get => _selectedSlot;
         set
         {
             if (_selectedSlot == value)
+            {
                 return;
+            }
+
             _selectedSlot = value;
             OnPropertyChanged();
         }
@@ -123,11 +136,14 @@ public class PlayerEntity : LivingEntity
 
     public Vector3 SpawnPoint
     {
-        get { return _spawnPoint; }
+        get => _spawnPoint;
         set
         {
             if (_spawnPoint == value)
+            {
                 return;
+            }
+
             _spawnPoint = value;
             OnPropertyChanged();
         }
@@ -135,8 +151,6 @@ public class PlayerEntity : LivingEntity
 
     // TODO: Can zombies pick up Items?  Perhaps, this needs to be in the base class.
     public event EventHandler<EntityEventArgs>? PickUpItem;
-    public void OnPickUpItem(ItemEntity item)
-    {
-        PickUpItem?.Invoke(this, new EntityEventArgs(item));
-    }
+
+    public void OnPickUpItem(ItemEntity item) => PickUpItem?.Invoke(this, new EntityEventArgs(item));
 }

@@ -13,7 +13,7 @@ public class ChangeHeldItemPacketTest
     [TestCase(0)]
     public void Ctor(short slot)
     {
-        ChangeHeldItemPacket actual = new ChangeHeldItemPacket(slot);
+        var actual = new ChangeHeldItemPacket(slot);
 
         Assert.AreEqual(slot, actual.Slot);
     }
@@ -26,22 +26,25 @@ public class ChangeHeldItemPacketTest
     {
 #if DEBUG
         if (!valid)
+        {
             Assert.Throws<ArgumentOutOfRangeException>(() => new ChangeHeldItemPacket(slot));
+        }
         else
+        {
             Assert.DoesNotThrow(() => new ChangeHeldItemPacket(slot));
+        }
 #else
             Assert.Pass();
 #endif
     }
 
-
     private static byte[] ArgsToByteArray(short slot)
     {
-        byte[] rv = new byte[3];
+        var rv = new byte[3];
 
         rv[0] = 0x10;
-        rv[1] = (byte)((slot >> 8) & 0x00ff);
-        rv[2] = (byte)(slot & 0x00ff);
+        rv[1] = (byte) ((slot >> 8) & 0x00ff);
+        rv[2] = (byte) (slot & 0x00ff);
 
         return rv;
     }
@@ -50,28 +53,29 @@ public class ChangeHeldItemPacketTest
     [TestCase(7)]
     public void WriteStream(short slot)
     {
-        byte[] expected = ArgsToByteArray(slot);
-        byte[] actual = new byte[3];
-        ChangeHeldItemPacket packet = new ChangeHeldItemPacket(slot);
+        var expected = ArgsToByteArray(slot);
+        var actual = new byte[3];
+        var packet = new ChangeHeldItemPacket(slot);
 
         using (Stream strm = new MemoryStream(actual))
         {
-            MinecraftStream mcStrm = new MinecraftStream(strm);
-            mcStrm.WriteByte(0x10);     // TODO: redo all packets to write their own IDs!!!!
+            var mcStrm = new MinecraftStream(strm);
+            mcStrm.WriteByte(0x10); // TODO: redo all packets to write their own IDs!!!!
             packet.WritePacket(mcStrm);
         }
 
-        for (int j = 0; j < actual.Length; j++)
+        for (var j = 0; j < actual.Length; j++)
+        {
             Assert.AreEqual(expected[j], actual[j]);
+        }
     }
-
 
     [TestCase(0)]
     [TestCase(7)]
     public void ReadStream(short slot)
     {
-        byte[] inStream = ArgsToByteArray(slot);
-        ChangeHeldItemPacket actual = new ChangeHeldItemPacket(slot);
+        var inStream = ArgsToByteArray(slot);
+        var actual = new ChangeHeldItemPacket(slot);
 
         using (Stream strm = new MemoryStream(inStream))
         {

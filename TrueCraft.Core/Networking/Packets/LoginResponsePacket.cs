@@ -7,7 +7,7 @@ namespace TrueCraft.Core.Networking.Packets;
 /// </summary>
 public struct LoginResponsePacket : IPacket
 {
-    public byte ID { get { return 0x01; } }
+    public byte ID => 0x01;
 
     public LoginResponsePacket(int entityID, long seed, DimensionID dimension)
     {
@@ -25,7 +25,7 @@ public struct LoginResponsePacket : IPacket
         EntityID = stream.ReadInt32();
         stream.ReadString(); // Unused
         Seed = stream.ReadInt64();
-        Dimension = (DimensionID)stream.ReadInt8();
+        Dimension = (DimensionID) stream.ReadInt8();
     }
 
     public void WritePacket(IMinecraftStream stream)
@@ -33,6 +33,6 @@ public struct LoginResponsePacket : IPacket
         stream.WriteInt32(EntityID);
         stream.WriteString(""); // Unused
         stream.WriteInt64(Seed);
-        stream.WriteInt8((sbyte)Dimension);
+        stream.WriteInt8((sbyte) Dimension);
     }
 }

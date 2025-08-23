@@ -5,24 +5,18 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class JukeboxBlock : BlockProvider, IBurnableItem
 {
     public static readonly byte BlockID = 0x54;
-        
-    public override byte ID { get { return 0x54; } }
-        
-    public override double BlastResistance { get { return 30; } }
 
-    public override double Hardness { get { return 2; } }
+    public override byte ID => 0x54;
 
-    public override byte Luminance { get { return 0; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Jukebox";
-    }
+    public override double BlastResistance => 30;
 
-    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(15); } }
+    public override double Hardness => 2;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(10, 4);
-    }
+    public override byte Luminance => 0;
+
+    public override string GetDisplayName(short metadata) => "Jukebox";
+
+    public TimeSpan BurnTime => TimeSpan.FromSeconds(15);
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(10, 4);
 }

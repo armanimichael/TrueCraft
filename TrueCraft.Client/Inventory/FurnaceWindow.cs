@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using fNbt;
 using TrueCraft.Client.Handlers;
 using TrueCraft.Client.Modules;
 using TrueCraft.Core;
@@ -25,14 +24,27 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
 
     private const int _outputSlotIndex = 2;
 
-    public FurnaceWindow(IItemRepository itemRepository,
-        ISlotFactory<ISlot> slotFactory, sbyte windowID,
-        ISlots<ISlot> mainInventory, ISlots<ISlot> hotBar) :
-        base(itemRepository, windowID, WindowType.Furnace, "Furnace",
-            new ISlots<ISlot>[] { GetSlots(itemRepository, slotFactory),
+    public FurnaceWindow(
+        IItemRepository itemRepository,
+        ISlotFactory<ISlot> slotFactory,
+        sbyte windowID,
+        ISlots<ISlot> mainInventory,
+        ISlots<ISlot> hotBar
+    )
+        :
+        base(
+            itemRepository,
+            windowID,
+            WindowType.Furnace,
+            "Furnace",
+            new ISlots<ISlot>[]
+            {
                 GetSlots(itemRepository, slotFactory),
                 GetSlots(itemRepository, slotFactory),
-                mainInventory, hotBar })
+                GetSlots(itemRepository, slotFactory),
+                mainInventory, hotBar
+            }
+        )
     {
         IngredientSlotIndex = 0;
         FuelSlotIndex = 1;
@@ -41,11 +53,14 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
         HotbarSlotIndex = MainSlotIndex + MainInventory.Count;
     }
 
-    private static ISlots<ISlot> GetSlots(IItemRepository itemRepository,
-        ISlotFactory<ISlot> slotFactory)
+    private static Slots<ISlot> GetSlots(
+        IItemRepository itemRepository,
+        ISlotFactory<ISlot> slotFactory
+    )
     {
-        List<ISlot> lst = new List<ISlot>();
+        var lst = new List<ISlot>();
         lst.Add(slotFactory.GetSlot(itemRepository));
+
         return new Slots<ISlot>(itemRepository, lst, 1);
     }
 
@@ -55,33 +70,35 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
     /// <inheritdoc />
     public int BurnProgress { get; set; }
 
-    public ISlots<ISlot> Ingredient => Slots[(int)AreaIndices.Ingredient];
+    public ISlots<ISlot> Ingredient => Slots[(int) AreaIndices.Ingredient];
 
     /// <inheritdoc />
     public int IngredientSlotIndex { get; }
 
-    public ISlots<ISlot> Fuel => Slots[(int)AreaIndices.Fuel];
+    public ISlots<ISlot> Fuel => Slots[(int) AreaIndices.Fuel];
 
     /// <inheritdoc />
     public int FuelSlotIndex { get; }
 
-    public ISlots<ISlot> Output => Slots[(int)AreaIndices.Output];
+    public ISlots<ISlot> Output => Slots[(int) AreaIndices.Output];
 
     /// <inheritdoc />
     public int OutputSlotIndex { get; }
 
-    public override bool IsOutputSlot(int slotIndex)
-    {
-        return slotIndex == _outputSlotIndex;
-    }
+    public override bool IsOutputSlot(int slotIndex) => slotIndex == _outputSlotIndex;
 
     public override void SetSlots(ItemStack[] slotContents)
     {
 #if DEBUG
         if (slotContents.Length != Count)
-            throw new ApplicationException($"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected.");
+        {
+            throw new ApplicationException(
+                $"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected."
+            );
+        }
 #endif
-        int index = 0;
+        var index = 0;
+
         for (int j = 0, jul = Slots.Length; j < jul; j++)
         for (int k = 0, kul = Slots[j].Count; k < kul; k++)
         {
@@ -96,16 +113,24 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
         if (rightClick)
         {
             if (shiftClick)
+            {
                 return HandleShiftRightClick(slotIndex, heldItem);
+            }
             else
+            {
                 return HandleRightClick(slotIndex, heldItem);
+            }
         }
         else
         {
             if (shiftClick)
+            {
                 return HandleShiftLeftClick(slotIndex, heldItem);
+            }
             else
+            {
                 return HandleLeftClick(slotIndex, heldItem);
+            }
         }
     }
 
@@ -114,7 +139,7 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
         if (IsOutputSlot(slotIndex))
         {
             // can only remove from output slot.
-            ItemStack output = this[slotIndex];
+            var output = this[slotIndex];
 
             // It is a No-Op if either the output slot is empty or the output
             // is not compatible with the item in hand.
@@ -122,84 +147,109 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
             // However, the client can be compatible if we don't bother the
             // server about such things.
             if (output.Empty || !output.CanMerge(heldItem.HeldItem))
-                return null;
-
-            return ActionConfirmation.GetActionConfirmation(() =>
             {
-                short itemID = output.ID;
-                short metadata = output.Metadata;
-                NbtCompound? nbt = output.Nbt;
-                int maxStack = ItemRepository.GetItemProvider(itemID)!.MaximumStack;   // output is known to not be Empty
-                int numToPickUp = Math.Min(maxStack - heldItem.HeldItem.Count, output.Count);
+                return null;
+            }
 
-                heldItem.HeldItem = new ItemStack(itemID, (sbyte)(heldItem.HeldItem.Count + numToPickUp), metadata, nbt);
-                this[slotIndex] = output.GetReducedStack(numToPickUp);
-            });
+            return ActionConfirmation.GetActionConfirmation(
+                () =>
+                {
+                    var itemID = output.ID;
+                    var metadata = output.Metadata;
+                    var nbt = output.Nbt;
+                    int maxStack = ItemRepository.GetItemProvider(itemID)!.MaximumStack; // output is known to not be Empty
+                    var numToPickUp = Math.Min(maxStack - heldItem.HeldItem.Count, output.Count);
+
+                    heldItem.HeldItem =
+                        new ItemStack(itemID, (sbyte) (heldItem.HeldItem.Count + numToPickUp), metadata, nbt);
+
+                    this[slotIndex] = output.GetReducedStack(numToPickUp);
+                }
+            );
         }
 
         // Play-testing of Beta 1.7.3 shows
         //  - Anything can be placed in the Fuel Slot.
         //  - Anything can be placed in the Ingredient Slot
-        ItemStack slotContent = this[slotIndex];
+        var slotContent = this[slotIndex];
 
         if (slotContent.Empty || heldItem.HeldItem.Empty || !slotContent.CanMerge(heldItem.HeldItem))
         {
-            return ActionConfirmation.GetActionConfirmation(() =>
-            {
-                this[slotIndex] = heldItem.HeldItem;
-                heldItem.HeldItem = slotContent;
-            });
+            return ActionConfirmation.GetActionConfirmation(
+                () =>
+                {
+                    this[slotIndex] = heldItem.HeldItem;
+                    heldItem.HeldItem = slotContent;
+                }
+            );
         }
         else
         {
-            return ActionConfirmation.GetActionConfirmation(() =>
-            {
-                int maxStack = ItemRepository.GetItemProvider(heldItem.HeldItem.ID)!.MaximumStack;   // heldItem is known to not be Empty
-                int numToPlace = Math.Min(maxStack - slotContent.Count, heldItem.HeldItem.Count);
-                this[slotIndex] = new ItemStack(slotContent.ID, (sbyte)(slotContent.Count + numToPlace),
-                    slotContent.Metadata, slotContent.Nbt);
-                heldItem.HeldItem = heldItem.HeldItem.GetReducedStack(numToPlace);
-            });
+            return ActionConfirmation.GetActionConfirmation(
+                () =>
+                {
+                    int maxStack =
+                        ItemRepository.GetItemProvider(heldItem.HeldItem.ID)!
+                                      .MaximumStack; // heldItem is known to not be Empty
+
+                    var numToPlace = Math.Min(maxStack - slotContent.Count, heldItem.HeldItem.Count);
+
+                    this[slotIndex] = new ItemStack(
+                        slotContent.ID,
+                        (sbyte) (slotContent.Count + numToPlace),
+                        slotContent.Metadata,
+                        slotContent.Nbt
+                    );
+
+                    heldItem.HeldItem = heldItem.HeldItem.GetReducedStack(numToPlace);
+                }
+            );
         }
     }
 
     protected ActionConfirmation? HandleShiftLeftClick(int slotIndex, IHeldItem heldItem)
     {
-        ItemStack srcSlotContent = this[slotIndex];
-        int areaIndex = GetAreaIndex(slotIndex);
+        var srcSlotContent = this[slotIndex];
+        var areaIndex = GetAreaIndex(slotIndex);
 
         // If the source area is anywhere but the Hotbar
-        if (areaIndex != (int)AreaIndices.Hotbar)
+        if (areaIndex != (int) AreaIndices.Hotbar)
         {
-            if (areaIndex == (int)AreaIndices.Main)
-            {
+            if (areaIndex == (int) AreaIndices.Main)
                 // Move as many as possible to the Hotbar.
-                return ActionConfirmation.GetActionConfirmation(() =>
-                {
-                    this[slotIndex] = Hotbar.StoreItemStack(srcSlotContent, false);
-                });
+            {
+                return ActionConfirmation.GetActionConfirmation(
+                    () =>
+                    {
+                        this[slotIndex] = Hotbar.StoreItemStack(srcSlotContent, false);
+                    }
+                );
             }
             else
-            {
                 // Move as many as possible to the Hotbar, then any remaining
                 // to the Inventory
-                return ActionConfirmation.GetActionConfirmation(() =>
-                {
-                    ItemStack remaining = Hotbar.StoreItemStack(srcSlotContent, true);
-                    remaining = MainInventory.StoreItemStack(remaining, true);
-                    remaining = Hotbar.StoreItemStack(remaining, false);
-                    this[slotIndex] = MainInventory.StoreItemStack(remaining, false);
-                });
+            {
+                return ActionConfirmation.GetActionConfirmation(
+                    () =>
+                    {
+                        var remaining = Hotbar.StoreItemStack(srcSlotContent, true);
+                        remaining = MainInventory.StoreItemStack(remaining, true);
+                        remaining = Hotbar.StoreItemStack(remaining, false);
+                        this[slotIndex] = MainInventory.StoreItemStack(remaining, false);
+                    }
+                );
             }
         }
         else
         {
             // The source area is the Hotbar.  Move as many as possible to
             // the main Inventory.
-            return ActionConfirmation.GetActionConfirmation(() =>
-            {
-                this[slotIndex] = MainInventory.StoreItemStack(srcSlotContent, false);
-            });
+            return ActionConfirmation.GetActionConfirmation(
+                () =>
+                {
+                    this[slotIndex] = MainInventory.StoreItemStack(srcSlotContent, false);
+                }
+            );
         }
     }
 
@@ -210,90 +260,119 @@ public class FurnaceWindow : Window<ISlot>, IFurnaceWindow<ISlot>, IFurnaceProgr
         if (IsOutputSlot(slotIndex))
         {
             // can only remove from output slot.
-            ItemStack output = this[slotIndex];
+            var output = this[slotIndex];
 
             // It is a No-Op if either the output slot is empty or the output
             // is not compatible with the item in hand.
             // It is assumed that Beta 1.7.3 sends a window click anyway in this case.
             if (output.Empty || !output.CanMerge(heldItem.HeldItem))
+            {
                 return null;
+            }
 
-            maxStack = ItemRepository.GetItemProvider(output.ID)!.MaximumStack;   // output is known to not be Empty
+            maxStack = ItemRepository.GetItemProvider(output.ID)!.MaximumStack; // output is known to not be Empty
+
             if (heldItem.HeldItem.Empty)
             {
-                return ActionConfirmation.GetActionConfirmation(() =>
-                {
-                    sbyte amt = (sbyte)(output.Count / 2 + output.Count % 2);
-                    heldItem.HeldItem = new ItemStack(output.ID, amt, output.Metadata);
-                    this[slotIndex] = output.GetReducedStack(amt);
-                });
+                return ActionConfirmation.GetActionConfirmation(
+                    () =>
+                    {
+                        var amt = (sbyte) ((output.Count / 2) + (output.Count % 2));
+                        heldItem.HeldItem = new ItemStack(output.ID, amt, output.Metadata);
+                        this[slotIndex] = output.GetReducedStack(amt);
+                    }
+                );
             }
 
             if (heldItem.HeldItem.Count < maxStack)
-            {
                 // Play-testing of Beta1.7.3 shows that when the mouse cursor
                 // has a compatible item in it, all of the output stack is
                 // picked up, not half of it
-                return ActionConfirmation.GetActionConfirmation(() =>
-                {
-                    sbyte amt = (sbyte)(output.Count + heldItem.HeldItem.Count > maxStack ? maxStack - heldItem.HeldItem.Count : output.Count);
-                    heldItem.HeldItem = new ItemStack(output.ID, (sbyte)(amt + heldItem.HeldItem.Count), output.Metadata);
-                    this[slotIndex] = output.GetReducedStack(amt);
-                });
+            {
+                return ActionConfirmation.GetActionConfirmation(
+                    () =>
+                    {
+                        var amt = (sbyte) (output.Count + heldItem.HeldItem.Count > maxStack
+                            ? maxStack - heldItem.HeldItem.Count
+                            : output.Count);
+
+                        heldItem.HeldItem =
+                            new ItemStack(output.ID, (sbyte) (amt + heldItem.HeldItem.Count), output.Metadata);
+
+                        this[slotIndex] = output.GetReducedStack(amt);
+                    }
+                );
             }
 
             return null;
         }
 
-        ItemStack stack = this[slotIndex];
+        var stack = this[slotIndex];
+
         if (heldItem.HeldItem.Empty)
         {
             // If the stack is empty, there's nothing to do.
             if (stack.Empty)
+            {
                 return null;
+            }
 
             // An empty hand picks up half
-            return ActionConfirmation.GetActionConfirmation(() =>
-            {
-                sbyte amt = (sbyte)(stack.Count / 2 + stack.Count % 2);
-                heldItem.HeldItem = new ItemStack(stack.ID, amt, stack.Metadata);
-                this[slotIndex] = stack.GetReducedStack(amt);
-            });
+            return ActionConfirmation.GetActionConfirmation(
+                () =>
+                {
+                    var amt = (sbyte) ((stack.Count / 2) + (stack.Count % 2));
+                    heldItem.HeldItem = new ItemStack(stack.ID, amt, stack.Metadata);
+                    this[slotIndex] = stack.GetReducedStack(amt);
+                }
+            );
         }
 
         // If the stack is empty or compatible
         if (heldItem.HeldItem.CanMerge(stack))
         {
             if (stack.Empty)
-                return ActionConfirmation.GetActionConfirmation(() =>
-                {
-                    this[slotIndex] = new ItemStack(heldItem.HeldItem.ID, 1, heldItem.HeldItem.Metadata);
-                    heldItem.HeldItem = heldItem.HeldItem.GetReducedStack(1);
-                });
+            {
+                return ActionConfirmation.GetActionConfirmation(
+                    () =>
+                    {
+                        this[slotIndex] = new ItemStack(heldItem.HeldItem.ID, 1, heldItem.HeldItem.Metadata);
+                        heldItem.HeldItem = heldItem.HeldItem.GetReducedStack(1);
+                    }
+                );
+            }
 
             // Place one item.
-            maxStack = ItemRepository.GetItemProvider(stack.ID)!.MaximumStack;   // stack is known to not be Empty
+            maxStack = ItemRepository.GetItemProvider(stack.ID)!.MaximumStack; // stack is known to not be Empty
+
             if (stack.Count < maxStack)
-                return ActionConfirmation.GetActionConfirmation(() =>
-                {
-                    this[slotIndex] = new ItemStack(heldItem.HeldItem.ID, (sbyte)(stack.Count + 1), heldItem.HeldItem.Metadata);
-                    heldItem.HeldItem = heldItem.HeldItem.GetReducedStack(1);
-                });
+            {
+                return ActionConfirmation.GetActionConfirmation(
+                    () =>
+                    {
+                        this[slotIndex] = new ItemStack(
+                            heldItem.HeldItem.ID,
+                            (sbyte) (stack.Count + 1),
+                            heldItem.HeldItem.Metadata
+                        );
+
+                        heldItem.HeldItem = heldItem.HeldItem.GetReducedStack(1);
+                    }
+                );
+            }
 
             return null;
         }
 
         // The stack and the staging item are incompatible
-        return ActionConfirmation.GetActionConfirmation(() =>
-        {
-            this[slotIndex] = heldItem.HeldItem;
-            heldItem.HeldItem = stack;
-        });
+        return ActionConfirmation.GetActionConfirmation(
+            () =>
+            {
+                this[slotIndex] = heldItem.HeldItem;
+                heldItem.HeldItem = stack;
+            }
+        );
     }
 
-    protected ActionConfirmation? HandleShiftRightClick(int slotIndex, IHeldItem heldItem)
-    {
-        return HandleShiftLeftClick(slotIndex, heldItem);
-    }
-
+    protected ActionConfirmation? HandleShiftRightClick(int slotIndex, IHeldItem heldItem) => HandleShiftLeftClick(slotIndex, heldItem);
 }

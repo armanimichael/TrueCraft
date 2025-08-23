@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using TrueCraft.Core.World;
-using TrueCraft.Core.Logic;
 
 namespace TrueCraft.Core.AI;
 
@@ -19,43 +18,61 @@ public class AStarPathFinder
         new[] { Vector3i.North, Vector3i.East },
         new[] { Vector3i.North, Vector3i.West },
         new[] { Vector3i.South, Vector3i.East },
-        new[] { Vector3i.South, Vector3i.West },
+        new[] { Vector3i.South, Vector3i.West }
     };
 
-    private PathResult TracePath(GlobalVoxelCoordinates start, GlobalVoxelCoordinates goal, Dictionary<GlobalVoxelCoordinates, GlobalVoxelCoordinates> parents)
+    private static PathResult TracePath(
+        GlobalVoxelCoordinates start,
+        GlobalVoxelCoordinates goal,
+        Dictionary<GlobalVoxelCoordinates, GlobalVoxelCoordinates> parents
+    )
     {
-        List<GlobalVoxelCoordinates> list = new List<GlobalVoxelCoordinates>();
-        GlobalVoxelCoordinates current = goal;
+        var list = new List<GlobalVoxelCoordinates>();
+        var current = goal;
+
         while (current != start)
         {
             current = parents[current];
             list.Insert(0, current);
         }
+
         list.Add(goal);
+
         return new PathResult(list);
     }
 
     // TODO: entity Bounding Box is not taken into account: What if the entity is more than one block high?
-    private bool CanOccupyVoxel(IDimension dimension, BoundingBox entity, GlobalVoxelCoordinates voxel)
+    private static bool CanOccupyVoxel(IDimension dimension, BoundingBox entity, GlobalVoxelCoordinates voxel)
     {
-        byte id = dimension.GetBlockID(voxel);
+        var id = dimension.GetBlockID(voxel);
 
-        IBlockProvider provider = dimension.BlockRepository.GetBlockProvider(id);
+        var provider = dimension.BlockRepository.GetBlockProvider(id);
+
         if (provider is null)
+        {
             return true;
+        }
 
         return provider.BoundingBox is null;
     }
 
-    private IEnumerable<GlobalVoxelCoordinates> GetNeighbors(IDimension dimension, BoundingBox subject, GlobalVoxelCoordinates current)
+    private IEnumerable<GlobalVoxelCoordinates> GetNeighbors(
+        IDimension dimension,
+        BoundingBox subject,
+        GlobalVoxelCoordinates current
+    )
     {
-        for (int i = 0; i < Neighbors.Length; i++)
+        for (var i = 0; i < Neighbors.Length; i++)
         {
             var next = Neighbors[i] + current;
+
             if (CanOccupyVoxel(dimension, subject, next))
+            {
                 yield return next;
+            }
         }
-        for (int i = 0; i < DiagonalNeighbors.Length; i++)
+
+        for (var i = 0; i < DiagonalNeighbors.Length; i++)
         {
             var pair = DiagonalNeighbors[i];
             var next = pair[0] + pair[1] + current;
@@ -63,11 +80,18 @@ public class AStarPathFinder
             if (CanOccupyVoxel(dimension, subject, next)
                 && CanOccupyVoxel(dimension, subject, pair[0] + current)
                 && CanOccupyVoxel(dimension, subject, pair[1] + current))
+            {
                 yield return next;
+            }
         }
     }
 
-    public PathResult? FindPath(IDimension dimension, BoundingBox subject, GlobalVoxelCoordinates start, GlobalVoxelCoordinates goal)
+    public PathResult? FindPath(
+        IDimension dimension,
+        BoundingBox subject,
+        GlobalVoxelCoordinates start,
+        GlobalVoxelCoordinates goal
+    )
     {
         // Thanks to www.redblobgames.com/pathfinding/a-star/implementation.html
         var parents = new Dictionary<GlobalVoxelCoordinates, GlobalVoxelCoordinates>();
@@ -82,16 +106,23 @@ public class AStarPathFinder
         while (openset.Count > 0)
         {
             var current = openset.Dequeue();
+
             if (current == goal)
+            {
                 return TracePath(start, goal, parents);
+            }
 
             closedset.Add(current);
 
             foreach (var next in GetNeighbors(dimension, subject, current))
             {
                 if (closedset.Contains(next))
+                {
                     continue;
-                var cost = (int)(costs[current] + current.DistanceTo(next));
+                }
+
+                var cost = (int) (costs[current] + current.DistanceTo(next));
+
                 if (!costs.ContainsKey(next) || cost < costs[next])
                 {
                     costs[next] = cost;

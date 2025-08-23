@@ -14,23 +14,23 @@ public class RegionTest
     [OneTimeSetUp]
     public void SetUp()
     {
-        string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        _region = new Region(RegionCoordinates.Zero, 
-            Path.Combine(assemblyDir, "Files"));
+        var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+
+        _region = new Region(
+            RegionCoordinates.Zero,
+            Path.Combine(assemblyDir, "Files")
+        );
     }
 
     [Test]
     public void TestGetChunk()
     {
-        IChunk? chunk = _region!.GetChunk(LocalChunkCoordinates.Zero);
+        var chunk = _region!.GetChunk(LocalChunkCoordinates.Zero);
 
         // No chunk was added, and Region must not generate chunks.
         Assert.IsNull(chunk);
     }
 
     [Test]
-    public void TestGetRegionFileName()
-    {
-        Assert.AreEqual("r.0.0.mcr", Region.GetRegionFileName(_region!.Position));
-    }
+    public void TestGetRegionFileName() => Assert.AreEqual("r.0.0.mcr", Region.GetRegionFileName(_region!.Position));
 }

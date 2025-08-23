@@ -5,7 +5,8 @@ using TrueCraft.Core.Logic;
 
 namespace TrueCraft.Core.Inventory;
 
-public class Slots<T> : ISlots<T> where T : ISlot
+public class Slots<T> : ISlots<T>
+    where T : ISlot
 {
     protected readonly IItemRepository _itemRepository;
     private readonly List<T> _lst;
@@ -29,32 +30,48 @@ public class Slots<T> : ISlots<T> where T : ISlot
     public virtual ItemStack StoreItemStack(ItemStack items, bool topUpOnly)
     {
         if (items.Empty)
+        {
             return items;
+        }
 
         // Are there compatible slot(s) that already contain something?
-        int j = 0;
-        int jul = this.Count;
-        ItemStack remaining = items;
+        var j = 0;
+        var jul = Count;
+        var remaining = items;
+
         while (j < jul && !remaining.Empty)
         {
             while (j < jul && this[j].Item.Empty)
+            {
                 j++;
+            }
+
             if (j == jul)
+            {
                 break;
+            }
 
             remaining = StoreInSlot(j, remaining);
             j++;
         }
 
         if (topUpOnly || remaining.Empty)
+        {
             return remaining;
+        }
 
         // Store any remaining items in the first empty slot.
         j = 0;
+
         while (j < jul && !this[j].Item.Empty)
+        {
             j++;
+        }
+
         if (j == jul)
+        {
             return remaining;
+        }
 
         return StoreInSlot(j, remaining);
     }
@@ -68,27 +85,25 @@ public class Slots<T> : ISlots<T> where T : ISlot
     private ItemStack StoreInSlot(int index, ItemStack items)
     {
         if (!this[index].Item.CanMerge(items))
+        {
             return items;
+        }
 
         int maxStack = _itemRepository.GetItemProvider(items.ID)!.MaximumStack;
 
-        ItemStack curContent = this[index].Item;
-        int numToStore = Math.Min(maxStack - curContent.Count, items.Count);
-        this[index].Item = new ItemStack(items.ID, (sbyte)(curContent.Count + numToStore), items.Metadata, items.Nbt);
-        return (numToStore < items.Count) ?
-            new ItemStack(items.ID, (sbyte)(items.Count - numToStore), items.Metadata, items.Nbt) :
-            ItemStack.EmptyStack;
+        var curContent = this[index].Item;
+        var numToStore = Math.Min(maxStack - curContent.Count, items.Count);
+        this[index].Item = new ItemStack(items.ID, (sbyte) (curContent.Count + numToStore), items.Metadata, items.Nbt);
+
+        return numToStore < items.Count
+            ? new ItemStack(items.ID, (sbyte) (items.Count - numToStore), items.Metadata, items.Nbt)
+            : ItemStack.EmptyStack;
     }
 
-    public virtual int Width
-    {
-        get
-        {
-            return _width;
-        }
-    }
+    public virtual int Width => _width;
 
     #region IList<T>
+
     public virtual T this[int index]
     {
         get => _lst[index];
@@ -97,29 +112,27 @@ public class Slots<T> : ISlots<T> where T : ISlot
 
     public int Count => _lst.Count;
 
-    public bool Contains(T item)
-    {
-        return _lst.Contains(item);
-    }
+    public bool Contains(T item) => _lst.Contains(item);
 
-    public void CopyTo(T[] array, int arrayIndex)
-    {
-        _lst.CopyTo(array, arrayIndex);
-    }
+    public void CopyTo(T[] array, int arrayIndex) => _lst.CopyTo(array, arrayIndex);
 
     public IEnumerator<T> GetEnumerator() => _lst.GetEnumerator();
+
     IEnumerator IEnumerable.GetEnumerator() => _lst.GetEnumerator();
 
-    public int IndexOf(T item)
-    {
-        return _lst.IndexOf(item);
-    }
+    public int IndexOf(T item) => _lst.IndexOf(item);
 
     public bool IsReadOnly => true;
+
     public void Add(T item) => throw new NotSupportedException();
+
     public void Clear() => throw new NotSupportedException();
+
     public void Insert(int index, T item) => throw new NotSupportedException();
+
     public bool Remove(T item) => throw new NotSupportedException();
+
     public void RemoveAt(int index) => throw new NotSupportedException();
+
     #endregion
 }

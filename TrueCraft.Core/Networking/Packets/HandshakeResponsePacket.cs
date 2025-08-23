@@ -5,7 +5,7 @@
 /// </summary>
 public struct HandshakeResponsePacket : IPacket
 {
-    public byte ID { get { return 0x02; } }
+    public byte ID => 0x02;
 
     public HandshakeResponsePacket(string connectionHash)
     {
@@ -17,13 +17,7 @@ public struct HandshakeResponsePacket : IPacket
     /// </summary>
     public string ConnectionHash;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        ConnectionHash = stream.ReadString();
-    }
+    public void ReadPacket(IMinecraftStream stream) => ConnectionHash = stream.ReadString();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteString(ConnectionHash);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteString(ConnectionHash);
 }

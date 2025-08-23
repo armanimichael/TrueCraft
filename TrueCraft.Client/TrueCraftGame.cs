@@ -14,7 +14,6 @@ using TrueCraft.Core.World;
 using TrueCraft.Client.Input;
 using TrueCraft.Client.Modules;
 using TrueCraft.Client.Rendering;
-
 using TVector3 = TrueCraft.Core.Vector3;
 
 namespace TrueCraft.Client;
@@ -26,10 +25,10 @@ public class TrueCraftGame : Game
     private readonly Camera _camera;
     private readonly AudioManager _audio;
 
-    public MultiplayerClient Client { get; private set; }
-    public GraphicsDeviceManager Graphics { get; private set; }
+    public MultiplayerClient Client { get; }
+    public GraphicsDeviceManager Graphics { get; }
     public TextureMapper? TextureMapper { get; private set; }
-    public Camera Camera { get => _camera; }
+    public Camera Camera => _camera;
     public ConcurrentBag<Action> PendingMainThreadActions { get; set; }
     public double Bobbing { get; set; }
     public ChunkModule? ChunkModule { get; private set; }
@@ -40,7 +39,7 @@ public class TrueCraftGame : Game
     public DateTime StartDigging { get; set; }
     public DateTime EndDigging { get; set; }
     public GlobalVoxelCoordinates? TargetBlock { get; set; }
-    public AudioManager Audio { get => _audio; }
+    public AudioManager Audio => _audio;
     public Texture2D? White1x1 { get; private set; }
     public PlayerControlModule? ControlModule { get; private set; }
     public SkyModule? SkyModule { get; private set; }
@@ -97,14 +96,21 @@ public class TrueCraftGame : Game
         _audio = new AudioManager();
     }
 
-    void Window_ClientSizeChanged(object? sender, EventArgs e)
+    private void Window_ClientSizeChanged(object? sender, EventArgs e)
     {
         if (GraphicsDevice.Viewport.Width < 640 || GraphicsDevice.Viewport.Height < 480)
+        {
             ScaleFactor = 0.5f;
+        }
         else if (GraphicsDevice.Viewport.Width < 978 || GraphicsDevice.Viewport.Height < 720)
+        {
             ScaleFactor = 1.0f;
+        }
         else
+        {
             ScaleFactor = 1.5f;
+        }
+
         IconRenderer.PrepareEffects(this);
         UpdateCamera();
         CreateRenderTarget();
@@ -123,9 +129,9 @@ public class TrueCraftGame : Game
 
         SkyModule = new SkyModule(this);
         ChunkModule = new ChunkModule(_serviceLocator, this);
-        _debugInfoModule = new DebugInfoModule(this, _pixel!);  // LoadContent previously called.
+        _debugInfoModule = new DebugInfoModule(this, _pixel!); // LoadContent previously called.
         _chatModule = new ChatModule(this, _pixel!);
-        HUDModule hud = new HUDModule(_serviceLocator.ItemRepository, this, _pixel!);
+        var hud = new HUDModule(_serviceLocator.ItemRepository, this, _pixel!);
         var windowModule = new WindowModule(_serviceLocator.ItemRepository, this, _pixel!);
 
         _graphicalModules.Add(SkyModule);
@@ -139,8 +145,16 @@ public class TrueCraftGame : Game
         _inputModules.Add(windowModule);
         _inputModules.Add(_debugInfoModule);
         _inputModules.Add(_chatModule);
+
         // TODO: Why create a second HUDModule?
-        _inputModules.Add(new HUDModule(_serviceLocator.ItemRepository, this, _pixel!));    // _pixel was initialized in LoadContent
+        _inputModules.Add(
+            new HUDModule(
+                _serviceLocator.ItemRepository,
+                this,
+                _pixel!
+            )
+        ); // _pixel was initialized in LoadContent
+
         _inputModules.Add(ControlModule = new PlayerControlModule(_serviceLocator, this));
 
         Client.PropertyChanged += HandleClientPropertyChanged;
@@ -169,23 +183,31 @@ public class TrueCraftGame : Game
     public void Invoke(Action action)
     {
         if (_threadID == Thread.CurrentThread.ManagedThreadId)
+        {
             action();
+        }
         else
+        {
             PendingMainThreadActions.Add(action);
+        }
     }
 
-    private void CreateRenderTarget()
-    {
-        _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height,
-            false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
-    }
+    private void CreateRenderTarget() => _renderTarget = new RenderTarget2D(
+        GraphicsDevice,
+        GraphicsDevice.Viewport.Width,
+        GraphicsDevice.Viewport.Height,
+        false,
+        GraphicsDevice.PresentationParameters.BackBufferFormat,
+        DepthFormat.Depth24
+    );
 
-    void HandleClientPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void HandleClientPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
         {
             case "Position":
                 UpdateCamera();
+
                 break;
         }
     }
@@ -197,18 +219,29 @@ public class TrueCraftGame : Game
 
         // Load any custom textures if needed.
         TextureMapper = new TextureMapper(GraphicsDevice);
+
         if (UserSettings.Local.SelectedTexturePack != TexturePack.Default.Name)
         {
-            TexturePack? tp = TexturePack.FromArchive(Path.Combine(Paths.TexturePacks,
-                UserSettings.Local.SelectedTexturePack));
+            var tp = TexturePack.FromArchive(
+                Path.Combine(
+                    Paths.TexturePacks,
+                    UserSettings.Local.SelectedTexturePack
+                )
+            );
+
             if (tp is not null)
+            {
                 TextureMapper.AddTexturePack(tp);
+            }
         }
 
         _pixel = new FontRenderer(
             new Font(GraphicsDevice, Content.RootDirectory, "Fonts/Pixel"),
-            new Font(GraphicsDevice, Content.RootDirectory, "Fonts/Pixel", FontStyle.Bold), null, null,
-            new Font(GraphicsDevice, Content.RootDirectory, "Fonts/Pixel", FontStyle.Italic));
+            new Font(GraphicsDevice, Content.RootDirectory, "Fonts/Pixel", FontStyle.Bold),
+            null,
+            null,
+            new Font(GraphicsDevice, Content.RootDirectory, "Fonts/Pixel", FontStyle.Italic)
+        );
 
         base.LoadContent();
     }
@@ -216,122 +249,172 @@ public class TrueCraftGame : Game
     private void OnKeyboardKeyDown(object? sender, KeyboardKeyEventArgs e)
     {
         if (_gameTime is null)
-            return;
-
-        foreach (IGameplayModule module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            return;
+        }
+
+        foreach (var module in _inputModules)
+        {
+            var input = module as IInputModule;
+
             if (input?.KeyDown(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnKeyboardKeyUp(object? sender, KeyboardKeyEventArgs e)
     {
         if (_gameTime is null)
-            return;
-
-        foreach (IGameplayModule module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            return;
+        }
+
+        foreach (var module in _inputModules)
+        {
+            var input = module as IInputModule;
+
             if (input?.KeyUp(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnGamePadButtonUp(object? sender, GamePadButtonEventArgs e)
     {
         if (_gameTime is null)
+        {
             return;
+        }
 
         foreach (var module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            var input = module as IInputModule;
+
             if (input?.GamePadButtonUp(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnGamePadButtonDown(object? sender, GamePadButtonEventArgs e)
     {
         if (_gameTime is null)
+        {
             return;
+        }
 
         foreach (var module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            var input = module as IInputModule;
+
             if (input?.GamePadButtonDown(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnMouseComponentScroll(object? sender, MouseScrollEventArgs e)
     {
         if (_gameTime is null)
+        {
             return;
+        }
 
         foreach (var module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            var input = module as IInputModule;
+
             if (input?.MouseScroll(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnMouseComponentButtonDown(object? sender, MouseButtonEventArgs e)
     {
         if (_gameTime is null)
+        {
             return;
+        }
 
         foreach (var module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            var input = module as IInputModule;
+
             if (input?.MouseButtonDown(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnMouseComponentButtonUp(object? sender, MouseButtonEventArgs e)
     {
         if (_gameTime is null)
+        {
             return;
+        }
 
         foreach (var module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            var input = module as IInputModule;
+
             if (input?.MouseButtonUp(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     private void OnMouseComponentMove(object? sender, MouseMoveEventArgs e)
     {
         if (_gameTime is null)
+        {
             return;
+        }
 
         foreach (var module in _inputModules)
         {
-            IInputModule? input = module as IInputModule;
+            var input = module as IInputModule;
+
             if (input?.MouseMove(_gameTime, e) ?? false)
+            {
                 break;
+            }
         }
     }
 
     public void TakeScreenshot()
     {
-        string path = Path.Combine(Paths.Screenshots, DateTime.Now.ToString("yyyy-MM-dd_H.mm.ss") + ".png");
+        var path = Path.Combine(Paths.Screenshots, DateTime.Now.ToString("yyyy-MM-dd_H.mm.ss") + ".png");
+
         if (!Directory.Exists(Paths.Screenshots))
+        {
             Directory.CreateDirectory(Paths.Screenshots);
+        }
+
         using (var stream = File.OpenWrite(path))
+        {
             _renderTarget?.SaveAsPng(stream, _renderTarget.Width, _renderTarget.Height);
+        }
+
         _chatModule?.AddMessage("Screenshot saved to " + Path.GetFileName(path));
     }
 
     public void FlushMainThreadActions()
     {
         Action? action;
+
         while (PendingMainThreadActions.TryTake(out action))
+        {
             action();
+        }
     }
 
     protected override void Update(GameTime gameTime)
@@ -339,17 +422,27 @@ public class TrueCraftGame : Game
         _gameTime = gameTime;
 
         Action? action;
+
         if (PendingMainThreadActions.TryTake(out action))
+        {
             action();
+        }
 
         IChunk? chunk;
-        LocalVoxelCoordinates adjusted = Client.Dimension.FindBlockPosition(
-            new GlobalVoxelCoordinates((int)Client.Position.X, 0, (int)Client.Position.Z), out chunk);
+
+        var adjusted = Client.Dimension.FindBlockPosition(
+            new GlobalVoxelCoordinates((int) Client.Position.X, 0, (int) Client.Position.Z),
+            out chunk
+        );
+
         if (chunk is not null && Client.LoggedIn)
         {
-            if (chunk.GetHeight((byte)adjusted.X, (byte)adjusted.Z) != 0)
+            if (chunk.GetHeight((byte) adjusted.X, (byte) adjusted.Z) != 0)
+            {
                 Client.Physics.Update(gameTime.ElapsedGameTime);
+            }
         }
+
         if (_nextPhysicsUpdate < DateTime.UtcNow && Client.LoggedIn)
         {
             // NOTE: This is to make the vanilla server send us chunk packets
@@ -360,9 +453,14 @@ public class TrueCraftGame : Game
         }
 
         foreach (var module in _inputModules)
+        {
             module.Update(gameTime);
+        }
+
         foreach (var module in _graphicalModules)
+        {
             module.Update(gameTime);
+        }
 
         UpdateCamera();
 
@@ -374,11 +472,14 @@ public class TrueCraftGame : Game
         const double bobbingMultiplier = 0.05;
 
         var bobbing = Bobbing * 1.5;
-        var xbob = Math.Cos(bobbing + Math.PI / 2) * bobbingMultiplier;
-        var ybob = Math.Sin(Math.PI / 2 - (2 * bobbing)) * bobbingMultiplier;
+        var xbob = Math.Cos(bobbing + (Math.PI / 2)) * bobbingMultiplier;
+        var ybob = Math.Sin((Math.PI / 2) - (2 * bobbing)) * bobbingMultiplier;
 
         _camera.Position = new TVector3(
-            Client.Position.X + xbob, Client.Position.Y + Client.Size.Height + ybob, Client.Position.Z);
+            Client.Position.X + xbob,
+            Client.Position.Y + Client.Size.Height + ybob,
+            Client.Position.Z
+        );
 
         _camera.Pitch = Client.Pitch;
         _camera.Yaw = Client.Yaw;
@@ -393,11 +494,15 @@ public class TrueCraftGame : Game
         GraphicsDevice.SamplerStates[1] = SamplerState.PointClamp;
 
         Mesh.ResetStats();
+
         foreach (var module in _graphicalModules)
         {
             var drawable = module as IGraphicalModule;
+
             if (drawable != null)
+            {
                 drawable.Draw(gameTime);
+            }
         }
 
         GraphicsDevice.SetRenderTarget(null);

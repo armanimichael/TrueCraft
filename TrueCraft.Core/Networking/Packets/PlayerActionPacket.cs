@@ -6,10 +6,10 @@ public struct PlayerActionPacket : IPacket
     {
         Crouch = 1,
         Uncrouch = 2,
-        LeaveBed = 3,
+        LeaveBed = 3
     }
 
-    public byte ID { get { return 0x13; } }
+    public byte ID => 0x13;
 
     public int EntityID;
     public PlayerAction Action;
@@ -17,12 +17,12 @@ public struct PlayerActionPacket : IPacket
     public void ReadPacket(IMinecraftStream stream)
     {
         EntityID = stream.ReadInt32();
-        Action = (PlayerAction)stream.ReadInt8();
+        Action = (PlayerAction) stream.ReadInt8();
     }
 
     public void WritePacket(IMinecraftStream stream)
     {
         stream.WriteInt32(EntityID);
-        stream.WriteInt8((sbyte)Action);
+        stream.WriteInt8((sbyte) Action);
     }
 }

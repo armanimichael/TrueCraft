@@ -5,30 +5,18 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class DirtBlock : BlockProvider
 {
     public static readonly byte BlockID = 0x03;
-        
-    public override byte ID { get { return 0x03; } }
-        
-    public override double BlastResistance { get { return 2.5; } }
 
-    public override double Hardness { get { return 0.5; } }
+    public override byte ID => 0x03;
 
-    public override byte Luminance { get { return 0; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Dirt";
-    }
+    public override double BlastResistance => 2.5;
 
-    public override SoundEffectClass SoundEffect
-    {
-        get
-        {
-            return SoundEffectClass.Gravel;
-        }
-    }
+    public override double Hardness => 0.5;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(2, 0);
-    }
+    public override byte Luminance => 0;
+
+    public override string GetDisplayName(short metadata) => "Dirt";
+
+    public override SoundEffectClass SoundEffect => SoundEffectClass.Gravel;
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(2, 0);
 }

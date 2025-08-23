@@ -19,7 +19,9 @@ public class Slot : ISlot
     public Slot(IItemRepository itemRepository)
     {
         if (itemRepository == null)
+        {
             throw new ArgumentNullException(nameof(itemRepository));
+        }
 
         _itemRepository = itemRepository;
     }
@@ -27,14 +29,21 @@ public class Slot : ISlot
     /// <inheritdoc />
     public virtual int CanAccept(ItemStack other)
     {
-        if (other.Empty) return 0;
+        if (other.Empty)
+        {
+            return 0;
+        }
 
-        if (_item.Empty) return other.Count;
+        if (_item.Empty)
+        {
+            return other.Count;
+        }
 
         if (_item.CanMerge(other))
         {
-            IItemProvider provider = _itemRepository.GetItemProvider(_item.ID)!;
+            var provider = _itemRepository.GetItemProvider(_item.ID)!;
             int maxStack = provider.MaximumStack;
+
             return Math.Min(maxStack - _item.Count, other.Count);
         }
 
@@ -47,7 +56,11 @@ public class Slot : ISlot
         get => _item;
         set
         {
-            if (_item == value) return;
+            if (_item == value)
+            {
+                return;
+            }
+
             _item = value;
             OnPropertyChanged();
         }
@@ -55,8 +68,5 @@ public class Slot : ISlot
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected virtual void OnPropertyChanged([CallerMemberName]string property = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-    }
+    protected virtual void OnPropertyChanged([CallerMemberName] string property = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 }

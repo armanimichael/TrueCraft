@@ -49,7 +49,6 @@ public struct BoundingBox : IEquatable<BoundingBox>
 
     #endregion Public Fields
 
-
     #region Public Constructors
 
     /// <summary>
@@ -59,8 +58,8 @@ public struct BoundingBox : IEquatable<BoundingBox>
     /// <param name="max">The number of corners a bounding box has.</param>
     public BoundingBox(Vector3 min, Vector3 max)
     {
-        this.Min = min;
-        this.Max = max;
+        Min = min;
+        Max = max;
     }
 
     /// <summary>
@@ -69,12 +68,11 @@ public struct BoundingBox : IEquatable<BoundingBox>
     /// <param name="b">The bounding box to clone.</param>
     public BoundingBox(BoundingBox b)
     {
-        this.Min = new Vector3(b.Min);
-        this.Max = new Vector3(b.Max);
+        Min = new Vector3(b.Min);
+        Max = new Vector3(b.Max);
     }
 
     #endregion Public Constructors
-
 
     #region Public Methods
 
@@ -93,11 +91,11 @@ public struct BoundingBox : IEquatable<BoundingBox>
     /// </remarks>
     public BoundingBox Expand(Size size)
     {
-        double w2 = size.Width * 0.5;
-        double d2 = size.Depth * 0.5;
+        var w2 = size.Width * 0.5;
+        var d2 = size.Depth * 0.5;
 
-        Vector3 newMin = new Vector3(this.Min.X - w2, this.Min.Y - size.Height, this.Min.Z - d2);
-        Vector3 newMax = new Vector3(this.Max.X + w2, this.Max.Y, this.Max.Z + d2);
+        var newMin = new Vector3(Min.X - w2, Min.Y - size.Height, Min.Z - d2);
+        var newMax = new Vector3(Max.X + w2, Max.Y, Max.Z + d2);
 
         return new BoundingBox(newMin, newMax);
     }
@@ -116,8 +114,9 @@ public struct BoundingBox : IEquatable<BoundingBox>
             || box.Min.Y > Max.Y
             || box.Max.Z < Min.Z
             || box.Min.Z > Max.Z)
+        {
             return ContainmentType.Disjoint;
-
+        }
 
         if (box.Min.X >= Min.X
             && box.Max.X <= Max.X
@@ -125,7 +124,9 @@ public struct BoundingBox : IEquatable<BoundingBox>
             && box.Max.Y <= Max.Y
             && box.Min.Z >= Min.Z
             && box.Max.Z <= Max.Z)
+        {
             return ContainmentType.Contains;
+        }
 
         return ContainmentType.Intersects;
     }
@@ -135,12 +136,9 @@ public struct BoundingBox : IEquatable<BoundingBox>
     /// </summary>
     /// <param name="vec">The vector.</param>
     /// <returns></returns>
-    public bool Contains(Vector3 vec)
-    {
-        return Min.X <= vec.X && vec.X <= Max.X &&
-               Min.Y <= vec.Y && vec.Y <= Max.Y &&
-               Min.Z <= vec.Z && vec.Z <= Max.Z;
-    }
+    public bool Contains(Vector3 vec) => Min.X <= vec.X && vec.X <= Max.X &&
+                                         Min.Y <= vec.Y && vec.Y <= Max.Y &&
+                                         Min.Z <= vec.Z && vec.Z <= Max.Z;
 
     /// <summary>
     /// Creates and returns a new bounding box from an enumeration of corner points.
@@ -150,19 +148,25 @@ public struct BoundingBox : IEquatable<BoundingBox>
     public static BoundingBox CreateFromPoints(IEnumerable<Vector3> points)
     {
         if (points == null)
+        {
             throw new ArgumentNullException();
+        }
 
-        bool empty = true;
-        Vector3 vector2 = new Vector3(float.MaxValue);
-        Vector3 vector1 = new Vector3(float.MinValue);
-        foreach (Vector3 vector3 in points)
+        var empty = true;
+        var vector2 = new Vector3(float.MaxValue);
+        var vector1 = new Vector3(float.MinValue);
+
+        foreach (var vector3 in points)
         {
             vector2 = Vector3.Min(vector2, vector3);
             vector1 = Vector3.Max(vector1, vector3);
             empty = false;
         }
+
         if (empty)
+        {
             throw new ArgumentException();
+        }
 
         return new BoundingBox(vector2, vector1);
     }
@@ -176,58 +180,43 @@ public struct BoundingBox : IEquatable<BoundingBox>
     /// <param name='Offset'>
     /// The offset.
     /// </param>
-    public BoundingBox OffsetBy(Vector3 Offset)
-    {
-        return new BoundingBox(Min + Offset, Max + Offset);
-    }
+    public BoundingBox OffsetBy(Vector3 Offset) => new(Min + Offset, Max + Offset);
 
     /// <summary>
     /// Returns an array of vectors containing the corners of this bounding box.
     /// </summary>
     /// <returns></returns>
-    public Vector3[] GetCorners()
-    {
-        return new Vector3[]
-        {
-            new Vector3(this.Min.X, this.Max.Y, this.Max.Z),
-            new Vector3(this.Max.X, this.Max.Y, this.Max.Z),
-            new Vector3(this.Max.X, this.Min.Y, this.Max.Z),
-            new Vector3(this.Min.X, this.Min.Y, this.Max.Z),
-            new Vector3(this.Min.X, this.Max.Y, this.Min.Z),
-            new Vector3(this.Max.X, this.Max.Y, this.Min.Z),
-            new Vector3(this.Max.X, this.Min.Y, this.Min.Z),
-            new Vector3(this.Min.X, this.Min.Y, this.Min.Z)
-        };
-    }
+    public Vector3[] GetCorners() => new Vector3[]
+                                     {
+                                         new(Min.X, Max.Y, Max.Z),
+                                         new(Max.X, Max.Y, Max.Z),
+                                         new(Max.X, Min.Y, Max.Z),
+                                         new(Min.X, Min.Y, Max.Z),
+                                         new(Min.X, Max.Y, Min.Z),
+                                         new(Max.X, Max.Y, Min.Z),
+                                         new(Max.X, Min.Y, Min.Z),
+                                         new(Min.X, Min.Y, Min.Z)
+                                     };
 
     /// <summary>
     /// Determines whether this and another bounding box are equal.
     /// </summary>
     /// <param name="other">The other bounding box.</param>
     /// <returns></returns>
-    public bool Equals(BoundingBox other)
-    {
-        return (this.Min == other.Min) && (this.Max == other.Max);
-    }
+    public bool Equals(BoundingBox other) => Min == other.Min && Max == other.Max;
 
     /// <summary>
     /// Determines whether this and another object are equal.
     /// </summary>
     /// <param name="obj">The other object.</param>
     /// <returns></returns>
-    public override bool Equals(object? obj)
-    {
-        return (obj is BoundingBox) && this.Equals((BoundingBox)obj);
-    }
+    public override bool Equals(object? obj) => obj is BoundingBox && Equals((BoundingBox) obj);
 
     /// <summary>
     /// Returns the hash code for this bounding box.
     /// </summary>
     /// <returns></returns>
-    public override int GetHashCode()
-    {
-        return this.Min.GetHashCode() + this.Max.GetHashCode();
-    }
+    public override int GetHashCode() => Min.GetHashCode() + Max.GetHashCode();
 
     /// <summary>
     /// Determines whether this bounding box intersects another.
@@ -238,6 +227,7 @@ public struct BoundingBox : IEquatable<BoundingBox>
     {
         bool result;
         Intersects(ref box, out result);
+
         return result;
     }
 
@@ -248,82 +238,54 @@ public struct BoundingBox : IEquatable<BoundingBox>
     /// <param name="result">Set to whether the two bounding boxes intersect.</param>
     public void Intersects(ref BoundingBox box, out bool result)
     {
-        if ((this.Max.X > box.Min.X) && (this.Min.X < box.Max.X))
+        if (Max.X > box.Min.X && Min.X < box.Max.X)
         {
-            if ((this.Max.Y < box.Min.Y) || (this.Min.Y > box.Max.Y))
+            if (Max.Y < box.Min.Y || Min.Y > box.Max.Y)
             {
                 result = false;
+
                 return;
             }
 
-            result = (this.Max.Z > box.Min.Z) && (this.Min.Z < box.Max.Z);
+            result = Max.Z > box.Min.Z && Min.Z < box.Max.Z;
+
             return;
         }
 
         result = false;
     }
 
-    public static bool operator ==(BoundingBox a, BoundingBox b)
-    {
-        return a.Equals(b);
-    }
+    public static bool operator ==(BoundingBox a, BoundingBox b) => a.Equals(b);
 
-    public static bool operator !=(BoundingBox a, BoundingBox b)
-    {
-        return !(a == b);
-    }
+    public static bool operator !=(BoundingBox a, BoundingBox b) => !(a == b);
 
     /// <summary>
     /// Returns a string representation of this bounding box.
     /// </summary>
     /// <returns></returns>
-    public override string ToString()
-    {
-        return string.Format("{{Min:{0} Max:{1}}}", this.Min.ToString(), this.Max.ToString());
-    }
+    public override string ToString() => string.Format("{{Min:{0} Max:{1}}}", Min.ToString(), Max.ToString());
 
     #endregion
 
     /// <summary>
     /// Gets the height of this bounding box.
     /// </summary>
-    public double Height
-    {
-        get { return Max.Y - Min.Y; }
-    }
+    public double Height => Max.Y - Min.Y;
 
     /// <summary>
     /// Gets the width of this bounding box.
     /// </summary>
-    public double Width
-    {
-        get { return Max.X - Min.X; }
-    }
+    public double Width => Max.X - Min.X;
 
     /// <summary>
     /// Gets the depth of this bounding box.
     /// </summary>
-    public double Depth
-    {
-        get { return Max.Z - Min.Z; }
-    }
+    public double Depth => Max.Z - Min.Z;
 
     /// <summary>
     /// Gets the center of this bounding box.
     /// </summary>
-    public Vector3 Center
-    {
-        get
-        {
-            return (this.Min + this.Max) / 2;
-        }
-    }
+    public Vector3 Center => (Min + Max) / 2;
 
-    public double Volume
-    {
-        get
-        {
-            return Width * Height * Depth;
-        }
-    }
+    public double Volume => Width * Height * Depth;
 }

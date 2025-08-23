@@ -5,7 +5,7 @@
 /// </summary>
 public struct CollectItemPacket : IPacket
 {
-    public byte ID { get { return 0x16; } }
+    public byte ID => 0x16;
 
     public int CollectedItemID;
     public int CollectorID;

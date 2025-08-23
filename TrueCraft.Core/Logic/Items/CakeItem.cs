@@ -10,16 +10,22 @@ public class CakeItem : FoodItem // TODO: This is a special sort of FoodItem tha
 {
     public static readonly short ItemID = 0x162;
 
-    public CakeItem(XmlNode node) : base(node)
-    {
-    }
+    public CakeItem(XmlNode node)
+        : base(node) { }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         coordinates += MathHelper.BlockFaceToCoordinates(face);
         var old = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates));
+
         if (old.Hardness == 0)
         {
             dimension.SetBlockID(coordinates, CakeBlock.BlockID);

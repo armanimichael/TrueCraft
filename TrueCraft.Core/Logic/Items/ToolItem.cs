@@ -17,41 +17,58 @@ public class ToolItem : ItemProvider, IToolItem
     private const string DamageNodeName = "damage";
 
     // Parameterless constructor to support testing
-    public ToolItem()
-    {
+    public ToolItem() { }
 
-    }
-
-    protected ToolItem(XmlNode node) : base(node)
+    protected ToolItem(XmlNode node)
+        : base(node)
     {
         XmlNode? toolNode = node[ToolNodeName];
-        if (toolNode is null)
-            throw new ArgumentException($"Missing <{ToolNodeName}> node.");
 
-        XmlNode? kindNode = toolNode.FirstChild;
+        if (toolNode is null)
+        {
+            throw new ArgumentException($"Missing <{ToolNodeName}> node.");
+        }
+
+        var kindNode = toolNode.FirstChild;
+
         if (kindNode is null || kindNode.LocalName != KindNodeName)
+        {
             throw new ArgumentException($"Missing <{KindNodeName}> node.");
+        }
+
         _type = ParseKind(kindNode.InnerText);
 
-        XmlNode? materialNode = kindNode.NextSibling;
+        var materialNode = kindNode.NextSibling;
+
         if (materialNode is null || materialNode.LocalName != MaterialNodeName)
+        {
             throw new ArgumentException($"Missing <{MaterialNodeName}> node.");
+        }
+
         _material = ParseMaterial(materialNode.InnerText);
 
-        XmlNode? durabilityNode = materialNode.NextSibling;
+        var durabilityNode = materialNode.NextSibling;
+
         if (durabilityNode is null || durabilityNode.LocalName != DurabilityNodeName)
+        {
             throw new ArgumentException($"Missing <{DurabilityNodeName}> node.");
+        }
+
         _durability = short.Parse(durabilityNode.InnerText);
 
-        XmlNode? damageNode = durabilityNode.NextSibling;
+        var damageNode = durabilityNode.NextSibling;
+
         if (damageNode is null || damageNode.LocalName != DamageNodeName)
+        {
             throw new ArgumentException($"Missing <{DamageNodeName}> node.");
+        }
+
         _damage = float.Parse(damageNode.InnerText);
     }
 
     protected virtual ToolType ParseKind(string kind)
     {
-        switch(kind)
+        switch (kind)
         {
             case "None":
                 return ToolType.None;
@@ -102,14 +119,14 @@ public class ToolItem : ItemProvider, IToolItem
     }
 
     /// <inheritdoc />
-    public virtual ToolMaterial Material { get => _material; }
+    public virtual ToolMaterial Material => _material;
 
     /// <inheritdoc />
-    public virtual ToolType ToolType { get => _type; }
+    public virtual ToolType ToolType => _type;
 
     /// <inheritdoc />
-    public virtual short Durability { get => _durability; }
+    public virtual short Durability => _durability;
 
     /// <inheritdoc />
-    public virtual float Damage { get => _damage; }
+    public virtual float Damage => _damage;
 }

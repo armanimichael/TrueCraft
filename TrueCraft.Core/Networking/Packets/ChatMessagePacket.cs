@@ -7,7 +7,7 @@
 /// </summary>
 public struct ChatMessagePacket : IPacket
 {
-    public byte ID { get { return 0x03; } }
+    public byte ID => 0x03;
 
     public ChatMessagePacket(string message)
     {
@@ -16,13 +16,7 @@ public struct ChatMessagePacket : IPacket
 
     public string Message;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        Message = stream.ReadString();
-    }
+    public void ReadPacket(IMinecraftStream stream) => Message = stream.ReadString();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteString(Message);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteString(Message);
 }

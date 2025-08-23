@@ -14,15 +14,25 @@ public class TestCraftingPattern
     private static Mock<ICraftingArea<ISlot>> GetCraftingArea(short[] grid)
     {
         if (grid.Length != 9 && grid.Length != 4)
+        {
             throw new ArgumentException(nameof(grid));
+        }
 
-        int sz = (grid.Length == 9 ? 3 : 2);
+        var sz = grid.Length == 9
+            ? 3
+            : 2;
 
-        Mock<ICraftingArea<ISlot>> area = new Mock<ICraftingArea<ISlot>>(MockBehavior.Strict);
+        var area = new Mock<ICraftingArea<ISlot>>(MockBehavior.Strict);
         area.Setup(a => a.Width).Returns(sz);
         area.Setup(a => a.Height).Returns(sz);
+
         area.Setup(a => a.GetItemStack(It.IsAny<int>(), It.IsAny<int>()))
-            .Returns<int, int>((x, y) => grid[y * sz + x] != -1 ? new ItemStack(grid[y * sz + x]) : ItemStack.EmptyStack);
+            .Returns<int, int>(
+                (x, y) =>
+                    grid[(y * sz) + x] != -1
+                        ? new ItemStack(grid[(y * sz) + x])
+                        : ItemStack.EmptyStack
+            );
 
         return area;
     }
@@ -30,28 +40,36 @@ public class TestCraftingPattern
     private static XmlNode GetCraftingAreaXml(short[] grid)
     {
         if (grid.Length != 9 && grid.Length != 4)
+        {
             throw new ArgumentException(nameof(grid));
+        }
 
-        int sz = (grid.Length == 9 ? 3 : 2);
+        var sz = grid.Length == 9
+            ? 3
+            : 2;
 
-        StringBuilder rv = new StringBuilder();
+        var rv = new StringBuilder();
         rv.Append("<pattern>");
-        for (int r = 0; r < sz; r ++)
+
+        for (var r = 0; r < sz; r++)
         {
             rv.Append("<r>");
-            for (int c = 0; c < sz; c ++)
+
+            for (var c = 0; c < sz; c++)
             {
                 rv.Append("<c>");
                 rv.Append("<id>");
-                rv.Append(grid[r * sz + c]);
+                rv.Append(grid[(r * sz) + c]);
                 rv.Append("</id>");
                 rv.Append("<count>1</count></c>");
             }
+
             rv.Append("</r>");
         }
+
         rv.Append("</pattern>");
 
-        XmlDocument doc = new XmlDocument();
+        var doc = new XmlDocument();
         doc.LoadXml(rv.ToString());
 
         // doc was constructed to ensure FirstChild is not null
@@ -62,31 +80,37 @@ public class TestCraftingPattern
     public void ctor_ItemStacks_Empty_Grid_Gets_Null()
     {
         // test 2x2 case
-        ItemStack[,] items = new[,]
-        {
-            { ItemStack.EmptyStack, ItemStack.EmptyStack },
-            { ItemStack.EmptyStack, ItemStack.EmptyStack }
-        };
+        var items = new[,]
+                    {
+                        { ItemStack.EmptyStack, ItemStack.EmptyStack },
+                        { ItemStack.EmptyStack, ItemStack.EmptyStack }
+                    };
 
-        CraftingPattern? actual = CraftingPattern.GetCraftingPattern(items);
+        var actual = CraftingPattern.GetCraftingPattern(items);
         Assert.Null(actual);
 
         // 3x3 case
         items = new[,]
-        {
-            { ItemStack.EmptyStack, ItemStack.EmptyStack, ItemStack.EmptyStack },
-            { ItemStack.EmptyStack, ItemStack.EmptyStack, ItemStack.EmptyStack },
-            { ItemStack.EmptyStack, ItemStack.EmptyStack, ItemStack.EmptyStack }
-        };
+                {
+                    { ItemStack.EmptyStack, ItemStack.EmptyStack, ItemStack.EmptyStack },
+                    { ItemStack.EmptyStack, ItemStack.EmptyStack, ItemStack.EmptyStack },
+                    { ItemStack.EmptyStack, ItemStack.EmptyStack, ItemStack.EmptyStack }
+                };
 
         actual = CraftingPattern.GetCraftingPattern(items);
         Assert.Null(actual);
-
     }
 
-    [TestCase(1, 1, new int[] { 17 }, new int[] { 1 },
-        @"<pattern><r><c><id>17</id><count>1</count></c></r></pattern>")]
-    [TestCase(3, 3,
+    [TestCase(
+        1,
+        1,
+        new int[] { 17 },
+        new int[] { 1 },
+        @"<pattern><r><c><id>17</id><count>1</count></c></r></pattern>"
+    )]
+    [TestCase(
+        3,
+        3,
         new int[] { 5, 4, 4, 5, 265, 331, 5, 4, 4 },
         new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1 },
         @"<pattern>
@@ -101,31 +125,40 @@ public class TestCraftingPattern
 <r><c><id>5</id><count>1</count></c>
 <c><id>4</id><count>1</count></c>
 <c><id>4</id><count>1</count></c>
-</r></pattern>")]
-    [TestCase(3, 1,
+</r></pattern>"
+    )]
+    [TestCase(
+        3,
+        1,
         new int[] { 5, 280, 280 },
         new int[] { 1, 1, 1 },
         @"<pattern>
 <r><c><id>5</id><count>1</count></c>
 <c><id>280</id><count>1</count></c>
 <c><id>280</id><count>1</count></c>
-</r></pattern>")]
-    public void Ctor_xml(int expectedWidth, int expectedHeight,
-        int[] expectedId, int[] expectedCount,
-        string xml)
+</r></pattern>"
+    )]
+    public void Ctor_xml(
+        int expectedWidth,
+        int expectedHeight,
+        int[] expectedId,
+        int[] expectedCount,
+        string xml
+    )
     {
-        XmlDocument doc = new XmlDocument();
+        var doc = new XmlDocument();
         doc.LoadXml(xml);
         // Test cases were constructed to ensure FirstChild is not null.
-        CraftingPattern actual = CraftingPattern.GetCraftingPattern(doc.FirstChild!)!;
+        var actual = CraftingPattern.GetCraftingPattern(doc.FirstChild!)!;
 
         Assert.AreEqual(expectedWidth, actual.Width);
         Assert.AreEqual(expectedHeight, actual.Height);
-        for (int x = 0; x < expectedWidth; x ++)
-        for (int y = 0; y < expectedHeight; y ++)
+
+        for (var x = 0; x < expectedWidth; x++)
+        for (var y = 0; y < expectedHeight; y++)
         {
-            Assert.AreEqual(expectedId[y * expectedWidth + x], actual[x, y].ID);
-            Assert.AreEqual(expectedCount[y * expectedWidth + x], actual[x, y].Count);
+            Assert.AreEqual(expectedId[(y * expectedWidth) + x], actual[x, y].ID);
+            Assert.AreEqual(expectedCount[(y * expectedWidth) + x], actual[x, y].Count);
         }
     }
 
@@ -136,9 +169,9 @@ public class TestCraftingPattern
     [TestCase(1, new short[] { -1, -1, -1, -1, 3, -1, -1, -1, -1 })]
     public void Width(int expectedWidth, short[] grid)
     {
-        XmlNode xml = GetCraftingAreaXml(grid);
+        var xml = GetCraftingAreaXml(grid);
 
-        CraftingPattern actual = CraftingPattern.GetCraftingPattern(xml)!;
+        var actual = CraftingPattern.GetCraftingPattern(xml)!;
 
         Assert.AreEqual(expectedWidth, actual.Width);
     }
@@ -150,9 +183,9 @@ public class TestCraftingPattern
     [TestCase(1, new short[] { -1, -1, -1, -1, 3, -1, -1, -1, -1 })]
     public void Height(int expectedHeight, short[] grid)
     {
-        XmlNode xml = GetCraftingAreaXml(grid);
+        var xml = GetCraftingAreaXml(grid);
 
-        CraftingPattern actual = CraftingPattern.GetCraftingPattern(xml)!;
+        var actual = CraftingPattern.GetCraftingPattern(xml)!;
 
         Assert.AreEqual(expectedHeight, actual.Height);
     }
@@ -161,17 +194,21 @@ public class TestCraftingPattern
     [TestCase(true, new short[] { 1, -1, -1, -1, -1, -1, -1, -1, -1 }, new short[] { -1, 1, -1, -1 })]
     [TestCase(true, new short[] { -1, -1, -1, -1, 1, 1, -1, 1, 2 }, new short[] { 1, 1, 1, 2 })]
     [TestCase(false, new short[] { 1, 1, 1, -1, 2, -1, -1, 2, -1 }, new short[] { 1, 2, 1, -1, 2, -1, -1, 2, -1 })]
-    [TestCase(false, new short[] { 1, -1, -1, -1, -1, -1, -1, -1, -1}, new short[] { -1, -1, 1, 1 })]
-    [TestCase(false, new short[] { 1, -1, -1, -1, -1, -1, -1, -1, -1 }, new short[] { 2, -1, -1, -1, -1, -1, -1, -1, -1 })]
+    [TestCase(false, new short[] { 1, -1, -1, -1, -1, -1, -1, -1, -1 }, new short[] { -1, -1, 1, 1 })]
+    [TestCase(
+        false,
+        new short[] { 1, -1, -1, -1, -1, -1, -1, -1, -1 },
+        new short[] { 2, -1, -1, -1, -1, -1, -1, -1, -1 }
+    )]
     public void Test_Equality(bool expected, short[] grid1, short[] grid2)
     {
-        XmlNode xml1 = GetCraftingAreaXml(grid1);
-        XmlNode xml2 = GetCraftingAreaXml(grid2);
+        var xml1 = GetCraftingAreaXml(grid1);
+        var xml2 = GetCraftingAreaXml(grid2);
 
-        CraftingPattern a = CraftingPattern.GetCraftingPattern(xml1)!;
-        CraftingPattern b = CraftingPattern.GetCraftingPattern(xml2)!;
+        var a = CraftingPattern.GetCraftingPattern(xml1)!;
+        var b = CraftingPattern.GetCraftingPattern(xml2)!;
 
-        Assert.False(object.ReferenceEquals(a, b));
+        Assert.False(ReferenceEquals(a, b));
         Assert.AreEqual(expected, a.Equals(b));
         Assert.AreEqual(expected, b.Equals(a));
 
@@ -187,5 +224,4 @@ public class TestCraftingPattern
         Assert.False(a == null!);
         Assert.False(null! == a!);
     }
-
 }

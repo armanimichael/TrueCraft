@@ -6,7 +6,8 @@ namespace TrueCraft.Core.Inventory;
 /// A Collection of Slots within a window where the slots have a common purpose.
 /// For example, the Main Inventory or the HotBar.
 /// </summary>
-public interface ISlots<T> : IList<T> where T : ISlot
+public interface ISlots<T> : IList<T>
+    where T : ISlot
 {
     /// <summary>
     /// Adds the given ItemStack to these slots, merging with established slots if possible.

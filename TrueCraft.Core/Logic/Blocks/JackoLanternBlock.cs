@@ -7,39 +7,29 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class JackoLanternBlock : BlockProvider
 {
     public static readonly byte BlockID = 0x5B;
-        
-    public override byte ID { get { return 0x5B; } }
-        
-    public override double BlastResistance { get { return 5; } }
 
-    public override double Hardness { get { return 1; } }
+    public override byte ID => 0x5B;
 
-    public override byte Luminance { get { return 15; } }
+    public override double BlastResistance => 5;
 
-    public override bool Opaque { get { return false; } }
+    public override double Hardness => 1;
 
-    public override byte LightOpacity { get { return 255; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Jack 'o' Lantern";
-    }
+    public override byte Luminance => 15;
 
-    public override SoundEffectClass SoundEffect
-    {
-        get
-        {
-            return SoundEffectClass.Wood;
-        }
-    }
+    public override bool Opaque => false;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(6, 6);
-    }
+    public override byte LightOpacity => 255;
 
-    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
-    {
-        dimension.SetMetadata(descriptor.Coordinates, (byte)MathHelper.DirectionByRotationFlat(user.Entity!.Yaw, true));
-    }
+    public override string GetDisplayName(short metadata) => "Jack 'o' Lantern";
+
+    public override SoundEffectClass SoundEffect => SoundEffectClass.Wood;
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(6, 6);
+
+    public override void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    ) => dimension.SetMetadata(descriptor.Coordinates, (byte) MathHelper.DirectionByRotationFlat(user.Entity!.Yaw, true));
 }

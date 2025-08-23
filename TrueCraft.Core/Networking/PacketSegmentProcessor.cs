@@ -8,13 +8,12 @@ namespace TrueCraft.Core.Networking;
 
 public class PacketSegmentProcessor : IPacketSegmentProcessor
 {
-
-    public List<byte> PacketBuffer { get; private set; }
+    public List<byte> PacketBuffer { get; }
 
     public PacketReader PacketReader { get; protected set; }
 
-    public bool ServerBound { get; private set; }
-        
+    public bool ServerBound { get; }
+
     public IPacket? CurrentPacket { get; protected set; }
 
     public PacketSegmentProcessor(PacketReader packetReader, bool serverBound)
@@ -36,27 +35,36 @@ public class PacketSegmentProcessor : IPacketSegmentProcessor
         }
 
         if (PacketBuffer.Count == 0)
+        {
             return false;
-            
+        }
+
         if (CurrentPacket is null)
         {
-            byte packetId = PacketBuffer[0];
+            var packetId = PacketBuffer[0];
 
             Func<IPacket> createPacket;
+
             if (ServerBound)
+            {
                 createPacket = PacketReader.ServerboundPackets[packetId];
+            }
             else
+            {
                 createPacket = PacketReader.ClientboundPackets[packetId];
+            }
 
             if (createPacket is null)
+            {
                 throw new NotSupportedException("Unable to read packet type 0x" + packetId.ToString("X2"));
+            }
 
             CurrentPacket = createPacket();
         }
-            
-        using (ByteListMemoryStream listStream = new ByteListMemoryStream(PacketBuffer, 1))
+
+        using (var listStream = new ByteListMemoryStream(PacketBuffer, 1))
         {
-            using (MinecraftStream ms = new MinecraftStream(listStream))
+            using (var ms = new MinecraftStream(listStream))
             {
                 try
                 {
@@ -67,14 +75,13 @@ public class PacketSegmentProcessor : IPacketSegmentProcessor
                     return false;
                 }
             }
-                
-            PacketBuffer.RemoveRange(0, (int)listStream.Position);
+
+            PacketBuffer.RemoveRange(0, (int) listStream.Position);
         }
-            
+
         packet = CurrentPacket;
         CurrentPacket = null;
 
         return PacketBuffer.Count > 0;
     }
-
 }

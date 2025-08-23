@@ -6,7 +6,11 @@ namespace TrueCraft.Core.Test.Logic.Items;
 
 public class TestToolItem
 {
-    [TestCase(ToolType.Pickaxe, ToolMaterial.Wood, 60, 0f,
+    [TestCase(
+        ToolType.Pickaxe,
+        ToolMaterial.Wood,
+        60,
+        0f,
         @"    <item>
       <id>270</id>
       <maximumstack>1</maximumstack>
@@ -28,8 +32,13 @@ public class TestToolItem
         <damage>0</damage>
       </tool>
     </item>
-")]
-    [TestCase(ToolType.Axe, ToolMaterial.Stone, 132, 0f,
+"
+    )]
+    [TestCase(
+        ToolType.Axe,
+        ToolMaterial.Stone,
+        132,
+        0f,
         @"    <item>
       <id>275</id>
       <maximumstack>1</maximumstack>
@@ -51,8 +60,13 @@ public class TestToolItem
         <damage>0</damage>
       </tool>
     </item>
-")]
-    [TestCase(ToolType.Shovel, ToolMaterial.Iron, 251, 0f,
+"
+    )]
+    [TestCase(
+        ToolType.Shovel,
+        ToolMaterial.Iron,
+        251,
+        0f,
         @"    <item>
       <id>256</id>
       <maximumstack>1</maximumstack>
@@ -74,8 +88,13 @@ public class TestToolItem
         <damage>0</damage>
       </tool>
     </item>
-")]
-    [TestCase(ToolType.Hoe, ToolMaterial.Gold, 33, 0f,
+"
+    )]
+    [TestCase(
+        ToolType.Hoe,
+        ToolMaterial.Gold,
+        33,
+        0f,
         @"    <item>
       <id>294</id>
       <maximumstack>1</maximumstack>
@@ -97,8 +116,13 @@ public class TestToolItem
         <damage>0</damage>
       </tool>
     </item>
-")]
-    [TestCase(ToolType.Sword, ToolMaterial.Diamond, 1562, 5.5f,
+"
+    )]
+    [TestCase(
+        ToolType.Sword,
+        ToolMaterial.Diamond,
+        1562,
+        5.5f,
         @"    <item>
       <id>276</id>
       <maximumstack>1</maximumstack>
@@ -120,11 +144,17 @@ public class TestToolItem
         <damage>5.5</damage>
       </tool>
     </item>
-")]
-    public void ctor(ToolType expectedKind, ToolMaterial expectedMaterial,
-        short expectedDurability, float expectedDamage, string xml)
+"
+    )]
+    public void ctor(
+        ToolType expectedKind,
+        ToolMaterial expectedMaterial,
+        short expectedDurability,
+        float expectedDamage,
+        string xml
+    )
     {
-        XmlNode itemNode = Utility.GetTopNode(xml);
+        var itemNode = Utility.GetTopNode(xml);
         IToolItem actual = new AToolItem(itemNode);
 
         Assert.AreEqual(expectedKind, actual.ToolType);
@@ -135,10 +165,5 @@ public class TestToolItem
 
     // The ToolItem constructor is protected, so this sub-class
     // allows us to test the protected constructor.
-    private class AToolItem : ToolItem
-    {
-        public AToolItem(XmlNode node) : base(node)
-        {
-        }
-    }
+    private sealed class AToolItem(XmlNode node) : ToolItem(node);
 }

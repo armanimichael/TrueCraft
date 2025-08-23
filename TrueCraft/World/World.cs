@@ -38,14 +38,20 @@ public class World : IWorld
     /// <param name="name">The name of the World, as seen by the Player.</param>
     /// <param name="dimensionFactory">A Factory for building the set of Dimensions.</param>
     /// <param name="spawnPoint">The default Spawn Point for all Players.</param>
-    private World(IServerServiceLocator serviceLocator, int seed, string baseDirectory,
-        string name, IDimensionFactory dimensionFactory, PanDimensionalVoxelCoordinates spawnPoint)
+    private World(
+        IServerServiceLocator serviceLocator,
+        int seed,
+        string baseDirectory,
+        string name,
+        IDimensionFactory dimensionFactory,
+        PanDimensionalVoxelCoordinates spawnPoint
+    )
     {
         _seed = seed;
         _name = name;
         _baseDirectory = baseDirectory;
 
-        IList<IDimensionServer> dimensions = dimensionFactory.BuildDimensions(serviceLocator, baseDirectory, seed);
+        var dimensions = dimensionFactory.BuildDimensions(serviceLocator, baseDirectory, seed);
         _dimensions = new List<IDimensionServer>(dimensions.Count);
         _dimensions.AddRange(dimensions);
 
@@ -65,30 +71,44 @@ public class World : IWorld
     public static string CreateWorld(int seed, string baseDirectory, string name)
     {
         // Ensure that the folder name does not contain any illegal characters.
-        string safeName = name;
-        foreach (char c in Path.GetInvalidFileNameChars())
+        var safeName = name;
+
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
             safeName = safeName.Replace(c.ToString(), string.Empty);
+        }
 
         // Ensure that the folder name does not duplicate an existing folder name
         if (File.Exists(Path.Combine(baseDirectory, safeName)))
         {
-            int serial = 1;
+            var serial = 1;
+
             while (File.Exists(Path.Combine(baseDirectory, $"{safeName}{serial}")))
+            {
                 serial++;
+            }
+
             safeName = $"{safeName}{serial}";
         }
 
         // Create the folder
-        string worldFolder = Path.Combine(baseDirectory, safeName);
+        var worldFolder = Path.Combine(baseDirectory, safeName);
         Directory.CreateDirectory(worldFolder);
 
-        NbtFile file = new NbtFile();
-        file.RootTag.Add(new NbtCompound("SpawnPoint", new[]
-        {
-            new NbtInt("X", 0),
-            new NbtInt("Y", 0),
-            new NbtInt("Z", 0)
-        }));
+        var file = new NbtFile();
+
+        file.RootTag.Add(
+            new NbtCompound(
+                "SpawnPoint",
+                new[]
+                {
+                    new NbtInt("X", 0),
+                    new NbtInt("Y", 0),
+                    new NbtInt("Z", 0)
+                }
+            )
+        );
+
         file.RootTag.Add(new NbtInt("Seed", seed));
         // TODO fix hard-coded OverWorld chunk provider
         file.RootTag.Add(new NbtString("ChunkProvider", "TrueCraft.TerrainGen.StandardGenerator"));
@@ -101,97 +121,107 @@ public class World : IWorld
     public static IWorld LoadWorld(IServerServiceLocator serviceLocator, string baseDirectory)
     {
         if (!Directory.Exists(baseDirectory))
+        {
             throw new DirectoryNotFoundException();
+        }
 
-        string name = Path.GetFileName(baseDirectory);
-        PanDimensionalVoxelCoordinates spawnPoint = new PanDimensionalVoxelCoordinates(DimensionID.Overworld, 0, 0, 0);
-        int seed = 0;
+        var name = Path.GetFileName(baseDirectory);
+        var spawnPoint = new PanDimensionalVoxelCoordinates(DimensionID.Overworld, 0, 0, 0);
+        var seed = 0;
 
         if (File.Exists(Path.Combine(baseDirectory, "manifest.nbt")))
         {
-            NbtFile file = new NbtFile(Path.Combine(baseDirectory, "manifest.nbt"));
+            var file = new NbtFile(Path.Combine(baseDirectory, "manifest.nbt"));
 
-            NbtCompound spawnNbt = (NbtCompound)file.RootTag["SpawnPoint"];
-            int x = spawnNbt["X"].IntValue;
-            int y = spawnNbt["Y"].IntValue;
-            int z = spawnNbt["Z"].IntValue;
+            var spawnNbt = (NbtCompound) file.RootTag["SpawnPoint"];
+            var x = spawnNbt["X"].IntValue;
+            var y = spawnNbt["Y"].IntValue;
+            var z = spawnNbt["Z"].IntValue;
             spawnPoint = new PanDimensionalVoxelCoordinates(DimensionID.Overworld, x, y, z);
 
             seed = file.RootTag["Seed"].IntValue;
 
-            string providerName = file.RootTag["ChunkProvider"].StringValue;
-            Type? chunkProviderType = Type.GetType(providerName);
+            var providerName = file.RootTag["ChunkProvider"].StringValue;
+            var chunkProviderType = Type.GetType(providerName);
+
             if (chunkProviderType is null)
+            {
                 throw new MissingProviderException(providerName);
-            IChunkProvider provider = (IChunkProvider)Activator.CreateInstance(chunkProviderType,
-                new object[] { seed })!;
+            }
+
+            var provider = (IChunkProvider) Activator.CreateInstance(
+                chunkProviderType,
+                new object[] { seed }
+            )!;
             // TODO
             // provider.Initialize(dimension);
 
             if (file.RootTag.Contains("Name"))
+            {
                 name = file.RootTag["Name"].StringValue;
+            }
 
             // TODO
             // dimension.ChunkProvider = provider;
         }
 
         IDimensionFactory factory = new DimensionFactory();
+
         return new World(serviceLocator, seed, baseDirectory, name, factory, spawnPoint);
     }
 
     #region IWorld
-    /// <inheritdoc />
-    public IDimension this[DimensionID index]
-    {
-        get
-        {
-            return _dimensions[((int)index) + 1];
-        }
-    }
 
     /// <inheritdoc />
-    public int Seed { get => _seed; }
+    public IDimension this[DimensionID index] => _dimensions[(int) index + 1];
 
     /// <inheritdoc />
-    public string Name { get => _name; }
+    public int Seed => _seed;
 
     /// <inheritdoc />
-    public string BaseDirectory { get => _baseDirectory; }
+    public string Name => _name;
 
     /// <inheritdoc />
-    public PanDimensionalVoxelCoordinates SpawnPoint { get => _spawnPoint; }
+    public string BaseDirectory => _baseDirectory;
 
     /// <inheritdoc />
-    public int Count { get => _dimensions.Count; }
+    public PanDimensionalVoxelCoordinates SpawnPoint => _spawnPoint;
+
+    /// <inheritdoc />
+    public int Count => _dimensions.Count;
 
     /// <inheritdoc />
     public void Save()
     {
-        NbtFile file = new NbtFile();
-        file.RootTag.Add(new NbtCompound("SpawnPoint", new[]
-        {
-            new NbtInt("X", this.SpawnPoint.X),
-            new NbtInt("Y", this.SpawnPoint.Y),
-            new NbtInt("Z", this.SpawnPoint.Z)
-        }));
-        file.RootTag.Add(new NbtInt("Seed", this.Seed));
-        file.RootTag.Add(new NbtString("ChunkProvider", ((IDimensionServer)this[DimensionID.Overworld]).ChunkProvider));
+        var file = new NbtFile();
+
+        file.RootTag.Add(
+            new NbtCompound(
+                "SpawnPoint",
+                new[]
+                {
+                    new NbtInt("X", SpawnPoint.X),
+                    new NbtInt("Y", SpawnPoint.Y),
+                    new NbtInt("Z", SpawnPoint.Z)
+                }
+            )
+        );
+
+        file.RootTag.Add(new NbtInt("Seed", Seed));
+        file.RootTag.Add(new NbtString("ChunkProvider", ((IDimensionServer) this[DimensionID.Overworld]).ChunkProvider));
         file.RootTag.Add(new NbtString("Name", Name));
-        file.SaveToFile(Path.Combine(this._baseDirectory, "manifest.nbt"), NbtCompression.ZLib);
+        file.SaveToFile(Path.Combine(_baseDirectory, "manifest.nbt"), NbtCompression.ZLib);
 
         // TODO: once the Nether is created, make this "dimension" not nullable.
-        foreach (IDimensionServer? dimension in _dimensions)
+        foreach (var dimension in _dimensions)
+        {
             dimension?.Save();
+        }
     }
 
-    public IEnumerator<IDimensionServer> GetEnumerator()
-    {
-        return _dimensions.GetEnumerator();
-    }
+    public IEnumerator<IDimensionServer> GetEnumerator() => _dimensions.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _dimensions.GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => _dimensions.GetEnumerator();
+
     #endregion
 }

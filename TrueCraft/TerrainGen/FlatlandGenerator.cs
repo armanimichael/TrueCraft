@@ -11,7 +11,8 @@ public class FlatlandGenerator : Generator
     private readonly List<GeneratorLayer> _layers;
     private readonly string _generatorOptions;
 
-    public FlatlandGenerator(int seed) : base(seed)
+    public FlatlandGenerator(int seed)
+        : base(seed)
     {
         _generatorOptions = DefaultGeneratorOptions;
         _layers = new List<GeneratorLayer>();
@@ -20,16 +21,18 @@ public class FlatlandGenerator : Generator
 
     private void CreateLayers()
     {
-        string[] parts = _generatorOptions.Split(';');
-        string[] layers = parts[1].Split(',');
+        var parts = _generatorOptions.Split(';');
+        var layers = parts[1].Split(',');
         double y = 0;
+
         foreach (var layer in layers)
         {
             var generatorLayer = new GeneratorLayer(layer);
             y += generatorLayer.Height;
             _layers.Add(generatorLayer);
         }
-        Biome = (Biome)byte.Parse(parts[2]);
+
+        Biome = (Biome) byte.Parse(parts[2]);
     }
 
     public Biome Biome { get; set; }
@@ -37,61 +40,72 @@ public class FlatlandGenerator : Generator
     public override IChunk GenerateChunk(GlobalChunkCoordinates position)
     {
         var chunk = new Chunk(position);
-        int y = 0;
-        for (int i = 0; i < _layers.Count; i++)
+        var y = 0;
+
+        for (var i = 0; i < _layers.Count; i++)
         {
-            int height = y + _layers[i].Height;
+            var height = y + _layers[i].Height;
+
             while (y < height)
             {
-                for (int x = 0; x < Chunk.Width; x++)
+                for (var x = 0; x < Chunk.Width; x++)
+                for (var z = 0; z < Chunk.Depth; z++)
                 {
-                    for (int z = 0; z < Chunk.Depth; z++)
-                    {
-                        LocalVoxelCoordinates local = new LocalVoxelCoordinates(x, y, z);
-                        chunk.SetBlockID(local, _layers[i].BlockId);
-                        chunk.SetMetadata(local, _layers[i].Metadata);
-                    }
+                    var local = new LocalVoxelCoordinates(x, y, z);
+                    chunk.SetBlockID(local, _layers[i].BlockId);
+                    chunk.SetMetadata(local, _layers[i].Metadata);
                 }
+
                 y++;
             }
         }
-        for (int x = 0; x < Chunk.Width; x++)
-        for (int z = 0; z < Chunk.Depth; z++)
+
+        for (var x = 0; x < Chunk.Width; x++)
+        for (var z = 0; z < Chunk.Depth; z++)
+        {
             chunk.SetBiome(x, z, Biome);
+        }
+
         chunk.TerrainPopulated = true;
         chunk.UpdateHeightMap();
+
         return chunk;
     }
 
-    public string LevelType
-    {
-        get { return "FLAT"; }
-    }
+    public static string LevelType => "FLAT";
 
-    public string GeneratorName { get { return "FLAT"; } }
+    public static string GeneratorName => "FLAT";
 
     public long Seed { get; set; }
 
-    public override GlobalVoxelCoordinates GetSpawn(IDimension dimension)
-    {
-        return new GlobalVoxelCoordinates(0, 5, 0);
-    }
+    public override GlobalVoxelCoordinates GetSpawn(IDimension dimension) => new(0, 5, 0);
 
     protected class GeneratorLayer
     {
         public GeneratorLayer(string layer)
         {
             var parts = layer.Split('x');
-            int idIndex = 0;
+            var idIndex = 0;
+
             if (parts.Length == 2)
+            {
                 idIndex++;
+            }
+
             var idParts = parts[idIndex].Split(':');
             BlockId = byte.Parse(idParts[0]);
+
             if (idParts.Length == 2)
-                Metadata = (byte)(byte.Parse(idParts[1]) & 0xF);
+            {
+                Metadata = (byte) (byte.Parse(idParts[1]) & 0xF);
+            }
+
             Height = 1;
+
             if (parts.Length == 2)
+            {
                 Height = int.Parse(parts[0]);
+            }
         }
 
         public byte BlockId { get; set; }

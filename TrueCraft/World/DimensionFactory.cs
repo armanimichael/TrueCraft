@@ -8,23 +8,26 @@ namespace TrueCraft.World;
 
 public class DimensionFactory : IDimensionFactory
 {
-    public DimensionFactory()
-    {
-    }
-
     /// <inheritdoc />
     public IList<IDimensionServer> BuildDimensions(IServerServiceLocator serviceLocator, string baseDirectory, int seed)
     {
-        List<IDimensionServer> dimensions = new List<IDimensionServer>(2);
+        var dimensions = new List<IDimensionServer>(2);
 
-        dimensions.Add(null!);   // TODO nether
+        dimensions.Add(null!); // TODO nether
 
         IChunkProvider chunkProvider = new StandardGenerator(seed);
         ILightingQueue lightingQueue = new LightingQueue();
-        EntityManager entityManager = new EntityManager(serviceLocator.Server);
-        IDimensionServer overWorld = new Dimension(serviceLocator,
-            baseDirectory, DimensionID.Overworld,
-            chunkProvider, lightingQueue, entityManager);
+        var entityManager = new EntityManager(serviceLocator.Server);
+
+        IDimensionServer overWorld = new Dimension(
+            serviceLocator,
+            baseDirectory,
+            DimensionID.Overworld,
+            chunkProvider,
+            lightingQueue,
+            entityManager
+        );
+
         entityManager.SetDimension(overWorld);
         dimensions.Add(overWorld);
 

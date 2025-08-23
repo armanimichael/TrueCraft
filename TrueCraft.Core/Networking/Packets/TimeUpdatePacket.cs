@@ -6,7 +6,7 @@
 /// </summary>
 public struct TimeUpdatePacket : IPacket
 {
-    public byte ID { get { return 0x04; } }
+    public byte ID => 0x04;
 
     public TimeUpdatePacket(long time)
     {
@@ -15,13 +15,7 @@ public struct TimeUpdatePacket : IPacket
 
     public long Time;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        Time = stream.ReadInt64();
-    }
+    public void ReadPacket(IMinecraftStream stream) => Time = stream.ReadInt64();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteInt64(Time);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteInt64(Time);
 }

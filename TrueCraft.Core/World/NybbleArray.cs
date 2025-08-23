@@ -63,38 +63,47 @@ public class NybbleArray : INbtSerializable
         get
         {
             if (index < 0)
+            {
                 throw new IndexOutOfRangeException();
-            return (byte)(_data[index / 2] >> (index % 2 * 4) & 0xF);
+            }
+
+            return (byte) ((_data[index / 2] >> (index % 2 * 4)) & 0xF);
         }
         set
         {
             if (index < 0)
+            {
                 throw new IndexOutOfRangeException();
+            }
+
             value &= 0x0F;
-            int idx = index / 2;
+            var idx = index / 2;
+
             if ((index & 0x01) != 0)
-                _data[idx] = (byte)((_data[idx] & 0x0F) | (value << 4));
+            {
+                _data[idx] = (byte) ((_data[idx] & 0x0F) | (value << 4));
+            }
             else
-                _data[idx] = (byte)((_data[idx] & 0xF0) | value);
+            {
+                _data[idx] = (byte) ((_data[idx] & 0xF0) | value);
+            }
         }
     }
 
     /// <summary>
     /// Gets the Length (in Nybbles) of this Array.
     /// </summary>
-    public int Length { get => 2 * _data.Length; }
+    public int Length => 2 * _data.Length;
 
     public byte[] ToArray()
     {
-        byte[] array = new byte[_data.Length];
+        var array = new byte[_data.Length];
         Buffer.BlockCopy(_data, 0, array, 0, _data.Length);
+
         return array;
     }
 
-    public NbtTag Serialize(string tagName)
-    {
-        return new NbtByteArray(tagName, ToArray());
-    }
+    public NbtTag Serialize(string tagName) => new NbtByteArray(tagName, ToArray());
 
     public void Deserialize(NbtTag value)
     {

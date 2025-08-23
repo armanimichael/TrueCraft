@@ -38,9 +38,22 @@ public class LocalVoxelCoordinates : IEquatable<LocalVoxelCoordinates>
     {
 #if DEBUG
         if (x < 0 || x >= WorldConstants.ChunkWidth)
-            throw new ArgumentOutOfRangeException(nameof(x), x, $"{ nameof(x) } is outside the valid range of[0,{ WorldConstants.ChunkWidth - 1}]");
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(x),
+                x,
+                $"{nameof(x)} is outside the valid range of[0,{WorldConstants.ChunkWidth - 1}]"
+            );
+        }
+
         if (z < 0 || z >= WorldConstants.ChunkDepth)
-            throw new ArgumentOutOfRangeException(nameof(z), z, $"{ nameof(z) } is outside the valid range of[0,{ WorldConstants.ChunkDepth - 1}]");
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(z),
+                z,
+                $"{nameof(z)} is outside the valid range of[0,{WorldConstants.ChunkDepth - 1}]"
+            );
+        }
 #endif
         X = x;
         Y = y;
@@ -57,46 +70,51 @@ public class LocalVoxelCoordinates : IEquatable<LocalVoxelCoordinates>
     public bool Equals(LocalVoxelCoordinates? other)
     {
         if (other is null)
+        {
             return false;
+        }
 
         return other.X.Equals(X) && other.Y.Equals(Y) && other.Z.Equals(Z);
     }
 
-    public static bool operator !=(LocalVoxelCoordinates? a, LocalVoxelCoordinates? b)
-    {
-        return !(a == b);
-    }
+    public static bool operator !=(LocalVoxelCoordinates? a, LocalVoxelCoordinates? b) => !(a == b);
 
     public static bool operator ==(LocalVoxelCoordinates? a, LocalVoxelCoordinates? b)
     {
         if (a is null)
         {
             if (b is null)
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
         else
         {
             if (b is null)
+            {
                 return false;
+            }
             else
+            {
                 return a.Equals(b);
-
+            }
         }
     }
-    #endregion  // IEquatable<LocalVoxelCoordinates>
+
+    #endregion // IEquatable<LocalVoxelCoordinates>
 
     #region Object overrides
+
     /// <summary>
     /// Determines whether this and another object are equal.
     /// </summary>
     /// <param name="obj">The other object.</param>
     /// <returns></returns>
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LocalVoxelCoordinates);
-    }
+    public override bool Equals(object? obj) => Equals(obj as LocalVoxelCoordinates);
 
     /// <summary>
     /// Returns the hash code for this 3D coordinates.
@@ -106,9 +124,10 @@ public class LocalVoxelCoordinates : IEquatable<LocalVoxelCoordinates>
     {
         unchecked
         {
-            int result = X.GetHashCode();
+            var result = X.GetHashCode();
             result = (result * 397) ^ Y.GetHashCode();
             result = (result * 397) ^ Z.GetHashCode();
+
             return result;
         }
     }
@@ -117,51 +136,52 @@ public class LocalVoxelCoordinates : IEquatable<LocalVoxelCoordinates>
     /// Converts this LocalVoxelCoordinates to a string in the format &lt;x, y, z&gt;.
     /// </summary>
     /// <returns></returns>
-    public override string ToString()
-    {
-        return string.Format("<{0},{1},{2}>", X, Y, Z);
-    }
-    #endregion   // object overrides
+    public override string ToString() => string.Format("<{0},{1},{2}>", X, Y, Z);
+
+    #endregion // object overrides
 
     #region operators
 
-    public LocalVoxelCoordinates Add(Vector3i other)
-    {
-        return new LocalVoxelCoordinates(this.X + other.X, this.Y + other.Y, this.Z + other.Z);
-    }
+    public LocalVoxelCoordinates Add(Vector3i other) => new(X + other.X, Y + other.Y, Z + other.Z);
 
-    public static LocalVoxelCoordinates operator +(LocalVoxelCoordinates c, Vector3i v)
-    {
-        return c.Add(v);
-    }
+    public static LocalVoxelCoordinates operator +(LocalVoxelCoordinates c, Vector3i v) => c.Add(v);
 
-    public static LocalVoxelCoordinates operator +(Vector3i v, LocalVoxelCoordinates c)
-    {
-        return c.Add(v);
-    }
+    public static LocalVoxelCoordinates operator +(Vector3i v, LocalVoxelCoordinates c) => c.Add(v);
+
     #endregion
 
     #region conversion operators
+
     public static explicit operator LocalVoxelCoordinates(GlobalVoxelCoordinates value)
     {
         int localX, localZ;
 
         if (value.X >= 0)
+        {
             localX = value.X % WorldConstants.ChunkWidth;
+        }
         else
-            localX = WorldConstants.ChunkWidth - 1 - (-value.X - 1) % WorldConstants.ChunkWidth;
+        {
+            localX = WorldConstants.ChunkWidth - 1 - ((-value.X - 1) % WorldConstants.ChunkWidth);
+        }
 
         if (value.Z >= 0)
+        {
             localZ = value.Z % WorldConstants.ChunkDepth;
+        }
         else
-            localZ = WorldConstants.ChunkDepth - 1 - (-value.Z - 1) % WorldConstants.ChunkDepth;
+        {
+            localZ = WorldConstants.ChunkDepth - 1 - ((-value.Z - 1) % WorldConstants.ChunkDepth);
+        }
 
         return new LocalVoxelCoordinates(localX, value.Y, localZ);
-
     }
+
     #endregion
 
     #region Constants
-    public static readonly LocalVoxelCoordinates Zero = new LocalVoxelCoordinates(0, 0, 0);
+
+    public static readonly LocalVoxelCoordinates Zero = new(0, 0, 0);
+
     #endregion
 }

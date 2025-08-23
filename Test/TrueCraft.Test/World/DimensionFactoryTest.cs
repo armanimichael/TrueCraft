@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
 using TrueCraft.Core.Logic;
@@ -10,32 +9,28 @@ namespace TrueCraft.Test.World;
 
 public class DimensionFactoryTest
 {
-    public DimensionFactoryTest()
-    {
-    }
-
     [Test]
     public void TestBuildDimensions()
     {
-        string baseDirectory = "FakeBaseDirectory";
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var baseDirectory = "FakeBaseDirectory";
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
 
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
 
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
 
-        Mock<IServerServiceLocator> mockServiceLocator = new Mock<IServerServiceLocator>(MockBehavior.Strict);
+        var mockServiceLocator = new Mock<IServerServiceLocator>(MockBehavior.Strict);
         mockServiceLocator.Setup(x => x.Server).Returns(mockServer.Object);
         mockServiceLocator.Setup(x => x.BlockRepository).Returns(mockBlockRepository.Object);
         mockServiceLocator.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
 
-        IDimensionFactory factory = new DimensionFactory();
+        var factory = new DimensionFactory();
 
-        IList<IDimensionServer> actual = factory.BuildDimensions(mockServiceLocator.Object, baseDirectory, 314159);
+        var actual = factory.BuildDimensions(mockServiceLocator.Object, baseDirectory, 314159);
 
         Assert.AreEqual(2, actual.Count);
 
-        Assert.IsNull(actual[0]);   // TODO Update for Nether
+        Assert.IsNull(actual[0]); // TODO Update for Nether
 
         IDimension overWorld = actual[1];
         Assert.AreEqual("OverWorld", overWorld.Name);

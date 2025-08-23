@@ -1,6 +1,7 @@
 namespace TrueCraft.Core.Inventory;
 
-public interface IChestWindow<T> : IWindow<T> where T : ISlot
+public interface IChestWindow<T> : IWindow<T>
+    where T : ISlot
 {
     /// <summary>
     /// Gets the collection of slots containing the Chest's contents.

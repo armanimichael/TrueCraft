@@ -9,7 +9,7 @@ public class MobManager
 {
     public EntityManager EntityManager { get; set; }
 
-    private Dictionary<DimensionID, List<ISpawnRule>> SpawnRules { get; set; }
+    private Dictionary<DimensionID, List<ISpawnRule>> SpawnRules { get; }
 
     public MobManager(EntityManager manager)
     {
@@ -20,26 +20,35 @@ public class MobManager
     public void AddRules(DimensionID dimension, ISpawnRule rules)
     {
         if (!SpawnRules.ContainsKey(dimension))
+        {
             SpawnRules[dimension] = new List<ISpawnRule>();
+        }
+
         SpawnRules[dimension].Add(rules);
     }
 
     public void SpawnInitialMobs(IChunk chunk, DimensionID dimension)
     {
         if (!SpawnRules.ContainsKey(dimension))
+        {
             return;
+        }
+
         var rules = SpawnRules[dimension];
+
         foreach (var rule in rules)
         {
             if (MathHelper.Random.Next(rule.ChunkSpawnChance) == 0)
+            {
                 rule.GenerateMobs(chunk, EntityManager);
+            }
         }
     }
 
     /// <summary>
     /// Call at dusk and it'll spawn baddies.
     /// </summary>
-    public void DayCycleSpawn(IChunk chunk, DimensionID dimension)
+    public static void DayCycleSpawn(IChunk chunk, DimensionID dimension)
     {
         // TODO
     }

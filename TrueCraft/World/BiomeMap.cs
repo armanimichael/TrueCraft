@@ -7,9 +7,9 @@ namespace TrueCraft.World;
 
 public class BiomeMap : IBiomeMap
 {
-    public IList<BiomeCell> BiomeCells { get; private set; }
+    public IList<BiomeCell> BiomeCells { get; }
 
-    Perlin TempNoise, RainNoise;
+    private Perlin TempNoise, RainNoise;
 
     public BiomeMap(int seed)
     {
@@ -29,22 +29,21 @@ public class BiomeMap : IBiomeMap
         RainNoise.Seed = seed;
     }
 
-    public void AddCell(BiomeCell cell)
-    {
-        BiomeCells.Add(cell);
-    }
+    public void AddCell(BiomeCell cell) => BiomeCells.Add(cell);
 
     public byte GetBiome(GlobalColumnCoordinates location)
     {
-        byte BiomeID = ClosestCell(location)?.BiomeID ?? (byte)Biome.Plains;
+        var BiomeID = ClosestCell(location)?.BiomeID ?? (byte) Biome.Plains;
+
         return BiomeID;
     }
 
     public byte GenerateBiome(int seed, IBiomeRepository biomes, GlobalColumnCoordinates location, bool spawn)
     {
-        double temp = Math.Abs(TempNoise.Value2D(location.X, location.Z));
-        double rainfall = Math.Abs(RainNoise.Value2D(location.X, location.Z));
-        byte ID = biomes.GetBiome(temp, rainfall, spawn).ID;
+        var temp = Math.Abs(TempNoise.Value2D(location.X, location.Z));
+        var rainfall = Math.Abs(RainNoise.Value2D(location.X, location.Z));
+        var ID = biomes.GetBiome(temp, rainfall, spawn).ID;
+
         return ID;
     }
 
@@ -55,15 +54,18 @@ public class BiomeMap : IBiomeMap
     {
         BiomeCell? cell = null;
         var distance = double.MaxValue;
-        foreach (BiomeCell C in BiomeCells)
+
+        foreach (var C in BiomeCells)
         {
             var _distance = Distance(location, C.CellPoint);
+
             if (_distance < distance)
             {
                 distance = _distance;
                 cell = C;
             }
         }
+
         return cell;
     }
 
@@ -73,19 +75,19 @@ public class BiomeMap : IBiomeMap
     public double ClosestCellPoint(GlobalColumnCoordinates location)
     {
         var distance = double.MaxValue;
-        foreach (BiomeCell C in BiomeCells)
+
+        foreach (var C in BiomeCells)
         {
             var _distance = Distance(location, C.CellPoint);
+
             if (_distance < distance)
             {
                 distance = _distance;
             }
         }
+
         return distance;
     }
 
-    private double Distance(GlobalColumnCoordinates a, GlobalColumnCoordinates b)
-    {
-        return Math.Max(Math.Abs(a.X - b.X), Math.Abs(a.Z - b.Z));
-    }
+    private static double Distance(GlobalColumnCoordinates a, GlobalColumnCoordinates b) => Math.Max(Math.Abs(a.X - b.X), Math.Abs(a.Z - b.Z));
 }

@@ -6,10 +6,9 @@ public class ShearsItem : ItemProvider, IDurableItem
 {
     public static readonly short ItemID = 0x167;
 
-    public ShearsItem(XmlNode node) : base(node)
-    {
-    }
+    public ShearsItem(XmlNode node)
+        : base(node) { }
 
     /// <inheritdoc />
-    public short Durability { get { return 239; } }
+    public short Durability => 239;
 }

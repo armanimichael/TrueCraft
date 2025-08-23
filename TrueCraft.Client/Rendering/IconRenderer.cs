@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using TrueCraft.Core.Logic;
-using TrueCraft.Client.Modelling;
 using TrueCraft.Client.Modelling.Blocks;
 
 namespace TrueCraft.Client.Rendering;
@@ -18,22 +17,31 @@ public static class IconRenderer
 
     public static void CreateBlocks(TrueCraftGame game, IBlockRepository repository)
     {
-        for (int i = 0; i < 0x100; i++)
+        for (var i = 0; i < 0x100; i++)
         {
-            IBlockProvider? provider = repository.GetBlockProvider((byte)i);
+            var provider = repository.GetBlockProvider((byte) i);
+
             if (provider is null)
+            {
                 continue;
+            }
 
             int[] indices;
-            foreach (short metadata in provider.VisibleMetadata)
+
+            foreach (var metadata in provider.VisibleMetadata)
             {
-                VertexPositionNormalColorTexture[] vertices = BlockModeller.RenderIcon(provider, metadata, out indices);
-                Mesh mesh = new Mesh(game, vertices, indices);
-                CacheEntry<Mesh> meshCacheEntry = new CacheEntry<Mesh>(mesh, metadata);
+                var vertices = BlockModeller.RenderIcon(provider, metadata, out indices);
+                var mesh = new Mesh(game, vertices, indices);
+                var meshCacheEntry = new CacheEntry<Mesh>(mesh, metadata);
+
                 if (_blockMeshes[provider.ID] == null)
+                {
                     _blockMeshes[provider.ID] = meshCacheEntry;
+                }
                 else
+                {
                     _blockMeshes[provider.ID].Append(meshCacheEntry);
+                }
             }
         }
 
@@ -50,39 +58,58 @@ public static class IconRenderer
         _renderEffect.DirectionalLight0.Direction = new Vector3(10, -10, -0.8f);
         _renderEffect.DirectionalLight0.DiffuseColor = Color.White.ToVector3();
         _renderEffect.DirectionalLight0.Enabled = true;
-        _renderEffect.Projection = Matrix.CreateOrthographic(18, 18, 0.1f, 1000.0f);   // TODO Hard-coded GUI slot size
+        _renderEffect.Projection = Matrix.CreateOrthographic(18, 18, 0.1f, 1000.0f); // TODO Hard-coded GUI slot size
         _renderEffect.View = Matrix.CreateLookAt(Vector3.UnitZ, Vector3.Zero, Vector3.Up);
     }
 
-    public static void RenderItemIcon(SpriteBatch spriteBatch, Texture2D texture, IItemProvider provider,
-        byte metadata, Rectangle destination, Color color)
+    public static void RenderItemIcon(
+        SpriteBatch spriteBatch,
+        Texture2D texture,
+        IItemProvider provider,
+        byte metadata,
+        Rectangle destination,
+        Color color
+    )
     {
-        Tuple<int, int>? icon = provider.GetIconTexture(metadata);
+        var icon = provider.GetIconTexture(metadata);
+
         if (icon is null)
-            icon = new Tuple<int, int>(0, 0);  // TODO: can we do a better default?
+        {
+            icon = new Tuple<int, int>(0, 0); // TODO: can we do a better default?
+        }
 
         var scale = texture.Width / 16;
         var source = new Rectangle(icon.Item1 * scale, icon.Item2 * scale, scale, scale);
         spriteBatch.Draw(texture, destination, source, color);
     }
 
-    public static void RenderBlockIcon(TrueCraftGame game, SpriteBatch spriteBatch, IBlockProvider provider, byte metadata, Rectangle destination)
+    public static void RenderBlockIcon(
+        TrueCraftGame game,
+        SpriteBatch spriteBatch,
+        IBlockProvider provider,
+        byte metadata,
+        Rectangle destination
+    )
     {
-        CacheEntry<Texture2D>? iconCacheEntry = _blockIconCache[provider.ID]?.Find(metadata);
+        var iconCacheEntry = _blockIconCache[provider.ID]?.Find(metadata);
+
         if (iconCacheEntry?.Metadata != metadata)
+        {
             iconCacheEntry = null;
+        }
 
         if (iconCacheEntry is null)
         {
             // There must be a Mesh for each Block Provider, so we don't test mesh for null.
-            Mesh mesh = _blockMeshes[provider.ID].Find(metadata).Value;
+            var mesh = _blockMeshes[provider.ID].Find(metadata).Value;
+
             _renderEffect.World = Matrix.Identity
                                   * Matrix.CreateScale(0.6f)
                                   * Matrix.CreateRotationY(-MathHelper.PiOver4)
                                   * Matrix.CreateRotationX(MathHelper.ToRadians(30))
-                                  * Matrix.CreateScale(new Vector3(18, 18, 1));    // TODO Hard-coded GUI slot size
+                                  * Matrix.CreateScale(new Vector3(18, 18, 1)); // TODO Hard-coded GUI slot size
 
-            RenderTarget2D newIcon = new RenderTarget2D(game.GraphicsDevice, 3 * 18, 3 * 18);   // TODO hard-coded GUI slot size
+            var newIcon = new RenderTarget2D(game.GraphicsDevice, 3 * 18, 3 * 18); // TODO hard-coded GUI slot size
 
             game.GraphicsDevice.SetRenderTarget(newIcon);
             game.GraphicsDevice.Clear(Color.Transparent);
@@ -90,18 +117,23 @@ public static class IconRenderer
             game.GraphicsDevice.SetRenderTarget(null);
 
             iconCacheEntry = new CacheEntry<Texture2D>(newIcon, metadata);
+
             if (_blockIconCache[provider.ID] == null)
+            {
                 _blockIconCache[provider.ID] = iconCacheEntry;
+            }
             else
+            {
                 _blockIconCache[provider.ID].Append(iconCacheEntry);
+            }
         }
 
-        Texture2D icon = iconCacheEntry.Value;
-        Rectangle source = new Rectangle(0, 0, icon.Width, icon.Height);
+        var icon = iconCacheEntry.Value;
+        var source = new Rectangle(0, 0, icon.Width, icon.Height);
         spriteBatch.Draw(icon, destination, source, Color.White);
     }
 
-    private class CacheEntry<T>
+    private sealed class CacheEntry<T>
     {
         private readonly T _icon;
         private readonly short _metadata;
@@ -114,17 +146,20 @@ public static class IconRenderer
             _next = null;
         }
 
-        public T Value { get => _icon; }
+        public T Value => _icon;
 
-        public short Metadata { get => _metadata; }
+        public short Metadata => _metadata;
 
-        public CacheEntry<T>? Next { get => _next; }
+        public CacheEntry<T>? Next => _next;
 
         public void Append(CacheEntry<T> icon)
         {
-            CacheEntry<T> last = this;
+            var last = this;
+
             while (last._next != null)
+            {
                 last = last._next;
+            }
 
             last._next = icon;
         }
@@ -140,13 +175,21 @@ public static class IconRenderer
         /// </remarks>
         public CacheEntry<T> Find(short metadata)
         {
-            CacheEntry<T> rv = this;
+            var rv = this;
+
             while (rv._metadata != metadata && rv._next != null)
+            {
                 rv = rv._next;
+            }
+
             if (rv == null || rv._metadata != metadata)
+            {
                 return this;
+            }
             else
+            {
                 return rv;
+            }
         }
     }
 }

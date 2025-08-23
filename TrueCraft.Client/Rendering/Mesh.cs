@@ -7,8 +7,12 @@ namespace TrueCraft.Client.Rendering;
 
 public sealed class Mesh : MeshBase
 {
-    public Mesh(TrueCraftGame game, VertexPositionNormalColorTexture[] vertices,
-        int[] indices) : base(game, vertices, indices)
+    public Mesh(
+        TrueCraftGame game,
+        VertexPositionNormalColorTexture[] vertices,
+        int[] indices
+    )
+        : base(game, vertices, indices)
     {
         BoundingBox = CalculateBoundingBox(vertices);
     }
@@ -20,20 +24,22 @@ public sealed class Mesh : MeshBase
     /// <returns></returns>
     private static BoundingBox CalculateBoundingBox(VertexPositionNormalColorTexture[] vertices)
     {
-        float minLength = float.MaxValue;
-        Vector3 minVector = Vector3.Zero;
-        float maxLength = float.MinValue;
-        Vector3 maxVector = Vector3.One;
+        var minLength = float.MaxValue;
+        var minVector = Vector3.Zero;
+        var maxLength = float.MinValue;
+        var maxVector = Vector3.One;
 
         for (int j = 0, jul = vertices.Length; j < jul; j++)
         {
-            Vector3 v = vertices[j].Position;
-            float len = v.Length();
+            var v = vertices[j].Position;
+            var len = v.Length();
+
             if (len < minLength)
             {
                 minLength = len;
                 minVector = v;
             }
+
             if (len > maxLength)
             {
                 maxLength = len;
@@ -68,7 +74,7 @@ public abstract class MeshBase : IDisposable
     public const int SubmeshLimit = 16;
 
     // Used for synchronous access to the graphics device.
-    private static readonly object _syncLock = new object();
+    private static readonly object _syncLock = new();
 
     private TrueCraftGame _game;
     private GraphicsDevice _graphicsDevice;
@@ -77,21 +83,9 @@ public abstract class MeshBase : IDisposable
     private VertexBuffer? _vertices;
     private IndexBuffer[] _indices;
 
-    public bool IsReady
-    {
-        get
-        {
-            return _isReady;
-        }
-    }
+    public bool IsReady => _isReady;
 
-    public int Submeshes
-    {
-        get
-        {
-            return _submeshes;
-        }
-    }
+    public int Submeshes => _submeshes;
 
     /// <summary>
     /// Gets the bounding box for this mesh.
@@ -106,42 +100,64 @@ public abstract class MeshBase : IDisposable
     /// <summary>
     /// Creates a new mesh.
     /// </summary>
-    protected MeshBase(TrueCraftGame game, VertexPositionNormalColorTexture[] vertices,
-        int submeshes)
+    protected MeshBase(
+        TrueCraftGame game,
+        VertexPositionNormalColorTexture[] vertices,
+        int submeshes
+    )
     {
-        if ((submeshes < 0) || (submeshes >= MeshBase.SubmeshLimit))
+        if (submeshes < 0 || submeshes >= SubmeshLimit)
+        {
             throw new ArgumentOutOfRangeException();
+        }
 
         _game = game;
         _graphicsDevice = game.GraphicsDevice;
         _indices = new IndexBuffer[submeshes];
 
-        _game.Invoke(() =>
-        {
-            _vertices = new VertexBuffer(_graphicsDevice, VertexPositionNormalColorTexture.VertexDeclaration,
-                (vertices.Length + 1), BufferUsage.WriteOnly);
-            _vertices.SetData(vertices);
-            _isReady = true;
-        });
+        _game.Invoke(
+            () =>
+            {
+                _vertices = new VertexBuffer(
+                    _graphicsDevice,
+                    VertexPositionNormalColorTexture.VertexDeclaration,
+                    vertices.Length + 1,
+                    BufferUsage.WriteOnly
+                );
+
+                _vertices.SetData(vertices);
+                _isReady = true;
+            }
+        );
     }
 
     /// <summary>
     /// Creates a new mesh.
     /// </summary>
-    protected MeshBase(TrueCraftGame game, VertexPositionNormalColorTexture[] vertices,
-        int[] indices)
+    protected MeshBase(
+        TrueCraftGame game,
+        VertexPositionNormalColorTexture[] vertices,
+        int[] indices
+    )
     {
         _game = game;
         _graphicsDevice = game.GraphicsDevice;
         _indices = new IndexBuffer[1];
 
-        _game.Invoke(() =>
-        {
-            _vertices = new VertexBuffer(_graphicsDevice, VertexPositionNormalColorTexture.VertexDeclaration,
-                (vertices.Length + 1), BufferUsage.WriteOnly);
-            _vertices.SetData(vertices);
-            _isReady = true;
-        });
+        _game.Invoke(
+            () =>
+            {
+                _vertices = new VertexBuffer(
+                    _graphicsDevice,
+                    VertexPositionNormalColorTexture.VertexDeclaration,
+                    vertices.Length + 1,
+                    BufferUsage.WriteOnly
+                );
+
+                _vertices.SetData(vertices);
+                _isReady = true;
+            }
+        );
 
         SetSubmesh(0, indices);
     }
@@ -151,22 +167,36 @@ public abstract class MeshBase : IDisposable
     /// </summary>
     protected void SetSubmesh(int index, int[] indices)
     {
-        if ((index < 0) || (index > _indices.Length))
+        if (index < 0 || index > _indices.Length)
+        {
             throw new ArgumentOutOfRangeException();
+        }
 
         lock (_syncLock)
         {
             if (_indices[index] != null)
-                _indices[index].Dispose();
-
-            _game.Invoke(() =>
             {
-                _indices[index] = new IndexBuffer(_graphicsDevice, typeof(int),
-                    (indices.Length + 1), BufferUsage.WriteOnly);
-                _indices[index].SetData(indices);
-                if (index + 1 > _submeshes)
-                    _submeshes = index + 1;
-            });
+                _indices[index].Dispose();
+            }
+
+            _game.Invoke(
+                () =>
+                {
+                    _indices[index] = new IndexBuffer(
+                        _graphicsDevice,
+                        typeof(int),
+                        indices.Length + 1,
+                        BufferUsage.WriteOnly
+                    );
+
+                    _indices[index].SetData(indices);
+
+                    if (index + 1 > _submeshes)
+                    {
+                        _submeshes = index + 1;
+                    }
+                }
+            );
         }
     }
 
@@ -177,10 +207,14 @@ public abstract class MeshBase : IDisposable
     public void Draw(Effect effect)
     {
         if (effect == null)
+        {
             throw new ArgumentException();
+        }
 
-        for (int i = 0; i < _indices.Length; i++)
+        for (var i = 0; i < _indices.Length; i++)
+        {
             Draw(effect, i);
+        }
     }
 
     /// <summary>
@@ -191,22 +225,38 @@ public abstract class MeshBase : IDisposable
     public void Draw(Effect effect, int index)
     {
         if (effect == null)
+        {
             throw new ArgumentException();
+        }
 
-        if ((index < 0) || (index > _indices.Length))
+        if (index < 0 || index > _indices.Length)
+        {
             throw new ArgumentOutOfRangeException();
+        }
 
-        if (_vertices == null || _vertices.IsDisposed || _indices[index] == null || _indices[index].IsDisposed || _indices[index].IndexCount < 3)
+        if (_vertices == null || _vertices.IsDisposed || _indices[index] == null || _indices[index].IsDisposed ||
+            _indices[index].IndexCount < 3)
+        {
             return; // Invalid state for rendering, just return.
+        }
 
         effect.GraphicsDevice.SetVertexBuffer(_vertices);
         effect.GraphicsDevice.Indices = _indices[index];
+
         foreach (var pass in effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            effect.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-                0, 0, _indices[index].IndexCount, 0, _indices[index].IndexCount / 3);
+
+            effect.GraphicsDevice.DrawIndexedPrimitives(
+                PrimitiveType.TriangleList,
+                0,
+                0,
+                _indices[index].IndexCount,
+                0,
+                _indices[index].IndexCount / 3
+            );
         }
+
         VerticiesRendered += _vertices.VertexCount;
         IndiciesRendered += _indices[index].IndexCount;
     }
@@ -217,10 +267,14 @@ public abstract class MeshBase : IDisposable
     public int GetTotalVertices()
     {
         if (_vertices is null)
+        {
             return 0;
+        }
 
         lock (_syncLock)
+        {
             return _vertices.VertexCount;
+        }
     }
 
     /// <summary>
@@ -230,9 +284,15 @@ public abstract class MeshBase : IDisposable
     {
         lock (_syncLock)
         {
-            int sum = 0;
-            foreach (IndexBuffer element in _indices)
-                sum += (element != null) ? element.IndexCount : 0;  // TODO: can this ever contain a null?
+            var sum = 0;
+
+            foreach (var element in _indices)
+            {
+                sum += element != null
+                    ? element.IndexCount
+                    : 0; // TODO: can this ever contain a null?
+            }
+
             return sum;
         }
     }
@@ -243,7 +303,9 @@ public abstract class MeshBase : IDisposable
     public void Dispose()
     {
         if (IsDisposed)
+        {
             return;
+        }
 
         Dispose(true);
         GC.SuppressFinalize(this);
@@ -263,8 +325,13 @@ public abstract class MeshBase : IDisposable
             _vertices = null;
 
             if (_indices is not null)
-                foreach (IndexBuffer element in _indices)
+            {
+                foreach (var element in _indices)
+                {
                     element?.Dispose();
+                }
+            }
+
             _indices = null!;
         }
 

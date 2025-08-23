@@ -8,28 +8,47 @@ namespace TrueCraft.Core.Entities;
 
 public class FallingSandEntity : FallingBlockEntity
 {
-    public FallingSandEntity(IDimension dimension, IEntityManager entityManager,
-        Vector3 position) : base(dimension, entityManager, position)
-    {
-    }
+    public FallingSandEntity(
+        IDimension dimension,
+        IEntityManager entityManager,
+        Vector3 position
+    )
+        : base(dimension, entityManager, position) { }
 
-    public override byte EntityType { get { return 70; } }
+    public override byte EntityType => 70;
 
     public override void TerrainCollision(Vector3 collisionPoint, Vector3 collisionDirection)
     {
         if (Despawned)
+        {
             return;
+        }
+
         if (collisionDirection == Vector3.Down)
         {
-            byte id = SandBlock.BlockID;
+            var id = SandBlock.BlockID;
             EntityManager.DespawnEntity(this);
-            Vector3 position = collisionPoint + Vector3i.Up;
-            IBlockProvider hit = Dimension.BlockRepository.GetBlockProvider(Dimension.GetBlockID((GlobalVoxelCoordinates)position));
+            var position = collisionPoint + Vector3i.Up;
+
+            var hit = Dimension.BlockRepository.GetBlockProvider(
+                Dimension.GetBlockID((GlobalVoxelCoordinates) position)
+            );
+
             if (hit.BoundingBox == null && !BlockProvider.Overwritable.Any(o => o == hit.ID))
-                EntityManager.SpawnEntity(new ItemEntity(Dimension, EntityManager,
-                    position + new Vector3(0.5), new ItemStack(id)));
+            {
+                EntityManager.SpawnEntity(
+                    new ItemEntity(
+                        Dimension,
+                        EntityManager,
+                        position + new Vector3(0.5),
+                        new ItemStack(id)
+                    )
+                );
+            }
             else
-                Dimension.SetBlockID((GlobalVoxelCoordinates)position, id);
+            {
+                Dimension.SetBlockID((GlobalVoxelCoordinates) position, id);
+            }
         }
     }
 }

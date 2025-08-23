@@ -2,7 +2,8 @@ using TrueCraft.Core.Logic;
 
 namespace TrueCraft.Core.Inventory;
 
-public interface ICraftingArea<T> : ISlots<T> where T : ISlot
+public interface ICraftingArea<T> : ISlots<T>
+    where T : ISlot
 {
     /// <summary>
     /// Gets the Height (in slots) of the Crafting Area's inputs.
@@ -32,5 +33,5 @@ public interface ICraftingArea<T> : ISlots<T> where T : ISlot
     /// Takes one Recipe's worth of output from the output slot.
     /// </summary>
     /// <returns>The output of one recipe.</returns>
-    public ItemStack TakeOutput();
+    ItemStack TakeOutput();
 }

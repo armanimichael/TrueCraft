@@ -6,40 +6,22 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class GoldOreBlock : BlockProvider, ISmeltableItem
 {
     public static readonly byte BlockID = 0x0E;
-        
-    public override byte ID { get { return 0x0E; } }
-        
-    public override double BlastResistance { get { return 15; } }
 
-    public override double Hardness { get { return 3; } }
+    public override byte ID => 0x0E;
 
-    public override byte Luminance { get { return 0; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Gold Ore";
-    }
+    public override double BlastResistance => 15;
 
-    public ItemStack SmeltingOutput { get { return new ItemStack((short)ItemIDs.GoldIngot); } }
+    public override double Hardness => 3;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(0, 2);
-    }
+    public override byte Luminance => 0;
 
-    public override ToolMaterial EffectiveToolMaterials
-    {
-        get
-        {
-            return ToolMaterial.Iron | ToolMaterial.Diamond;
-        }
-    }
+    public override string GetDisplayName(short metadata) => "Gold Ore";
 
-    public override ToolType EffectiveTools
-    {
-        get
-        {
-            return ToolType.Pickaxe;
-        }
-    }
+    public ItemStack SmeltingOutput => new((short) ItemIDs.GoldIngot);
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(0, 2);
+
+    public override ToolMaterial EffectiveToolMaterials => ToolMaterial.Iron | ToolMaterial.Diamond;
+
+    public override ToolType EffectiveTools => ToolType.Pickaxe;
 }

@@ -14,5 +14,5 @@ public class WindowClosedEventArgs : EventArgs
     /// <summary>
     /// Gets the ID of the Window which was closed.
     /// </summary>
-    public sbyte WindowID { get => _windowID; }
+    public sbyte WindowID => _windowID;
 }

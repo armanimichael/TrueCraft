@@ -2,7 +2,7 @@
 
 public struct EntityMetadataPacket : IPacket
 {
-    public byte ID { get { return 0x28; } }
+    public byte ID => 0x28;
 
     public int EntityID;
     public MetadataDictionary Metadata;

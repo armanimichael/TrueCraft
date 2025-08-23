@@ -47,7 +47,7 @@ public sealed class TextureMapper : IDisposable
     /// <summary>
     /// 
     /// </summary>
-    private IDictionary<string, Texture2D> _customs;
+    private Dictionary<string, Texture2D> _customs;
 
     /// <summary>
     /// 
@@ -61,7 +61,9 @@ public sealed class TextureMapper : IDisposable
     public TextureMapper(GraphicsDevice graphicsDevice)
     {
         if (graphicsDevice is null)
+        {
             throw new ArgumentException();
+        }
 
         _device = graphicsDevice;
         _customs = new Dictionary<string, Texture2D>();
@@ -75,13 +77,12 @@ public sealed class TextureMapper : IDisposable
     /// <param name="texture"></param>
     public void AddTexture(string key, Texture2D texture)
     {
-        if (string.IsNullOrEmpty(key) || (texture is null))
+        if (string.IsNullOrEmpty(key) || texture is null)
+        {
             throw new ArgumentException();
+        }
 
-        if (_customs.ContainsKey(key))
-            _customs[key] = texture;
-        else
-            _customs.Add(key, texture);
+        _customs[key] = texture;
     }
 
     /// <summary>
@@ -91,21 +92,28 @@ public sealed class TextureMapper : IDisposable
     public void AddTexturePack(TexturePack texturePack)
     {
         if (texturePack is null)
+        {
             return;
+        }
 
         // Make sure to 'silence' errors loading custom texture packs;
         // they're unimportant as we can just use default textures.
         try
         {
-            using (Stream strm = new FileStream(Path.Combine(Paths.TexturePacks, texturePack.Name), FileMode.Open, FileAccess.Read))
-            using (ZipArchive archive = new ZipArchive(strm))
+            using (Stream strm = new FileStream(
+                       Path.Combine(Paths.TexturePacks, texturePack.Name),
+                       FileMode.Open,
+                       FileAccess.Read
+                   ))
+            using (var archive = new ZipArchive(strm))
             {
-                foreach (ZipArchiveEntry entry in archive.Entries)
+                foreach (var entry in archive.Entries)
                 {
                     var key = entry.Name;
+
                     if (Path.GetExtension(key) == ".png")
                     {
-                        using (Stream stream = entry.Open())
+                        using (var stream = entry.Open())
                         {
                             // TODO: why copy this stream to a Memory Stream and then use it?
                             //       Why not just use this Stream?
@@ -119,22 +127,32 @@ public sealed class TextureMapper : IDisposable
                                 }
                             }
                             catch (Exception ex)
-                            {  // TODO: what causes Exceptions to be thrown?  Can we use a more specific type of Exception?
-                                Console.WriteLine("Exception ({0}) occurred while loading {1} from texture pack:\n\n{2}", ex.GetType().ToString(), key, ex);
+                            {
+                                // TODO: what causes Exceptions to be thrown?  Can we use a more specific type of Exception?
+                                Console.WriteLine(
+                                    "Exception ({0}) occurred while loading {1} from texture pack:\n\n{2}",
+                                    ex.GetType().ToString(),
+                                    key,
+                                    ex
+                                );
                             }
                         }
                     }
                 }
             }
         }
-        catch { return; }
+        catch
+        {
+            return;
+        }
     }
 
     public static void CopyStream(Stream input, Stream output)
     {
-        byte[] buffer = new byte[16*1024];
+        var buffer = new byte[16 * 1024];
         int read;
-        while((read = input.Read (buffer, 0, buffer.Length)) > 0)
+
+        while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
         {
             output.Write(buffer, 0, read);
         }
@@ -149,9 +167,12 @@ public sealed class TextureMapper : IDisposable
     {
         Texture2D? result = null;
         TryGetTexture(key, out result);
+
         if (result is null)
             // TODO Load a default texture.
+        {
             throw new InvalidOperationException($"Failed to find Texture {key}");
+        }
 
         return result;
     }
@@ -165,23 +186,33 @@ public sealed class TextureMapper : IDisposable
     public bool TryGetTexture(string key, out Texture2D? texture)
     {
         if (string.IsNullOrEmpty(key))
+        {
             throw new ArgumentException();
+        }
 
-        bool hasTexture = false;
+        var hasTexture = false;
         texture = null;
 
         // -> Try to load from custom textures
         Texture2D? customTexture = null;
-        bool inCustom = _customs.TryGetValue(key, out customTexture);
-        texture = (inCustom) ? customTexture : null;
+        var inCustom = _customs.TryGetValue(key, out customTexture);
+
+        texture = inCustom
+            ? customTexture
+            : null;
+
         hasTexture = inCustom;
 
         // -> Try to load from default textures
         if (!hasTexture)
         {
             Texture2D? defaultTexture = null;
-            bool inDefault = TextureMapper.Defaults.TryGetValue(key, out defaultTexture);
-            texture = (inDefault) ? defaultTexture : null;
+            var inDefault = Defaults.TryGetValue(key, out defaultTexture);
+
+            texture = inDefault
+                ? defaultTexture
+                : null;
+
             hasTexture = inDefault;
         }
 
@@ -195,10 +226,14 @@ public sealed class TextureMapper : IDisposable
     public void Dispose()
     {
         if (_isDisposed)
+        {
             return;
+        }
 
         foreach (var pair in _customs)
+        {
             pair.Value.Dispose();
+        }
 
         _customs.Clear();
         _customs = null!;

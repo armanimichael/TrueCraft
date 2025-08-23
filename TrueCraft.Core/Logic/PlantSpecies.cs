@@ -38,5 +38,5 @@ public enum PlantSpecies
     /// <summary>
     /// Sugarcane.
     /// </summary>
-    SugarCane,
+    SugarCane
 }

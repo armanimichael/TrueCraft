@@ -5,58 +5,40 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class RailBlock : BlockProvider
 {
     public static readonly byte BlockID = 0x42;
-        
-    public override byte ID { get { return 0x42; } }
-        
-    public override double BlastResistance { get { return 3.5; } }
 
-    public override double Hardness { get { return 0.7; } }
+    public override byte ID => 0x42;
 
-    public override byte Luminance { get { return 0; } }
+    public override double BlastResistance => 3.5;
 
-    public override bool Opaque { get { return false; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Rail";
-    }
+    public override double Hardness => 0.7;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(0, 8);
-    }
+    public override byte Luminance => 0;
+
+    public override bool Opaque => false;
+
+    public override string GetDisplayName(short metadata) => "Rail";
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(0, 8);
 }
 
 public class PoweredRailBlock : RailBlock
 {
-    public static readonly new byte BlockID = 0x1B;
+    public new static readonly byte BlockID = 0x1B;
 
-    public override byte ID { get { return 0x1B; } }
+    public override byte ID => 0x1B;
 
-    public override string GetDisplayName(short metadata)
-    {
-        return "Powered Rail";
-    }
+    public override string GetDisplayName(short metadata) => "Powered Rail";
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(3, 11);
-    }
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(3, 11);
 }
 
 public class DetectorRailBlock : RailBlock
 {
-    public static readonly new byte BlockID = 0x1C;
+    public new static readonly byte BlockID = 0x1C;
 
-    public override byte ID { get { return 0x1C; } }
+    public override byte ID => 0x1C;
 
-    public override string GetDisplayName(short metadata)
-    {
-        return "Detector Rail";
-    }
+    public override string GetDisplayName(short metadata) => "Detector Rail";
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(3, 12);
-    }
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(3, 12);
 }

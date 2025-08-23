@@ -9,7 +9,7 @@ public class TestVector3i
     [TestCase(1, 2, 3)]
     public void Vector3i_Constructor(int x, int y, int z)
     {
-        Vector3i actual = new Vector3i(x, y, z);
+        var actual = new Vector3i(x, y, z);
 
         Assert.AreEqual(x, actual.X);
         Assert.AreEqual(y, actual.Y);
@@ -35,14 +35,23 @@ public class TestVector3i
     [TestCase(2, 4, 6, 1, 0, 0, 3, 4, 6)]
     [TestCase(2, 4, 6, 0, 1, 0, 2, 5, 6)]
     [TestCase(2, 4, 6, 0, 0, 1, 2, 4, 7)]
-    public void Vector3i_Add(int x1, int y1, int z1, int x2, int y2, int z2,
-        int expectedX, int expectedY, int expectedZ)
+    public void Vector3i_Add(
+        int x1,
+        int y1,
+        int z1,
+        int x2,
+        int y2,
+        int z2,
+        int expectedX,
+        int expectedY,
+        int expectedZ
+    )
     {
-        Vector3i a = new Vector3i(x1, y1, z1);
-        Vector3i b = new Vector3i(x2, y2, z2);
-        Vector3i expected = new Vector3i(expectedX, expectedY, expectedZ);
+        var a = new Vector3i(x1, y1, z1);
+        var b = new Vector3i(x2, y2, z2);
+        var expected = new Vector3i(expectedX, expectedY, expectedZ);
 
-        Vector3i actual = a + b;
+        var actual = a + b;
 
         Assert.AreEqual(expected, actual);
     }
@@ -50,9 +59,9 @@ public class TestVector3i
     [Test]
     public void Vector3i_ToString()
     {
-        Vector3i a = new Vector3i(2, 3, 5);
+        var a = new Vector3i(2, 3, 5);
 
-        string actual = a.ToString();
+        var actual = a.ToString();
 
         Assert.AreEqual("<2,3,5>", actual);
     }
@@ -61,10 +70,10 @@ public class TestVector3i
     [TestCase(-3, -2, -1)]
     public void Vector3i_NegationOperator(int x, int y, int z)
     {
-        Vector3i t = new Vector3i(x, y, z);
-        Vector3i expected = new Vector3i(-x, -y, -z);
+        var t = new Vector3i(x, y, z);
+        var expected = new Vector3i(-x, -y, -z);
 
-        Vector3i actual = -t;
+        var actual = -t;
 
         Assert.AreEqual(expected.X, actual.X);
         Assert.AreEqual(expected.Y, actual.Y);
@@ -74,9 +83,9 @@ public class TestVector3i
     [TestCase(1, 2, 3, 5)]
     public void Vector3i_MultiplyOperator(int x, int y, int z, int m)
     {
-        Vector3i v = new Vector3i(x, y, z);
+        var v = new Vector3i(x, y, z);
 
-        Vector3i actual = m * v;
+        var actual = m * v;
 
         Assert.AreEqual(actual.X, m * x);
         Assert.AreEqual(actual.Y, m * y);

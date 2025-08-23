@@ -5,7 +5,7 @@
 /// </summary>
 public struct UpdateHealthPacket : IPacket
 {
-    public byte ID { get { return 0x08; } }
+    public byte ID => 0x08;
 
     public UpdateHealthPacket(short health)
     {
@@ -14,13 +14,7 @@ public struct UpdateHealthPacket : IPacket
 
     public short Health;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        Health = stream.ReadInt16();
-    }
+    public void ReadPacket(IMinecraftStream stream) => Health = stream.ReadInt16();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteInt16(Health);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteInt16(Health);
 }

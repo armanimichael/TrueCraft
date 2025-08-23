@@ -10,16 +10,23 @@ public class RedstoneItem : ItemProvider
 {
     public static readonly short ItemID = 0x14B;
 
-    public RedstoneItem(XmlNode node) : base(node)
-    {
-    }
+    public RedstoneItem(XmlNode node)
+        : base(node) { }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         coordinates += MathHelper.BlockFaceToCoordinates(face);
-        IBlockProvider supportingBlock = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates + Vector3i.Down));
+
+        var supportingBlock =
+            dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates + Vector3i.Down));
 
         if (supportingBlock.Opaque)
         {

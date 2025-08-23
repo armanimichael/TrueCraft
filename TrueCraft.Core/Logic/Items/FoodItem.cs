@@ -13,20 +13,28 @@ public class FoodItem : ItemProvider, IFoodItem
 
     private readonly float _restores;
 
-    public FoodItem(XmlNode node) : base(node)
+    public FoodItem(XmlNode node)
+        : base(node)
     {
         XmlNode? foodNode = node[FoodNodeName];
+
         if (foodNode is null)
+        {
             throw new ArgumentException($"Missing <{FoodNodeName}> node.");
+        }
+
         XmlNode? restoreNode = foodNode[RestoresNodeName];
+
         if (restoreNode is null)
+        {
             throw new ArgumentException($"Missing <{RestoresNodeName}> node.");
+        }
 
         _restores = float.Parse(restoreNode.InnerText);
     }
 
     /// <inheritdoc />
-    public float Restores { get => _restores; }
+    public float Restores => _restores;
 
     // TODO: requires ItemUsedOn... overrides (server-side)
 }

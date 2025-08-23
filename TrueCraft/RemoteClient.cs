@@ -11,7 +11,6 @@ using TrueCraft.Core;
 using TrueCraft.Core.Entities;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Logging;
-using TrueCraft.Core.Logic;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.Server;
@@ -27,23 +26,39 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 {
     private IDimensionServer? _dimension = null;
 
-    public RemoteClient(IServiceLocator serviceLocator, IMultiplayerServer server, IPacketReader packetReader, PacketHandler[] packetHandlers, Socket connection)
+    public RemoteClient(
+        IServiceLocator serviceLocator,
+        IMultiplayerServer server,
+        IPacketReader packetReader,
+        PacketHandler[] packetHandlers,
+        Socket connection
+    )
     {
         _loadedChunks = new HashSet<GlobalChunkCoordinates>();
         Server = server;
 
-        ISlotFactory<IServerSlot> slotFactory = SlotFactory<IServerSlot>.Get();
-        IItemRepository itemRepository = serviceLocator.ItemRepository;
+        var slotFactory = SlotFactory<IServerSlot>.Get();
+        var itemRepository = serviceLocator.ItemRepository;
 
-        Inventory = ServerSlots.GetServerSlots(itemRepository, 27);   // TODO hard-coded constant
-        Hotbar = ServerSlots.GetServerSlots(itemRepository, 9);       // TODO hard-coded constant
+        Inventory = ServerSlots.GetServerSlots(itemRepository, 27); // TODO hard-coded constant
+        Hotbar = ServerSlots.GetServerSlots(itemRepository, 9); // TODO hard-coded constant
         Armor = new ArmorSlots<IServerSlot>(itemRepository, slotFactory);
-        CraftingGrid = new CraftingArea<IServerSlot>(itemRepository,
-            serviceLocator.CraftingRepository, slotFactory, 2, 2);                 // TODO hard-coded constants
 
-        InventoryWindowContent = new TrueCraft.Inventory.InventoryWindow(itemRepository,
+        CraftingGrid = new CraftingArea<IServerSlot>(
+            itemRepository,
             serviceLocator.CraftingRepository,
-            slotFactory, Inventory, Hotbar);
+            slotFactory,
+            2,
+            2
+        ); // TODO hard-coded constants
+
+        InventoryWindowContent = new InventoryWindow(
+            itemRepository,
+            serviceLocator.CraftingRepository,
+            slotFactory,
+            Inventory,
+            Hotbar
+        );
 
         SelectedSlot = 0;
 
@@ -67,6 +82,7 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     /// A list of entities that this client is aware of.
     /// </summary>
     internal List<IEntity> KnownEntities { get; set; }
+
     internal sbyte NextWindowID { get; set; }
 
     public string? Username { get; internal set; }
@@ -80,13 +96,16 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
         internal set
         {
             // TODO: Once IRemoteClient is properly server-side only, fix this.
-            IDimensionServer? val = value as IDimensionServer;
+            var val = value as IDimensionServer;
+
             if (val is null)
+            {
                 throw new ArgumentNullException();
+            }
+
             _dimension = val;
         }
     }
-
 
     /// <summary>
     /// Gets the Player's Inventory.
@@ -106,7 +125,7 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     /// <summary>
     /// Gets the Player's Crafting Grid.
     /// </summary>
-    public ISlots<IServerSlot> CraftingGrid { get;  }
+    public ISlots<IServerSlot> CraftingGrid { get; }
 
     /// <summary>
     /// Gets or sets the selected index in the Hotbar
@@ -121,14 +140,8 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
     public IWindow<IServerSlot> CurrentWindow
     {
-        get
-        {
-            return _currentWindow ?? InventoryWindowContent;
-        }
-        internal set
-        {
-            _currentWindow = value;
-        }
+        get => _currentWindow ?? InventoryWindowContent;
+        internal set => _currentWindow = value;
     }
 
     public bool EnableLogging { get; set; }
@@ -141,9 +154,9 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
     private SocketAsyncEventArgsPool? _socketPool;
 
-    public IPacketReader PacketReader { get; private set; }
+    public IPacketReader PacketReader { get; }
 
-    private PacketHandler[] PacketHandlers { get; set; }
+    private PacketHandler[] PacketHandlers { get; }
 
     private IEntity? _entity;
 
@@ -151,35 +164,41 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
     public bool Disconnected
     {
-        get
-        {
-            return Interlocked.Read(ref disconnected) == 1;
-        }
-        internal set
-        {
-            Interlocked.CompareExchange(ref disconnected, value ? 1 : 0, value ? 0 : 1);
-        }
+        get => Interlocked.Read(ref disconnected) == 1;
+        internal set => Interlocked.CompareExchange(
+            ref disconnected,
+            value
+                ? 1
+                : 0,
+            value
+                ? 0
+                : 1
+        );
     }
 
     public IEntity? Entity
     {
-        get
-        {
-            return _entity;
-        }
+        get => _entity;
         internal set
         {
-            PlayerEntity? player = _entity as PlayerEntity;
+            var player = _entity as PlayerEntity;
+
             if (player is not null)
+            {
                 player.PickUpItem -= HandlePickUpItem;
+            }
+
             _entity = value;
             player = _entity as PlayerEntity;
+
             if (player is not null)
+            {
                 player.PickUpItem += HandlePickUpItem;
+            }
         }
     }
 
-    void HandlePickUpItem(object? sender, EntityEventArgs e)
+    private void HandlePickUpItem(object? sender, EntityEventArgs e)
     {
         IPacket packet = new CollectItemPacket(e.Entity.EntityID, Entity!.EntityID);
 
@@ -189,18 +208,24 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
         // TODO: Should this packet even be sent to the originating client?
         //       It's used to provide the pickup animation.
         QueuePacket(packet);
-        IEntityManager manager = _dimension!.EntityManager;
-        foreach (IRemoteClient client in manager.ClientsForEntity(Entity))
-            client.QueuePacket(packet);
+        var manager = _dimension!.EntityManager;
 
-        ItemStack toPickUp = ((ItemEntity)e.Entity).Item;
-        ItemStack remaining = PickUpStack(toPickUp);
+        foreach (var client in manager.ClientsForEntity(Entity))
+        {
+            client.QueuePacket(packet);
+        }
+
+        var toPickUp = ((ItemEntity) e.Entity).Item;
+        var remaining = PickUpStack(toPickUp);
 
         if (remaining != toPickUp)
         {
             manager.DespawnEntity(e.Entity);
+
             if (!remaining.Empty)
+            {
                 manager.SpawnEntity(new ItemEntity(_dimension, manager, e.Entity.Position, remaining));
+            }
         }
     }
 
@@ -211,25 +236,23 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     /// <returns>The remaining Items after picking up.</returns>
     private ItemStack PickUpStack(ItemStack item)
     {
-        IItemProvider provider = _dimension!.ItemRepository.GetItemProvider(item.ID)!;
-        ItemStack remaining = Inventory.StoreItemStack(item, false);
+        var provider = _dimension!.ItemRepository.GetItemProvider(item.ID)!;
+        var remaining = Inventory.StoreItemStack(item, false);
 
         if (!remaining.Empty)
+        {
             remaining = Hotbar.StoreItemStack(remaining, false);
+        }
 
         if (!remaining.Empty)
+        {
             remaining = Inventory.StoreItemStack(remaining, false);
+        }
 
         return remaining;
     }
 
-    public ItemStack SelectedItem
-    {
-        get
-        {
-            return Hotbar[SelectedSlot].Item;
-        }
-    }
+    public ItemStack SelectedItem => Hotbar[SelectedSlot].Item;
 
     /// <summary>
     /// Gets the contents of the player's inventory window.
@@ -238,33 +261,42 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
     internal int ChunkRadius { get; set; }
 
-    private readonly object _loadedChunkLock = new object();
+    private readonly object _loadedChunkLock = new();
     private HashSet<GlobalChunkCoordinates> _loadedChunks;
 
-    public bool DataAvailable
-    {
-        get
-        {
-            return true;
-        }
-    }
+    public bool DataAvailable => true;
 
     public bool Load()
     {
         var path = Path.Combine(Directory.GetCurrentDirectory(), "players", Username + ".nbt");
+
         if (Program.ServerConfiguration?.Singleplayer ?? ServerConfiguration.SinglePlayerDefault)
-            path = Path.Combine(((IWorld)Server.World!).BaseDirectory, "player.nbt");
+        {
+            path = Path.Combine(((IWorld) Server.World!).BaseDirectory, "player.nbt");
+        }
+
         if (!File.Exists(path))
+        {
             return false;
+        }
+
         try
         {
             var nbt = new NbtFile(path);
+
             Entity!.Position = new Vector3(
                 nbt.RootTag["position"][0].DoubleValue,
                 nbt.RootTag["position"][1].DoubleValue,
-                nbt.RootTag["position"][2].DoubleValue);
-            InventoryWindowContent.SetSlots(((NbtList)nbt.RootTag["inventory"]).Select(t => ItemStack.FromNbt((NbtCompound)t)).ToArray());
-            ((PlayerEntity)Entity).Health = nbt.RootTag["health"].ShortValue;
+                nbt.RootTag["position"][2].DoubleValue
+            );
+
+            InventoryWindowContent.SetSlots(
+                ((NbtList) nbt.RootTag["inventory"])
+                .Select(t => ItemStack.FromNbt((NbtCompound) t))
+                .ToArray()
+            );
+
+            ((PlayerEntity) Entity).Health = nbt.RootTag["health"].ShortValue;
             Entity.Yaw = nbt.RootTag["yaw"].FloatValue;
             Entity.Pitch = nbt.RootTag["pitch"].FloatValue;
         }
@@ -275,6 +307,7 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
             //   2. When would it be thrown?
             //   3. Why is it safe to ignore?
         }
+
         return true;
     }
 
@@ -282,36 +315,56 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     {
         // The remote client may be disconnected prior to setting the World property.
         if (_dimension is null)
+        {
             return;
+        }
 
         var path = Path.Combine(Directory.GetCurrentDirectory(), "players", Username + ".nbt");
+
         if (Program.ServerConfiguration?.Singleplayer ?? ServerConfiguration.SinglePlayerDefault)
-            path = Path.Combine(((IWorld)Server.World!).BaseDirectory, "player.nbt");
+        {
+            path = Path.Combine(((IWorld) Server.World!).BaseDirectory, "player.nbt");
+        }
+
         if (!Directory.Exists(Path.GetDirectoryName(path)))
+        {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        }
+
         if (Entity == null) // I didn't think this could happen but null reference exceptions have been repoted here
+        {
             return;
-        var nbt = new NbtFile(new NbtCompound("player", new NbtTag[]
-            {
-                new NbtString("username", Username),
-                new NbtList("position", new[]
+        }
+
+        var nbt = new NbtFile(
+            new NbtCompound(
+                "player",
+                new NbtTag[]
                 {
-                    new NbtDouble(Entity.Position.X),
-                    new NbtDouble(Entity.Position.Y),
-                    new NbtDouble(Entity.Position.Z)
-                }),
-                new NbtList("inventory", InventoryTags()),
-                new NbtShort("health", ((PlayerEntity)Entity).Health),
-                new NbtFloat("yaw", Entity.Yaw),
-                new NbtFloat("pitch", Entity.Pitch),
-            }
-        ));
+                    new NbtString("username", Username),
+                    new NbtList(
+                        "position",
+                        new[]
+                        {
+                            new NbtDouble(Entity.Position.X),
+                            new NbtDouble(Entity.Position.Y),
+                            new NbtDouble(Entity.Position.Z)
+                        }
+                    ),
+                    new NbtList("inventory", InventoryTags()),
+                    new NbtShort("health", ((PlayerEntity) Entity).Health),
+                    new NbtFloat("yaw", Entity.Yaw),
+                    new NbtFloat("pitch", Entity.Pitch)
+                }
+            )
+        );
+
         nbt.SaveToFile(path, NbtCompression.ZLib);
     }
 
-    private IEnumerable<NbtTag> InventoryTags()
+    private List<NbtTag> InventoryTags()
     {
-        List<NbtTag> rv = new List<NbtTag>();
+        var rv = new List<NbtTag>();
         // TODO: does B1.7.3 really save the crafting contents?
         // TODO BUG: this saves the items in the Crafting area as part of the player's inventory.
         //           They should be dropped when the player closes the window.
@@ -326,7 +379,7 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     public void OpenWindow(IWindow<IServerSlot> window)
     {
         CurrentWindow = window;
-        IServerWindow serverWindow = (IServerWindow)window;
+        var serverWindow = (IServerWindow) window;
 
         QueuePacket(serverWindow.GetOpenWindowPacket());
 
@@ -335,9 +388,12 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
     public void CloseWindow(bool clientInitiated = false)
     {
-        IServerWindow serverWindow = (IServerWindow)CurrentWindow;
+        var serverWindow = (IServerWindow) CurrentWindow;
+
         if (!clientInitiated)
+        {
             QueuePacket(serverWindow.GetCloseWindowPacket());
+        }
 
         // TODO Something else instantiates the window and gives it to us.  Then, we destroy it?
         //      Almost certainly the wrong action for a Chest.
@@ -348,31 +404,40 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
         // after a client-initiated window closure.  It is assumed that they
         // are sent after a server-initiated one too.
         foreach (IPacket packet in serverWindow.GetDirtySetSlotPackets())
+        {
             QueuePacket(packet);
+        }
     }
 
     public void Log(string message, params object[] parameters)
     {
         if (EnableLogging)
-            SendMessage(ChatColor.Gray + string.Format("[" + DateTime.UtcNow.ToShortTimeString() + "] " + message, parameters));
+        {
+            SendMessage(
+                ChatColor.Gray +
+                string.Format("[" + DateTime.UtcNow.ToShortTimeString() + "] " + message, parameters)
+            );
+        }
     }
 
     public void QueuePacket(IPacket packet)
     {
         if (Disconnected || (_connection != null && !_connection.Connected))
-            return;
-
-        using (MemoryStream writeStream = new MemoryStream())
         {
-            using (MinecraftStream ms = new MinecraftStream(writeStream))
+            return;
+        }
+
+        using (var writeStream = new MemoryStream())
+        {
+            using (var ms = new MinecraftStream(writeStream))
             {
                 writeStream.WriteByte(packet.ID);
                 packet.WritePacket(ms);
             }
 
-            byte[] buffer = writeStream.ToArray();
+            var buffer = writeStream.ToArray();
 
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+            var args = new SocketAsyncEventArgs();
             args.UserToken = packet;
             args.Completed += OperationCompleted;
             args.SetBuffer(buffer, 0, buffer.Length);
@@ -380,7 +445,9 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
             if (_connection != null)
             {
                 if (!_connection.SendAsync(args))
+                {
                     OperationCompleted(this, args);
+                }
             }
         }
     }
@@ -388,19 +455,26 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     private void StartReceive()
     {
         // Check if this RemoteClient has been disposed.
-        if (object.ReferenceEquals(_socketPool, null))
+        if (ReferenceEquals(_socketPool, null))
+        {
             return;
+        }
 
-        SocketAsyncEventArgs args = _socketPool.Get();
+        var args = _socketPool.Get();
         args.Completed += OperationCompleted;
 
         if (!_connection!.ReceiveAsync(args))
+        {
             OperationCompleted(this, args);
+        }
     }
 
     private void OperationCompleted(object? sender, SocketAsyncEventArgs e)
     {
-        if (_thisDisposed) return;
+        if (_thisDisposed)
+        {
+            return;
+        }
 
         e.Completed -= OperationCompleted;
 
@@ -410,37 +484,49 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
                 ProcessNetwork(e);
 
                 _socketPool?.Add(e);
+
                 break;
             case SocketAsyncOperation.Send:
-                IPacket? packet = e.UserToken as IPacket;
+                var packet = e.UserToken as IPacket;
 
                 if (packet is DisconnectPacket)
+                {
                     Server.DisconnectClient(this);
+                }
 
                 e.SetBuffer(null, 0, 0);
+
                 break;
         }
 
         if (_connection != null)
+        {
             if (!_connection.Connected && !Disconnected)
+            {
                 Server.DisconnectClient(this);
+            }
+        }
     }
 
     private void ProcessNetwork(SocketAsyncEventArgs e)
     {
         if (_connection == null || !_connection.Connected)
+        {
             return;
+        }
 
         if (e.SocketError != SocketError.Success || e.BytesTransferred == 0)
         {
             Server.DisconnectClient(this);
+
             return;
         }
 
         var packets = PacketReader.ReadPackets(this, e.Buffer!, e.Offset, e.BytesTransferred);
+
         try
         {
-            foreach (IPacket packet in packets)
+            foreach (var packet in packets)
             {
                 if (PacketHandlers[packet.ID] != null)
                 {
@@ -456,8 +542,11 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
                     {
                         Server.Log(LogCategory.Notice, "Disconnecting client due to exception in network worker");
                         Server.Log(LogCategory.Debug, ex.ToString());
+
                         if (ex.StackTrace is not null)
+                        {
                             Server.Log(LogCategory.Debug, ex.StackTrace.ToString());
+                        }
 
                         Server.DisconnectClient(this);
                     }
@@ -471,6 +560,7 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
         catch (NotSupportedException)
         {
             Server.Log(LogCategory.Debug, "Disconnecting client due to unsupported packet received.");
+
             return;
         }
 
@@ -480,14 +570,17 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     public void Disconnect()
     {
         if (Disconnected)
+        {
             return;
+        }
 
         Disconnected = true;
 
         _connection?.Shutdown(SocketShutdown.Both);
 
-        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        var args = new SocketAsyncEventArgs();
         args.Completed += DisconnectCompleted;
+
         if (!_connection?.DisconnectAsync(args) ?? true)
         {
             DisconnectCompleted(_connection, args);
@@ -495,33 +588,48 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
         }
     }
 
-    private void DisconnectCompleted(object? sender, SocketAsyncEventArgs e)
-    {
-        _connection?.Close();
-    }
+    private void DisconnectCompleted(object? sender, SocketAsyncEventArgs e) => _connection?.Close();
 
     public void SendMessage(string message)
     {
         var parts = message.Split('\n');
+
         foreach (var part in parts)
+        {
             QueuePacket(new ChatMessagePacket(part));
+        }
     }
 
     internal void ExpandChunkRadius(IMultiplayerServer server)
     {
-        if (this.Disconnected)
-            return;
-        Task.Factory.StartNew(() =>
+        if (Disconnected)
         {
-            if (ChunkRadius < 8) // TODO: Allow customization of this number
+            return;
+        }
+
+        Task.Factory.StartNew(
+            () =>
             {
-                ChunkRadius++;
-                server.Scheduler.ScheduleEvent("client.update-chunks", this,
-                    TimeSpan.Zero, s => UpdateChunks());
-                server.Scheduler.ScheduleEvent("remote.chunks", this,
-                    TimeSpan.FromSeconds(1), ExpandChunkRadius);
+                if (ChunkRadius < 8) // TODO: Allow customization of this number
+                {
+                    ChunkRadius++;
+
+                    server.Scheduler.ScheduleEvent(
+                        "client.update-chunks",
+                        this,
+                        TimeSpan.Zero,
+                        s => UpdateChunks()
+                    );
+
+                    server.Scheduler.ScheduleEvent(
+                        "remote.chunks",
+                        this,
+                        TimeSpan.FromSeconds(1),
+                        ExpandChunkRadius
+                    );
+                }
             }
-        });
+        );
     }
 
     internal void SendKeepAlive(IMultiplayerServer server)
@@ -532,64 +640,94 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
     internal void UpdateChunks(bool block = false)
     {
-        List<IChunk> toLoad = new List<IChunk>();
-        int cr = ChunkRadius;
-        GlobalChunkCoordinates entityChunk = (GlobalChunkCoordinates)Entity!.Position;
+        var toLoad = new List<IChunk>();
+        var cr = ChunkRadius;
+        var entityChunk = (GlobalChunkCoordinates) Entity!.Position;
 
         Profiler.Start("client.new-chunks");
-        lock(_loadedChunkLock)
-            for (int x = -cr; x < cr; x++)
+
+        lock (_loadedChunkLock)
+        {
+            for (var x = -cr; x < cr; x++)
+            for (var z = -cr; z < cr; z++)
             {
-                for (int z = -cr; z < cr; z++)
+                var coords = new GlobalChunkCoordinates(entityChunk.X + x, entityChunk.Z + z);
+
+                if (!_loadedChunks.Contains(coords))
                 {
-                    GlobalChunkCoordinates coords = new GlobalChunkCoordinates(entityChunk.X + x, entityChunk.Z + z);
-                    if (!_loadedChunks.Contains(coords))
-                        toLoad.Add(_dimension!.GetChunk(coords, LoadEffort.Generate)!);
+                    toLoad.Add(_dimension!.GetChunk(coords, LoadEffort.Generate)!);
                 }
             }
+        }
+
         Profiler.Done();
 
-        var encode = new Action(() =>
-        {
-            Profiler.Start("client.encode-chunks");
-            foreach (IChunk chunk in toLoad)
+        var encode = new Action(
+            () =>
             {
-                chunk.LastAccessed = DateTime.UtcNow;
-                LoadChunk(chunk);
+                Profiler.Start("client.encode-chunks");
+
+                foreach (var chunk in toLoad)
+                {
+                    chunk.LastAccessed = DateTime.UtcNow;
+                    LoadChunk(chunk);
+                }
+
+                Profiler.Done();
             }
-            Profiler.Done();
-        });
+        );
+
         if (block)
+        {
             encode();
+        }
         else
+        {
             Task.Factory.StartNew(encode);
+        }
 
         Profiler.Start("client.old-chunks");
-        List<GlobalChunkCoordinates> unload = new List<GlobalChunkCoordinates>(2 * cr + 1);
-        lock(_loadedChunkLock)
-            unload.AddRange(_loadedChunks.Where((a) => Math.Abs(a.X - entityChunk.X) > cr || Math.Abs(a.Z - entityChunk.Z) > cr));
+        var unload = new List<GlobalChunkCoordinates>((2 * cr) + 1);
+
+        lock (_loadedChunkLock)
+        {
+            unload.AddRange(
+                _loadedChunks.Where(
+                    (a) =>
+                        Math.Abs(a.X - entityChunk.X) > cr || Math.Abs(a.Z - entityChunk.Z) > cr
+                )
+            );
+        }
+
         unload.ForEach((a) => UnloadChunk(a));
         Profiler.Done();
 
         Profiler.Start("client.update-entities");
-        IEntityManager manager = _dimension!.EntityManager;
-        ((EntityManager)manager).UpdateClientEntities(this);    // TODO remove cast
+        var manager = _dimension!.EntityManager;
+        ((EntityManager) manager).UpdateClientEntities(this); // TODO remove cast
         Profiler.Done();
     }
 
     internal void UnloadAllChunks()
     {
-        lock(_loadedChunkLock)
-            while (_loadedChunks.Any())
+        lock (_loadedChunkLock)
+        {
+            while (_loadedChunks.Count != 0)
+            {
                 UnloadChunk(_loadedChunks.First());
+            }
+        }
     }
 
     internal void LoadChunk(IChunk chunk)
     {
         QueuePacket(new ChunkPreamblePacket(chunk.Coordinates.X, chunk.Coordinates.Z));
         QueuePacket(CreatePacket(chunk));
-        lock(_loadedChunkLock)
+
+        lock (_loadedChunkLock)
+        {
             _loadedChunks.Add(chunk.Coordinates);
+        }
 
         // TODO:
         //Server.Scheduler.ScheduleEvent("client.finalize-chunks", this,
@@ -616,8 +754,11 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
     internal void UnloadChunk(GlobalChunkCoordinates position)
     {
         QueuePacket(new ChunkPreamblePacket(position.X, position.Z, false));
-        lock(_loadedChunkLock)
+
+        lock (_loadedChunkLock)
+        {
             _loadedChunks.Remove(position);
+        }
     }
 
     // TODO: move the various parts of this to the appropriate server-side WindowContent sub-class.
@@ -654,17 +795,29 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
         Profiler.Start("client.encode-chunks.compress");
         byte[] result;
+
         using (var ms = new MemoryStream())
         {
             using (var msOut = new MemoryStream(chunk.Data))
-            using (ZLibStream deflate = new ZLibStream(ms, CompressionLevel.SmallestSize))
+            using (var deflate = new ZLibStream(ms, CompressionLevel.SmallestSize))
+            {
                 msOut.CopyTo(deflate);
+            }
+
             result = ms.ToArray();
         }
+
         Profiler.Done();
 
-        return new ChunkDataPacket(X * WorldConstants.ChunkWidth, 0, Z * WorldConstants.ChunkDepth,
-            WorldConstants.ChunkWidth, WorldConstants.Height, WorldConstants.ChunkDepth, result);
+        return new ChunkDataPacket(
+            X * WorldConstants.ChunkWidth,
+            0,
+            Z * WorldConstants.ChunkDepth,
+            WorldConstants.ChunkWidth,
+            WorldConstants.Height,
+            WorldConstants.ChunkDepth,
+            result
+        );
     }
 
     public void Dispose()
@@ -680,8 +833,11 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
         if (disposing)
         {
             IPacketSegmentProcessor? processor;
+
             while (!PacketReader.Processors.TryRemove(this, out processor))
+            {
                 Thread.Sleep(1);
+            }
 
             Disconnect();
 
@@ -692,6 +848,5 @@ public class RemoteClient : IRemoteClient, IEventSubject, IDisposable
 
             Disposed?.Invoke(this, EventArgs.Empty);
         }
-
     }
 }

@@ -5,7 +5,7 @@
 /// </summary>
 public struct SpawnGenericEntityPacket : IPacket
 {
-    public byte ID { get { return 0x17; } }
+    public byte ID => 0x17;
 
     /// <summary>
     /// Constructs a SpawnGenericEntityPacket with the optional fields zeroed.
@@ -42,6 +42,7 @@ public struct SpawnGenericEntityPacket : IPacket
         Y = stream.ReadInt32();
         Z = stream.ReadInt32();
         Data = stream.ReadInt32();
+
         if (Data > 0)
         {
             XVelocity = stream.ReadInt16();
@@ -64,6 +65,7 @@ public struct SpawnGenericEntityPacket : IPacket
         stream.WriteInt32(Y);
         stream.WriteInt32(Z);
         stream.WriteInt32(Data);
+
         if (Data > 0)
         {
             stream.WriteInt16(XVelocity);

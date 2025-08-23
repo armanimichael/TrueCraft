@@ -11,7 +11,7 @@ namespace TrueCraft.Test.World;
 
 public class FakeDimension : IDimensionServer
 {
-    private const int BuildHeight = 128;
+    private const int _buildHeight = 128;
 
     private readonly IBlockRepository _blockRepository;
 
@@ -19,42 +19,48 @@ public class FakeDimension : IDimensionServer
 
     private readonly IEntityManager _entityManager;
 
-    private Dictionary<GlobalChunkCoordinates, IChunk> _chunks;
+    private readonly Dictionary<GlobalChunkCoordinates, IChunk> _chunks;
 
-    public FakeDimension(IBlockRepository blockRepository, IItemRepository itemRepository,
-        IEntityManager entityManager)
+    public FakeDimension(
+        IBlockRepository blockRepository,
+        IItemRepository itemRepository,
+        IEntityManager entityManager
+    )
     {
         _blockRepository = blockRepository;
         _itemRepository = itemRepository;
         _entityManager = entityManager;
         _chunks = new Dictionary<GlobalChunkCoordinates, IChunk>(434);
 
-        _setBlockIDCount = 0;
+        SetBlockIdCount = 0;
 
-        GlobalChunkCoordinates chunkCoordinates = new GlobalChunkCoordinates(0, 0);
+        var chunkCoordinates = new GlobalChunkCoordinates(0, 0);
         _chunks[chunkCoordinates] = new FakeChunk(chunkCoordinates);
     }
 
-    public DimensionID ID { get => DimensionID.Overworld; }
+    public DimensionID ID => DimensionID.Overworld;
 
-    public string Name { get => "Fake"; }
+    public string Name => "Fake";
 
-    public IBlockRepository BlockRepository { get => _blockRepository; }
+    public IBlockRepository BlockRepository => _blockRepository;
 
     /// <inheritdoc/>
-    public IItemRepository ItemRepository { get => _itemRepository; }
+    public IItemRepository ItemRepository => _itemRepository;
 
-    public long TimeOfDay { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-    public IChunk? GetChunk(GlobalVoxelCoordinates coordinates)
+    public long TimeOfDay
     {
-        return GetChunk((GlobalChunkCoordinates)coordinates);
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
     }
+
+    public IChunk? GetChunk(GlobalVoxelCoordinates coordinates) => GetChunk((GlobalChunkCoordinates) coordinates);
 
     public IChunk? GetChunk(GlobalChunkCoordinates coordinates)
     {
         if (_chunks.ContainsKey(coordinates))
+        {
             return _chunks[coordinates];
+        }
 
         return null;
     }
@@ -62,141 +68,132 @@ public class FakeDimension : IDimensionServer
     public LocalVoxelCoordinates FindBlockPosition(GlobalVoxelCoordinates coordinates, out IChunk? chunk)
     {
         chunk = GetChunk(coordinates);
-        return (LocalVoxelCoordinates)coordinates;
+
+        return (LocalVoxelCoordinates) coordinates;
     }
 
     public BlockDescriptor GetBlockData(GlobalVoxelCoordinates coordinates)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        if (chunk is null)
-            return new BlockDescriptor() { ID = AirBlock.BlockID };
+        var chunk = GetChunk(coordinates);
 
-        LocalVoxelCoordinates local = (LocalVoxelCoordinates)coordinates;
-        return new BlockDescriptor()
+        if (chunk is null)
         {
-            ID = chunk.GetBlockID(local),
-            Metadata = chunk.GetMetadata(local),
-            BlockLight = chunk.GetBlockLight(local),
-            SkyLight = chunk.GetSkyLight(local),
-            Coordinates = coordinates,
-            Chunk = chunk
-        };
+            return new BlockDescriptor { ID = AirBlock.BlockID };
+        }
+
+        var local = (LocalVoxelCoordinates) coordinates;
+
+        return new BlockDescriptor
+               {
+                   ID = chunk.GetBlockID(local),
+                   Metadata = chunk.GetMetadata(local),
+                   BlockLight = chunk.GetBlockLight(local),
+                   SkyLight = chunk.GetSkyLight(local),
+                   Coordinates = coordinates,
+                   Chunk = chunk
+               };
     }
 
     public byte GetBlockID(GlobalVoxelCoordinates coordinates)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        return chunk?.GetBlockID((LocalVoxelCoordinates)coordinates) ?? 0;
+        var chunk = GetChunk(coordinates);
+
+        return chunk?.GetBlockID((LocalVoxelCoordinates) coordinates) ?? 0;
     }
 
     public byte GetBlockLight(GlobalVoxelCoordinates coordinates)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        return chunk?.GetBlockLight((LocalVoxelCoordinates)coordinates) ?? 0;
+        var chunk = GetChunk(coordinates);
+
+        return chunk?.GetBlockLight((LocalVoxelCoordinates) coordinates) ?? 0;
     }
 
     public byte GetMetadata(GlobalVoxelCoordinates coordinates)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        return chunk?.GetMetadata((LocalVoxelCoordinates)coordinates) ?? 0;
+        var chunk = GetChunk(coordinates);
+
+        return chunk?.GetMetadata((LocalVoxelCoordinates) coordinates) ?? 0;
     }
 
     public byte GetSkyLight(GlobalVoxelCoordinates coordinates)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        return chunk?.GetSkyLight((LocalVoxelCoordinates)coordinates) ?? 0;
+        var chunk = GetChunk(coordinates);
+
+        return chunk?.GetSkyLight((LocalVoxelCoordinates) coordinates) ?? 0;
     }
 
-    public bool IsChunkLoaded(GlobalVoxelCoordinates coordinates)
-    {
-        return _chunks.ContainsKey((GlobalChunkCoordinates)coordinates);
-    }
+    public bool IsChunkLoaded(GlobalVoxelCoordinates coordinates) => _chunks.ContainsKey((GlobalChunkCoordinates) coordinates);
 
-    public bool IsValidPosition(GlobalVoxelCoordinates position)
-    {
-        return position.Y >= 0 && position.Y < BuildHeight;
-    }
+    public bool IsValidPosition(GlobalVoxelCoordinates position) => position.Y >= 0 && position.Y < _buildHeight;
 
-    public void SetBlockData(GlobalVoxelCoordinates coordinates, BlockDescriptor block)
-    {
-        throw new NotImplementedException();
-    }
+    public void SetBlockData(GlobalVoxelCoordinates coordinates, BlockDescriptor block) => throw new NotImplementedException();
 
     public void SetBlockID(GlobalVoxelCoordinates coordinates, byte value)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        chunk?.SetBlockID((LocalVoxelCoordinates)coordinates, value);
-        _setBlockIDCount++;
+        var chunk = GetChunk(coordinates);
+        chunk?.SetBlockID((LocalVoxelCoordinates) coordinates, value);
+        SetBlockIdCount++;
     }
 
     public void SetBlockLight(GlobalVoxelCoordinates coordinates, byte value)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        chunk?.SetBlockLight((LocalVoxelCoordinates)coordinates, value);
+        var chunk = GetChunk(coordinates);
+        chunk?.SetBlockLight((LocalVoxelCoordinates) coordinates, value);
     }
 
     public void SetMetadata(GlobalVoxelCoordinates coordinates, byte value)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        chunk?.SetMetadata((LocalVoxelCoordinates)coordinates, value);
+        var chunk = GetChunk(coordinates);
+        chunk?.SetMetadata((LocalVoxelCoordinates) coordinates, value);
     }
 
     public void SetSkyLight(GlobalVoxelCoordinates coordinates, byte value)
     {
-        IChunk? chunk = GetChunk(coordinates);
-        chunk?.SetSkyLight((LocalVoxelCoordinates)coordinates, value);
+        var chunk = GetChunk(coordinates);
+        chunk?.SetSkyLight((LocalVoxelCoordinates) coordinates, value);
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
 
-    public IEnumerator<IChunk> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
+    public IEnumerator<IChunk> GetEnumerator() => throw new NotImplementedException();
 
     #region IDimensionServer
+
     public event EventHandler<BlockChangeEventArgs>? BlockChanged;
     public event EventHandler<ChunkLoadedEventArgs>? ChunkGenerated;
     public event EventHandler<ChunkLoadedEventArgs>? ChunkLoaded;
 
     /// <inheritdoc />
-    public void Initialize(GlobalChunkCoordinates spawnChunk, IMultiplayerServer server, IDimensionServer.ProgressNotification? progressNotification)
-    {
-        throw new NotImplementedException();
-    }
+    public void Initialize(
+        GlobalChunkCoordinates spawnChunk,
+        IMultiplayerServer server,
+        IDimensionServer.ProgressNotification? progressNotification
+    ) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public IEntityManager EntityManager { get => _entityManager; }
+    public IEntityManager EntityManager => _entityManager;
 
     /// <inheritdoc />
-    public NbtCompound? GetTileEntity(GlobalVoxelCoordinates coordinates)
-    {
-        throw new NotImplementedException();
-    }
+    public NbtCompound? GetTileEntity(GlobalVoxelCoordinates coordinates) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public void SetTileEntity(GlobalVoxelCoordinates coordinates, NbtCompound? value)
-    {
-        throw new NotImplementedException();
-    }
+    public void SetTileEntity(GlobalVoxelCoordinates coordinates, NbtCompound? value) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public void Save()
-    {
-        throw new NotImplementedException();
-    }
+    public void Save() => throw new NotImplementedException();
 
     /// <inheritdoc />
     public IChunk? GetChunk(GlobalChunkCoordinates coordinates, LoadEffort loadEffort)
     {
         if (_chunks.ContainsKey(coordinates))
+        {
             return _chunks[coordinates];
+        }
 
         if (loadEffort == LoadEffort.InMemory)
+        {
             return null;
+        }
 
         // For purposes of this Fake, we'll pretend the chunk has already been
         // saved to disk.
@@ -208,46 +205,36 @@ public class FakeDimension : IDimensionServer
     /// <inheritdoc />
     public byte GetBlockID(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort)
     {
-        IChunk? chunk = GetChunk((GlobalChunkCoordinates)coordinates, LoadEffort.Load);
-        return chunk?.GetBlockID((LocalVoxelCoordinates)coordinates) ?? AirBlock.BlockID;
+        var chunk = GetChunk((GlobalChunkCoordinates) coordinates, LoadEffort.Load);
+
+        return chunk?.GetBlockID((LocalVoxelCoordinates) coordinates) ?? AirBlock.BlockID;
     }
 
     /// <inheritdoc />
-    public byte GetMetadata(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort)
-    {
-        throw new NotImplementedException();
-    }
+    public byte GetMetadata(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public byte GetBlockLight(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort)
-    {
-        throw new NotImplementedException();
-    }
+    public byte GetBlockLight(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public byte GetSkyLight(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort)
-    {
-        throw new NotImplementedException();
-    }
+    public byte GetSkyLight(GlobalVoxelCoordinates coordinates, LoadEffort loadEffort) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public string ChunkProvider { get => throw new NotImplementedException(); }
+    public string ChunkProvider => throw new NotImplementedException();
+
     #endregion
 
     #region Stats
-    private int _setBlockIDCount;
 
     /// <summary>
     /// Resets the counts of all calls.
     /// </summary>
-    public void ResetCounts()
-    {
-        _setBlockIDCount = 0;
-    }
+    public void ResetCounts() => SetBlockIdCount = 0;
 
     /// <summary>
     /// Gets the number of times SetBlockID was called since the last call to ResetCounts.
     /// </summary>
-    public int SetBlockIDCount { get => _setBlockIDCount; }
+    public int SetBlockIdCount { get; private set; }
+
     #endregion
 }

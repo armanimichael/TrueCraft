@@ -4,7 +4,6 @@ namespace TrueCraft.Core.Logic.Items;
 
 public class PickaxeItem : ToolItem
 {
-    public PickaxeItem(XmlNode node) : base(node)
-    {
-    }
+    public PickaxeItem(XmlNode node)
+        : base(node) { }
 }

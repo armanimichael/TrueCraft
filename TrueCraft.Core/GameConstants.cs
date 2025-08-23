@@ -1,4 +1,5 @@
 using System;
+
 namespace TrueCraft.Core;
 
 public static class GameConstants

@@ -17,23 +17,30 @@ public class LightingQueue : ILightingQueue
     }
 
     /// <inheritdoc />
-    public void Enqueue(GlobalVoxelCoordinates seed, LightingOperationMode mode,
-        LightingOperationKind kind, byte lightLevel)
+    public void Enqueue(
+        GlobalVoxelCoordinates seed,
+        LightingOperationMode mode,
+        LightingOperationKind kind,
+        byte lightLevel
+    )
     {
-        LightingOperation op = new LightingOperation(seed, mode, kind, lightLevel);
+        var op = new LightingOperation(seed, mode, kind, lightLevel);
 
-        switch(kind)
+        switch (kind)
         {
             case LightingOperationKind.Initial:
                 _initialLightingStack.Push(op);
+
                 break;
 
             case LightingOperationKind.Sky:
                 _skyLightingQueue.Push(op);
+
                 break;
 
             case LightingOperationKind.Block:
                 _blockLightingQueue.Push(op);
+
                 break;
         }
     }
@@ -44,13 +51,19 @@ public class LightingQueue : ILightingQueue
         LightingOperation? rv;
 
         if (_initialLightingStack.TryPop(out rv))
+        {
             return rv;
+        }
 
         if (_skyLightingQueue.TryPop(out rv))
+        {
             return rv;
+        }
 
         if (_blockLightingQueue.TryPop(out rv))
+        {
             return rv;
+        }
 
         return null;
     }

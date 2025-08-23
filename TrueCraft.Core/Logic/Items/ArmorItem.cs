@@ -18,30 +18,50 @@ public class ArmorItem : ItemProvider, IArmorItem
     private const string DurabilityNodeName = "durability";
     private const string DefencePointsNodeName = "defencepoints";
 
-    public ArmorItem(XmlNode node) : base(node)
+    public ArmorItem(XmlNode node)
+        : base(node)
     {
         XmlNode? armorNode = node[ArmorNodeName];
+
         if (armorNode is null)
+        {
             throw new ArgumentException($"Missing {ArmorNodeName} node.");
+        }
 
         XmlNode? kindNode = armorNode[KindNodeName];
+
         if (kindNode is null)
+        {
             throw new ArgumentException($"Missing <{KindNodeName}> node.");
+        }
+
         _kind = ParseArmorKind(kindNode.InnerText);
 
-        XmlNode? materialNode = kindNode.NextSibling;
+        var materialNode = kindNode.NextSibling;
+
         if (materialNode is null)
+        {
             throw new ArgumentException($"Missing {MaterialNodeName} node.");
+        }
+
         _material = ParseArmorMaterial(materialNode.InnerText);
 
-        XmlNode? durabilityNode = materialNode.NextSibling;
+        var durabilityNode = materialNode.NextSibling;
+
         if (durabilityNode is null)
+        {
             throw new ArgumentException($"Missing {DurabilityNodeName} node.");
+        }
+
         _durability = short.Parse(durabilityNode.InnerText);
 
-        XmlNode? defencePointsNode = durabilityNode.NextSibling;
+        var defencePointsNode = durabilityNode.NextSibling;
+
         if (defencePointsNode is null)
+        {
             throw new ArgumentException($"Missing {DefencePointsNodeName} node.");
+        }
+
         _defencePoints = float.Parse(defencePointsNode.InnerText);
     }
 
@@ -61,6 +81,7 @@ public class ArmorItem : ItemProvider, IArmorItem
             case "Boots":
                 return ArmorKind.Boots;
         }
+
         throw new ArgumentException($"Unknown Armor Kind: '{armorKind}'");
     }
 
@@ -90,14 +111,14 @@ public class ArmorItem : ItemProvider, IArmorItem
     }
 
     /// <inheritdoc />
-    public ArmorKind Kind { get => _kind; }
+    public ArmorKind Kind => _kind;
 
     /// <inheritdoc />
-    public ArmorMaterial Material { get => _material; }
+    public ArmorMaterial Material => _material;
 
     /// <inheritdoc />
-    public short Durability { get => _durability; }
+    public short Durability => _durability;
 
     /// <inheritdoc />
-    public float DefencePoints { get => _defencePoints; }
+    public float DefencePoints => _defencePoints;
 }

@@ -28,5 +28,5 @@ public enum FontStyle
     /// <summary>
     /// Italicized font.
     /// </summary>
-    Italic = 4,
+    Italic = 4
 }

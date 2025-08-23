@@ -10,22 +10,34 @@ public class SugarCanesItem : ItemProvider
 {
     public static readonly short ItemID = 0x152;
 
-    public SugarCanesItem(XmlNode node) : base(node)
-    {
-    }
+    public SugarCanesItem(XmlNode node)
+        : base(node) { }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension   , IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         coordinates += MathHelper.BlockFaceToCoordinates(face);
+
         if (SugarcaneBlock.ValidPlacement(new BlockDescriptor { Coordinates = coordinates }, dimension))
         {
             dimension.SetBlockID(coordinates, SugarcaneBlock.BlockID);
             item.Count--;
             user.Hotbar[user.SelectedSlot].Item = item;
-            dimension.BlockRepository.GetBlockProvider(SugarcaneBlock.BlockID).BlockPlaced(
-                new BlockDescriptor { Coordinates = coordinates }, face, dimension, user);
+
+            dimension.BlockRepository.GetBlockProvider(SugarcaneBlock.BlockID)
+                     .BlockPlaced(
+                         new BlockDescriptor { Coordinates = coordinates },
+                         face,
+                         dimension,
+                         user
+                     );
         }
     }
 }

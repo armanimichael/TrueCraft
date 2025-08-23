@@ -32,17 +32,19 @@ public class PathResult : IList<GlobalVoxelCoordinates>
         set
         {
             if (value < 0 || value >= _wayPoints.Count)
+            {
                 throw new ArgumentOutOfRangeException();
+            }
 
             _index = value;
         }
     }
 
     /// <inheritdoc />
-    public int Count { get => _wayPoints.Count; }
+    public int Count => _wayPoints.Count;
 
     /// <inheritdoc />
-    public bool IsReadOnly { get => true; }
+    public bool IsReadOnly => true;
 
     /// <inheritdoc />
     public GlobalVoxelCoordinates this[int index]
@@ -51,53 +53,23 @@ public class PathResult : IList<GlobalVoxelCoordinates>
         set => throw new NotSupportedException();
     }
 
-    public int IndexOf(GlobalVoxelCoordinates item)
-    {
-        return _wayPoints.IndexOf(item);
-    }
+    public int IndexOf(GlobalVoxelCoordinates item) => _wayPoints.IndexOf(item);
 
-    public void Insert(int index, GlobalVoxelCoordinates item)
-    {
-        throw new NotSupportedException();
-    }
+    public void Insert(int index, GlobalVoxelCoordinates item) => throw new NotSupportedException();
 
-    public void RemoveAt(int index)
-    {
-        throw new NotSupportedException();
-    }
+    public void RemoveAt(int index) => throw new NotSupportedException();
 
-    public void Add(GlobalVoxelCoordinates item)
-    {
-        throw new NotSupportedException();
-    }
+    public void Add(GlobalVoxelCoordinates item) => throw new NotSupportedException();
 
-    public void Clear()
-    {
-        throw new NotSupportedException();
-    }
+    public void Clear() => throw new NotSupportedException();
 
-    public bool Contains(GlobalVoxelCoordinates item)
-    {
-        return _wayPoints.Contains(item);
-    }
+    public bool Contains(GlobalVoxelCoordinates item) => _wayPoints.Contains(item);
 
-    public void CopyTo(GlobalVoxelCoordinates[] array, int arrayIndex)
-    {
-        _wayPoints.CopyTo(array, arrayIndex);
-    }
+    public void CopyTo(GlobalVoxelCoordinates[] array, int arrayIndex) => _wayPoints.CopyTo(array, arrayIndex);
 
-    public bool Remove(GlobalVoxelCoordinates item)
-    {
-        throw new NotSupportedException();
-    }
+    public bool Remove(GlobalVoxelCoordinates item) => throw new NotSupportedException();
 
-    public IEnumerator<GlobalVoxelCoordinates> GetEnumerator()
-    {
-        return _wayPoints.GetEnumerator();
-    }
+    public IEnumerator<GlobalVoxelCoordinates> GetEnumerator() => _wayPoints.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _wayPoints.GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => _wayPoints.GetEnumerator();
 }

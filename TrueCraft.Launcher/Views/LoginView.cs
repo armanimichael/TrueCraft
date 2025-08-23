@@ -23,14 +23,15 @@ public class LoginView : VBox
     public LoginView(LauncherWindow window)
     {
         _window = window;
-        this.SetSizeRequest(250, -1);
+        SetSizeRequest(250, -1);
 
         ErrorLabel = new Label("Username or password incorrect")
-        {
-            // TODO TextColor = Color.FromBytes(255, 0, 0),
-            Justify = Justification.Center,
-            Visible = false
-        };
+                     {
+                         // TODO TextColor = Color.FromBytes(255, 0, 0),
+                         Justify = Justification.Center,
+                         Visible = false
+                     };
+
         UsernameText = new Entry();
         PasswordText = new Entry();
         PasswordText.Visibility = false;
@@ -40,17 +41,22 @@ public class LoginView : VBox
         OfflineButton = new Button("Play Offline");
         RememberCheckBox = new CheckButton("Remember Me");
         UsernameText.Text = UserSettings.Local.Username;
+
         if (UserSettings.Local.AutoLogin)
         {
             PasswordText.Text = UserSettings.Local.Password;
             RememberCheckBox.Active = true;
         }
 
-        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TrueCraft.Launcher.Content.truecraft_logo.png"))
+        using (var stream = Assembly.GetExecutingAssembly()
+                                    .GetManifestResourceStream("TrueCraft.Launcher.Content.truecraft_logo.png"))
+        {
             TrueCraftLogoImage = new Image(new Gdk.Pixbuf(stream, 350, 75));
+        }
 
         UsernameText.PlaceholderText = "Username";
         PasswordText.PlaceholderText = "Password";
+
         // TODO: restore this functionality.
         //PasswordText.KeyReleaseEvent += (sender, e) =>
         //{
@@ -66,38 +72,34 @@ public class LoginView : VBox
         {
             _window.WebView.Text = "https://truecraft.io/register";
         };
+
         OfflineButton.Clicked += (sender, e) =>
         {
             _window.User.Username = UsernameText.Text;
             _window.User.SessionId = "-";
             _window.ShowMainMenuView();
         };
+
         var regoffbox = new HBox();
         regoffbox.PackStart(RegisterButton, true, false, 0);
         regoffbox.PackStart(OfflineButton, true, false, 0);
         LogInButton.Clicked += LogInButton_Clicked;
 
-        this.PackEnd(regoffbox, true, false, 0);
-        this.PackEnd(LogInButton, true, false, 0);
-        this.PackEnd(RememberCheckBox, true, false, 0);
-        this.PackEnd(PasswordText, true, false, 0);
-        this.PackEnd(UsernameText, true, false, 0);
-        this.PackEnd(ErrorLabel, true, false, 0);
+        PackEnd(regoffbox, true, false, 0);
+        PackEnd(LogInButton, true, false, 0);
+        PackEnd(RememberCheckBox, true, false, 0);
+        PackEnd(PasswordText, true, false, 0);
+        PackEnd(UsernameText, true, false, 0);
+        PackEnd(ErrorLabel, true, false, 0);
     }
 
-    private void DisableForm()
-    {
-        UsernameText.Sensitive = PasswordText.Sensitive = LogInButton.Sensitive =
-            RegisterButton.Sensitive = OfflineButton.Sensitive = false;
-    }
+    private void DisableForm() => UsernameText.Sensitive = PasswordText.Sensitive = LogInButton.Sensitive =
+        RegisterButton.Sensitive = OfflineButton.Sensitive = false;
 
-    private void EnableForm()
-    {
-        UsernameText.Sensitive = PasswordText.Sensitive = LogInButton.Sensitive =
-            RegisterButton.Sensitive = OfflineButton.Sensitive = true;
-    }
+    private void EnableForm() => UsernameText.Sensitive = PasswordText.Sensitive = LogInButton.Sensitive =
+        RegisterButton.Sensitive = OfflineButton.Sensitive = true;
 
-    private class LogInAsyncState
+    private sealed class LogInAsyncState
     {
         public LogInAsyncState(HttpWebRequest request, string username, string password)
         {
@@ -117,8 +119,10 @@ public class LoginView : VBox
         {
             ErrorLabel.Text = "Username and password are required";
             ErrorLabel.Visible = true;
+
             return;
         }
+
         ErrorLabel.Visible = false;
         DisableForm();
 
@@ -127,30 +131,43 @@ public class LoginView : VBox
         request.Method = "POST";
         request.ContentType = "application/x-www-form-urlencoded";
         request.AllowAutoRedirect = false;
-        request.BeginGetRequestStream(HandleLoginRequestReady, new LogInAsyncState(
-            request, _window.User.Username, PasswordText.Text));
+
+        request.BeginGetRequestStream(
+            HandleLoginRequestReady,
+            new LogInAsyncState(
+                request,
+                _window.User.Username,
+                PasswordText.Text
+            )
+        );
     }
 
     private void HandleLoginRequestReady(IAsyncResult asyncResult)
     {
         try
         {
-            LogInAsyncState state = (LogInAsyncState)asyncResult.AsyncState!;
-            HttpWebRequest request = state.Request;
-            Stream requestStream = request.EndGetRequestStream(asyncResult);
+            var state = (LogInAsyncState) asyncResult.AsyncState!;
+            var request = state.Request;
+            var requestStream = request.EndGetRequestStream(asyncResult);
+
             using (var writer = new StreamWriter(requestStream))
+            {
                 writer.Write(string.Format("user={0}&password={1}&version=12", state.Username, state.Password));
+            }
+
             request.BeginGetResponse(HandleLoginResponse, request);
         }
         catch
         {
-            Application.Invoke((sender, e) =>
-            {
-                EnableForm();
-                ErrorLabel.Text = "Unable to log in";
-                ErrorLabel.Visible = true;
-                RegisterButton.Label = "Offline Mode";
-            });
+            Application.Invoke(
+                (sender, e) =>
+                {
+                    EnableForm();
+                    ErrorLabel.Text = "Unable to log in";
+                    ErrorLabel.Visible = true;
+                    RegisterButton.Label = "Offline Mode";
+                }
+            );
         }
     }
 
@@ -158,49 +175,66 @@ public class LoginView : VBox
     {
         try
         {
-            HttpWebRequest request = (HttpWebRequest)asyncResult.AsyncState!;
-            WebResponse response = request.EndGetResponse(asyncResult);
+            var request = (HttpWebRequest) asyncResult.AsyncState!;
+            var response = request.EndGetResponse(asyncResult);
             string session;
+
             using (var reader = new StreamReader(response.GetResponseStream()))
+            {
                 session = reader.ReadToEnd();
+            }
+
             if (session.Contains(":"))
             {
-                var parts = session.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-                Application.Invoke((sender, e) =>
-                {
-                    _window.User.Username = parts[2];
-                    _window.User.SessionId = parts[3];
-                    EnableForm();
-                    _window.ShowMainMenuView();
-                    UserSettings.Local.AutoLogin = RememberCheckBox.Active;
-                    UserSettings.Local.Username = _window.User.Username;
-                    if (UserSettings.Local.AutoLogin)
-                        UserSettings.Local.Password = PasswordText.Text;
-                    else
-                        UserSettings.Local.Password = string.Empty;
-                    UserSettings.Local.Save();
-                });
+                var parts = session.Split([':'], StringSplitOptions.RemoveEmptyEntries);
+
+                Application.Invoke(
+                    (sender, e) =>
+                    {
+                        _window.User.Username = parts[2];
+                        _window.User.SessionId = parts[3];
+                        EnableForm();
+                        _window.ShowMainMenuView();
+                        UserSettings.Local.AutoLogin = RememberCheckBox.Active;
+                        UserSettings.Local.Username = _window.User.Username;
+
+                        if (UserSettings.Local.AutoLogin)
+                        {
+                            UserSettings.Local.Password = PasswordText.Text;
+                        }
+                        else
+                        {
+                            UserSettings.Local.Password = string.Empty;
+                        }
+
+                        UserSettings.Local.Save();
+                    }
+                );
             }
             else
             {
-                Application.Invoke((sender, e) =>
-                {
-                    EnableForm();
-                    ErrorLabel.Text = session;
-                    ErrorLabel.Visible = true;
-                    RegisterButton.Label = "Offline Mode";
-                });
+                Application.Invoke(
+                    (sender, e) =>
+                    {
+                        EnableForm();
+                        ErrorLabel.Text = session;
+                        ErrorLabel.Visible = true;
+                        RegisterButton.Label = "Offline Mode";
+                    }
+                );
             }
         }
         catch
         {
-            Application.Invoke((sender, e) =>
-            {
-                EnableForm();
-                ErrorLabel.Text = "Unable to log in.";
-                ErrorLabel.Visible = true;
-                RegisterButton.Label = "Offline Mode";
-            });
+            Application.Invoke(
+                (sender, e) =>
+                {
+                    EnableForm();
+                    ErrorLabel.Text = "Unable to log in.";
+                    ErrorLabel.Visible = true;
+                    RegisterButton.Label = "Offline Mode";
+                }
+            );
         }
     }
 }

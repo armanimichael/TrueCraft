@@ -27,8 +27,12 @@ public class Camera
     /// </summary>
     public float AspectRatio
     {
-        get { return _aspectRatio; }
-        set { _aspectRatio = value; _isDirty = true; }
+        get => _aspectRatio;
+        set
+        {
+            _aspectRatio = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -36,8 +40,12 @@ public class Camera
     /// </summary>
     public float Fov
     {
-        get { return _fov; }
-        set { _fov = value; _isDirty = true; }
+        get => _fov;
+        set
+        {
+            _fov = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -45,8 +53,12 @@ public class Camera
     /// </summary>
     public float NearZ
     {
-        get { return _nearZ; }
-        set { _nearZ = value; _isDirty = true; }
+        get => _nearZ;
+        set
+        {
+            _nearZ = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -54,8 +66,12 @@ public class Camera
     /// </summary>
     public float FarZ
     {
-        get { return _farZ; }
-        set { _farZ = value; _isDirty = true; }
+        get => _farZ;
+        set
+        {
+            _farZ = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -63,8 +79,12 @@ public class Camera
     /// </summary>
     public TVector3 Position
     {
-        get { return _position; }
-        set { _position = value; _isDirty = true; }
+        get => _position;
+        set
+        {
+            _position = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -72,8 +92,12 @@ public class Camera
     /// </summary>
     public float Pitch
     {
-        get { return _pitch; }
-        set { _pitch = value; _isDirty = true; }
+        get => _pitch;
+        set
+        {
+            _pitch = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -81,8 +105,12 @@ public class Camera
     /// </summary>
     public float Yaw
     {
-        get { return _yaw; }
-        set { _yaw = value; _isDirty = true; }
+        get => _yaw;
+        set
+        {
+            _yaw = value;
+            _isDirty = true;
+        }
     }
 
     /// <summary>
@@ -93,9 +121,7 @@ public class Camera
     /// <param name="nearZ"></param>
     /// <param name="farZ"></param>
     public Camera(float aspectRatio, float fov, float nearZ, float farZ)
-        : this(aspectRatio, fov, nearZ, farZ, TVector3.Zero, 0.0f, 0.0f)
-    {
-    }
+        : this(aspectRatio, fov, nearZ, farZ, TVector3.Zero, 0.0f, 0.0f) { }
 
     /// <summary>
     /// Creates a new camera from the specified values.
@@ -115,7 +141,8 @@ public class Camera
         FarZ = farZ;
 
         Position = position;
-        Pitch = pitch; Yaw = yaw;
+        Pitch = pitch;
+        Yaw = yaw;
 
         _frustum = new BoundingFrustum(Matrix.Identity);
         _view = _projection = Matrix.Identity;
@@ -129,7 +156,9 @@ public class Camera
     public void ApplyTo(IEffectMatrices effectMatrices)
     {
         if (_isDirty)
+        {
             Recalculate();
+        }
 
         effectMatrices.View = _view;
         effectMatrices.Projection = _projection;
@@ -144,7 +173,10 @@ public class Camera
         get
         {
             if (_isDirty)
+            {
                 Recalculate();
+            }
+
             return _frustum;
         }
     }
@@ -156,7 +188,10 @@ public class Camera
     public Matrix GetViewMatrix()
     {
         if (_isDirty)
+        {
             Recalculate();
+        }
+
         return _view;
     }
 
@@ -167,7 +202,10 @@ public class Camera
     public Matrix GetProjectionMatrix()
     {
         if (_isDirty)
+        {
             Recalculate();
+        }
+
         return _projection;
     }
 
@@ -177,13 +215,16 @@ public class Camera
     private void Recalculate()
     {
         var origin = new Vector3(
-            (float)this._position.X,
-            (float)this._position.Y,
-            (float)this._position.Z);
+            (float) _position.X,
+            (float) _position.Y,
+            (float) _position.Z
+        );
 
-        var direction = Vector3.Transform(Vector3.UnitZ,
+        var direction = Vector3.Transform(
+            Vector3.UnitZ,
             Matrix.CreateRotationX(MathHelper.ToRadians(_pitch)) *
-            Matrix.CreateRotationY(MathHelper.ToRadians(-(_yaw - 180) + 180)));
+            Matrix.CreateRotationY(MathHelper.ToRadians(-(_yaw - 180) + 180))
+        );
 
         _view = Matrix.CreateLookAt(origin, origin + direction, Vector3.Up);
         _projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(_fov), _aspectRatio, _nearZ, _farZ);

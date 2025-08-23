@@ -22,54 +22,43 @@ public class BufferedStream : Stream
     /// </summary>
     internal bool WriteImmediately { get; set; }
 
-    public override bool CanRead { get { return BaseStream.CanRead; } }
+    public override bool CanRead => BaseStream.CanRead;
 
-    public override bool CanSeek { get { return BaseStream.CanSeek; } }
+    public override bool CanSeek => BaseStream.CanSeek;
 
-    public override bool CanWrite { get { return BaseStream.CanWrite; } }
+    public override bool CanWrite => BaseStream.CanWrite;
 
     public override void Flush()
     {
-        BaseStream.Write(PendingStream.GetBuffer(), 0, (int)PendingStream.Position);
+        BaseStream.Write(PendingStream.GetBuffer(), 0, (int) PendingStream.Position);
         PendingStream.Position = 0;
     }
 
-    public long PendingWrites
-    {
-        get { return PendingStream.Position; }
-    }
+    public long PendingWrites => PendingStream.Position;
 
-    public override long Length
-    {
-        get { return BaseStream.Length; }
-    }
+    public override long Length => BaseStream.Length;
 
     public override long Position
     {
-        get { return BaseStream.Position; }
-        set { BaseStream.Position = value; }
+        get => BaseStream.Position;
+        set => BaseStream.Position = value;
     }
 
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-        return BaseStream.Read(buffer, offset, count);
-    }
+    public override int Read(byte[] buffer, int offset, int count) => BaseStream.Read(buffer, offset, count);
 
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-        return BaseStream.Seek(offset, origin);
-    }
+    public override long Seek(long offset, SeekOrigin origin) => BaseStream.Seek(offset, origin);
 
-    public override void SetLength(long value)
-    {
-        BaseStream.SetLength(value);
-    }
+    public override void SetLength(long value) => BaseStream.SetLength(value);
 
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (WriteImmediately)
+        {
             BaseStream.Write(buffer, offset, count);
+        }
         else
+        {
             PendingStream.Write(buffer, offset, count);
+        }
     }
 }

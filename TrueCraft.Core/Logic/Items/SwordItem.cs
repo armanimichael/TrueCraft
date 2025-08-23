@@ -4,7 +4,6 @@ namespace TrueCraft.Core.Logic.Items;
 
 public class SwordItem : ToolItem
 {
-    public SwordItem(XmlNode node) : base(node)
-    {
-    }
+    public SwordItem(XmlNode node)
+        : base(node) { }
 }

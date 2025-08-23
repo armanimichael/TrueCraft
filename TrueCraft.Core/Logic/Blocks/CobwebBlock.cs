@@ -6,45 +6,24 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class CobwebBlock : BlockProvider
 {
     public static readonly byte BlockID = 0x1E;
-        
-    public override byte ID { get { return 0x1E; } }
-        
-    public override double BlastResistance { get { return 20; } }
 
-    public override double Hardness { get { return 4; } }
+    public override byte ID => 0x1E;
 
-    public override byte Luminance { get { return 0; } }
+    public override double BlastResistance => 20;
 
-    public override bool Opaque { get { return false; } }
+    public override double Hardness => 4;
 
-    public override bool DiffuseSkyLight
-    {
-        get
-        {
-            return true;
-        }
-    }
+    public override byte Luminance => 0;
 
-    public override ToolType EffectiveTools
-    {
-        get
-        {
-            return ToolType.Sword;
-        }
-    }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Cobweb";
-    }
+    public override bool Opaque => false;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(11, 0);
-    }
+    public override bool DiffuseSkyLight => true;
 
-    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item)
-    {
-        return new[] { new ItemStack(StringItem.ItemID, 1, descriptor.Metadata) };
-    }
+    public override ToolType EffectiveTools => ToolType.Sword;
+
+    public override string GetDisplayName(short metadata) => "Cobweb";
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(11, 0);
+
+    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item) => new[] { new ItemStack(StringItem.ItemID, 1, descriptor.Metadata) };
 }

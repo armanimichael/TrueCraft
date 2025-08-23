@@ -5,7 +5,7 @@
 /// </summary>
 public struct EntityLookPacket : IPacket
 {
-    public byte ID { get { return 0x20; } }
+    public byte ID => 0x20;
 
     public int EntityID;
     public sbyte Yaw, Pitch;

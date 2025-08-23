@@ -6,20 +6,16 @@ namespace TrueCraft.Client.Inventory;
 
 public class SlotFactory : ISlotFactory<ISlot>
 {
-    public SlotFactory()
-    {
-    }
-
-    public ISlot GetSlot(IItemRepository itemRepository)
-    {
-        return new Slot(itemRepository);
-    }
+    public ISlot GetSlot(IItemRepository itemRepository) => new Slot(itemRepository);
 
     public List<ISlot> GetSlots(IItemRepository itemRepository, int count)
     {
-        List<ISlot> rv = new List<ISlot>(count);
-        for (int j = 0; j < count; j++)
+        var rv = new List<ISlot>(count);
+
+        for (var j = 0; j < count; j++)
+        {
             rv.Add(new Slot(itemRepository));
+        }
 
         return rv;
     }

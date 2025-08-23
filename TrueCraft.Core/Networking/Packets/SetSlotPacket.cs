@@ -5,7 +5,7 @@
 /// </summary>
 public struct SetSlotPacket : IPacket
 {
-    public byte ID { get { return 0x67; } }
+    public byte ID => 0x67;
 
     public SetSlotPacket(sbyte windowID, short slotIndex, short itemID, sbyte count, short metadata)
     {
@@ -27,6 +27,7 @@ public struct SetSlotPacket : IPacket
         WindowID = stream.ReadInt8();
         SlotIndex = stream.ReadInt16();
         ItemID = stream.ReadInt16();
+
         if (ItemID != -1)
         {
             Count = stream.ReadInt8();
@@ -39,6 +40,7 @@ public struct SetSlotPacket : IPacket
         stream.WriteInt8(WindowID);
         stream.WriteInt16(SlotIndex);
         stream.WriteInt16(ItemID);
+
         if (ItemID != -1)
         {
             stream.WriteInt8(Count);
@@ -46,8 +48,5 @@ public struct SetSlotPacket : IPacket
         }
     }
 
-    public override string ToString()
-    {
-        return $"(WindowID={WindowID}; SlotIndex={SlotIndex}; ItemID={ItemID}; Count={Count}; Metadata={Metadata})";
-    }
+    public override string ToString() => $"(WindowID={WindowID}; SlotIndex={SlotIndex}; ItemID={ItemID}; Count={Count}; Metadata={Metadata})";
 }

@@ -11,18 +11,31 @@ using TrueCraft.Core.World;
 
 namespace TrueCraft.Inventory;
 
-public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
-    IChestWindow, IServerWindow
+public class ChestWindow : ChestWindow<IServerSlot>,
+    IChestWindow,
+    IServerWindow
 {
     private readonly GlobalVoxelCoordinates? _otherHalf;
 
-    public ChestWindow(IItemRepository itemRepository,
+    public ChestWindow(
+        IItemRepository itemRepository,
         ISlotFactory<IServerSlot> slotFactory,
-        sbyte windowID, ISlots<IServerSlot> mainInventory, ISlots<IServerSlot> hotBar,
+        sbyte windowID,
+        ISlots<IServerSlot> mainInventory,
+        ISlots<IServerSlot> hotBar,
         IDimension dimension,
-        GlobalVoxelCoordinates location, GlobalVoxelCoordinates? otherHalf) :
-        base(itemRepository, slotFactory, windowID, mainInventory, hotBar,
-            otherHalf is not null)
+        GlobalVoxelCoordinates location,
+        GlobalVoxelCoordinates? otherHalf
+    )
+        :
+        base(
+            itemRepository,
+            slotFactory,
+            windowID,
+            mainInventory,
+            hotBar,
+            otherHalf is not null
+        )
     {
         Dimension = dimension;
         Location = location;
@@ -32,76 +45,79 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
 
     private void Load()
     {
-        NbtCompound? entity = ((IDimensionServer)Dimension).GetTileEntity(Location);
-        ISlots<IServerSlot> chestInventory = this.ChestInventory;
+        var entity = ((IDimensionServer) Dimension).GetTileEntity(Location);
+        var chestInventory = ChestInventory;
+
         if (entity is not null)
         {
-            foreach (var item in (NbtList)entity["Items"])
+            foreach (var item in (NbtList) entity["Items"])
             {
-                ItemStack slot = ItemStack.FromNbt((NbtCompound)item);
+                var slot = ItemStack.FromNbt((NbtCompound) item);
                 chestInventory[slot.Index].Item = slot;
                 chestInventory[slot.Index].SetClean();
             }
         }
 
         // Add adjacent items
-        if (!object.ReferenceEquals(OtherHalf, null))
+        if (!ReferenceEquals(OtherHalf, null))
         {
-            entity = ((IDimensionServer)Dimension).GetTileEntity(OtherHalf);
+            entity = ((IDimensionServer) Dimension).GetTileEntity(OtherHalf);
+
             if (entity is not null)
             {
-                foreach (var item in (NbtList)entity["Items"])
+                foreach (var item in (NbtList) entity["Items"])
                 {
-                    ItemStack slot = ItemStack.FromNbt((NbtCompound)item);
+                    var slot = ItemStack.FromNbt((NbtCompound) item);
                     chestInventory[slot.Index + ChestLength].Item = slot;
                     chestInventory[slot.Index].SetClean();
                 }
             }
         }
-
     }
 
     public IDimension Dimension { get; }
 
     public GlobalVoxelCoordinates Location { get; }
 
-    public GlobalVoxelCoordinates? OtherHalf { get => _otherHalf; }
+    public GlobalVoxelCoordinates? OtherHalf => _otherHalf;
 
     /// <inheritdoc />
-    public CloseWindowPacket GetCloseWindowPacket()
-    {
-        return new CloseWindowPacket(WindowID);
-    }
+    public CloseWindowPacket GetCloseWindowPacket() => new(WindowID);
 
     public List<SetSlotPacket> GetDirtySetSlotPackets()
     {
-        int offset = 9;  // TODO hard-coded constant.  This is the offset within the Inventory Window of the Main Inventory.
-        List<SetSlotPacket> packets = ((IServerSlots)MainInventory).GetSetSlotPackets(0, (short)offset);
+        var
+            offset = 9; // TODO hard-coded constant.  This is the offset within the Inventory Window of the Main Inventory.
+
+        var packets = ((IServerSlots) MainInventory).GetSetSlotPackets(0, (short) offset);
         offset += MainInventory.Count;
 
-        packets.AddRange(((IServerSlots)Hotbar).GetSetSlotPackets(0, (short)offset));
+        packets.AddRange(((IServerSlots) Hotbar).GetSetSlotPackets(0, (short) offset));
 
         return packets;
     }
 
     public OpenWindowPacket GetOpenWindowPacket()
     {
-        int len = Count - MainInventory.Count - Hotbar.Count;
-        return new OpenWindowPacket(WindowID, Type, Name, (sbyte)len);
+        var len = Count - MainInventory.Count - Hotbar.Count;
+
+        return new OpenWindowPacket(WindowID, Type, Name, (sbyte) len);
     }
 
-    public WindowItemsPacket GetWindowItemsPacket()
-    {
-        return new WindowItemsPacket(WindowID, AllItems());
-    }
+    public WindowItemsPacket GetWindowItemsPacket() => new(WindowID, AllItems());
 
     public override void SetSlots(ItemStack[] slotContents)
     {
 #if DEBUG
         if (slotContents.Length != Count)
-            throw new ApplicationException($"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected.");
+        {
+            throw new ApplicationException(
+                $"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected."
+            );
+        }
 #endif
-        int index = 0;
+        var index = 0;
+
         for (int j = 0, jul = Slots.Length; j < jul; j++)
         for (int k = 0, kul = Slots[j].Count; k < kul; k++)
         {
@@ -114,22 +130,30 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
     public void HandleClick(IRemoteClient client, ClickWindowPacket packet)
     {
         int slotIndex = packet.SlotIndex;
-        ItemStack itemStaging = client.ItemStaging;
+        var itemStaging = client.ItemStaging;
         bool handled;
 
         if (packet.RightClick)
         {
             if (packet.Shift)
+            {
                 handled = HandleShiftRightClick(slotIndex, ref itemStaging);
+            }
             else
+            {
                 handled = HandleRightClick(slotIndex, ref itemStaging);
+            }
         }
         else
         {
             if (packet.Shift)
+            {
                 handled = HandleShiftLeftClick(slotIndex, ref itemStaging);
+            }
             else
+            {
                 handled = HandleLeftClick(slotIndex, ref itemStaging);
+            }
         }
 
         // TODO: For each Chest Slot changed, we must inform clients other than
@@ -142,7 +166,9 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
         Save();
 
         if (handled)
+        {
             client.ItemStaging = itemStaging;
+        }
 
         client.QueuePacket(new TransactionStatusPacket(packet.WindowID, packet.TransactionID, handled));
     }
@@ -153,6 +179,7 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
         {
             itemStaging = this[slotIndex];
             this[slotIndex] = ItemStack.EmptyStack;
+
             return true;
         }
         else
@@ -161,26 +188,33 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
             {
                 this[slotIndex] = itemStaging;
                 itemStaging = ItemStack.EmptyStack;
+
                 return true;
             }
 
             if (itemStaging.CanMerge(this[slotIndex]))
             {
-                int maxStack = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;  // itemStaging is known to not be Empty.
-                int numToPlace = Math.Min(maxStack - this[slotIndex].Count, itemStaging.Count);
+                int maxStack =
+                    ItemRepository.GetItemProvider(itemStaging.ID)!
+                                  .MaximumStack; // itemStaging is known to not be Empty.
+
+                var numToPlace = Math.Min(maxStack - this[slotIndex].Count, itemStaging.Count);
+
                 if (numToPlace > 0)
                 {
-                    ItemStack slot = this[slotIndex];
-                    this[slotIndex] = new ItemStack(slot.ID, (sbyte)(slot.Count + numToPlace), slot.Metadata, slot.Nbt);
+                    var slot = this[slotIndex];
+                    this[slotIndex] = new ItemStack(slot.ID, (sbyte) (slot.Count + numToPlace), slot.Metadata, slot.Nbt);
                     itemStaging = itemStaging.GetReducedStack(numToPlace);
                 }
+
                 return true;
             }
             else
             {
-                ItemStack tmp = this[slotIndex];
+                var tmp = this[slotIndex];
                 this[slotIndex] = itemStaging;
                 itemStaging = tmp;
+
                 return true;
             }
         }
@@ -188,11 +222,11 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
 
     protected bool HandleShiftLeftClick(int slotIndex, ref ItemStack itemStaging)
     {
-        AreaIndices srcArea = (AreaIndices)GetAreaIndex(slotIndex);
+        var srcArea = (AreaIndices) GetAreaIndex(slotIndex);
 
         if (srcArea == AreaIndices.ChestArea)
         {
-            ItemStack remaining = Hotbar.StoreItemStack(this[slotIndex], true);
+            var remaining = Hotbar.StoreItemStack(this[slotIndex], true);
             remaining = MainInventory.StoreItemStack(remaining, true);
             remaining = Hotbar.StoreItemStack(remaining, false);
             remaining = MainInventory.StoreItemStack(remaining, false);
@@ -202,7 +236,7 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
         }
         else
         {
-            ItemStack remaining = this[slotIndex];
+            var remaining = this[slotIndex];
             remaining = ChestInventory.StoreItemStack(remaining, true);
             this[slotIndex] = ChestInventory.StoreItemStack(remaining, false);
 
@@ -212,16 +246,27 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
 
     protected bool HandleRightClick(int slotIndex, ref ItemStack itemStaging)
     {
-        ItemStack stack = this[slotIndex];
+        var stack = this[slotIndex];
+
         if (!itemStaging.Empty)
         {
             if (stack.CanMerge(itemStaging))
             {
-                int maxStack = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;  // itemStaging is known to not be Empty
+                int maxStack =
+                    ItemRepository.GetItemProvider(itemStaging.ID)!
+                                  .MaximumStack; // itemStaging is known to not be Empty
+
                 if (stack.Count < maxStack)
                 {
-                    this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)(stack.Count + 1), itemStaging.Metadata, itemStaging.Nbt);
+                    this[slotIndex] = new ItemStack(
+                        itemStaging.ID,
+                        (sbyte) (stack.Count + 1),
+                        itemStaging.Metadata,
+                        itemStaging.Nbt
+                    );
+
                     itemStaging = itemStaging.GetReducedStack(1);
+
                     return true;
                 }
                 else
@@ -238,6 +283,7 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
                 // Right-click on an incompatible slot => exchange stacks.
                 this[slotIndex] = itemStaging;
                 itemStaging = stack;
+
                 return true;
             }
         }
@@ -247,62 +293,75 @@ public class ChestWindow : TrueCraft.Core.Inventory.ChestWindow<IServerSlot>,
             // It is assumed that the server will return accepted=true in
             // this case (similarly to such cases in the Inventory Window).
             if (stack.Empty)
+            {
                 return true;
+            }
 
             int cnt = stack.Count;
-            int numToPickUp = cnt / 2 + (cnt & 0x0001);
+            var numToPickUp = (cnt / 2) + (cnt & 0x0001);
 
-            itemStaging = new ItemStack(stack.ID, (sbyte)numToPickUp, stack.Metadata, stack.Nbt);
+            itemStaging = new ItemStack(stack.ID, (sbyte) numToPickUp, stack.Metadata, stack.Nbt);
             this[slotIndex] = stack.GetReducedStack(numToPickUp);
 
             return true;
         }
     }
 
-    protected bool HandleShiftRightClick(int slotIndex, ref ItemStack itemStaging)
-    {
-        return HandleShiftLeftClick(slotIndex, ref itemStaging);
-    }
+    protected bool HandleShiftRightClick(int slotIndex, ref ItemStack itemStaging) => HandleShiftLeftClick(slotIndex, ref itemStaging);
 
     public void Save()
     {
-        NbtList entitySelf = new NbtList("Items", NbtTagType.Compound);
-        NbtList entityAdjacent = new NbtList("Items", NbtTagType.Compound);
+        var entitySelf = new NbtList("Items", NbtTagType.Compound);
+        var entityAdjacent = new NbtList("Items", NbtTagType.Compound);
 
-        ISlots<IServerSlot> chestInventory = this.ChestInventory;
+        var chestInventory = ChestInventory;
+
         for (int i = 0, iul = chestInventory.Count; i < iul; i++)
         {
-            ItemStack item = chestInventory[i].Item;
+            var item = chestInventory[i].Item;
+
             if (!item.Empty)
             {
-                if (i < ChestWindow<IServerSlot>.ChestLength)
+                if (i < ChestLength)
                 {
                     item.Index = i;
                     entitySelf.Add(item.ToNbt());
                 }
                 else
                 {
-                    item.Index = i - ChestWindow<IServerSlot>.ChestLength;
+                    item.Index = i - ChestLength;
                     entityAdjacent.Add(item.ToNbt());
                 }
             }
         }
 
-        NbtCompound? newEntity = ((IDimensionServer)Dimension).GetTileEntity(Location);
+        var newEntity = ((IDimensionServer) Dimension).GetTileEntity(Location);
+
         if (newEntity is null)
+        {
             newEntity = new NbtCompound(new[] { entitySelf });
+        }
         else
+        {
             newEntity["Items"] = entitySelf;
-        ((IDimensionServer)Dimension).SetTileEntity(Location, newEntity);
+        }
+
+        ((IDimensionServer) Dimension).SetTileEntity(Location, newEntity);
 
         if (_otherHalf is not null)
         {
-            newEntity = ((IDimensionServer)Dimension).GetTileEntity(_otherHalf);
+            newEntity = ((IDimensionServer) Dimension).GetTileEntity(_otherHalf);
+
             if (newEntity is null)
+            {
                 newEntity = new NbtCompound(new[] { entityAdjacent });
+            }
             else
+            {
                 newEntity["Items"] = entityAdjacent;
-            ((IDimensionServer)Dimension).SetTileEntity(_otherHalf, newEntity);
+            }
+
+            ((IDimensionServer) Dimension).SetTileEntity(_otherHalf, newEntity);
         }
     }
 }

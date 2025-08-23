@@ -6,7 +6,7 @@
 /// </summary>
 public struct PlayerBlockPlacementPacket : IPacket
 {
-    public byte ID { get { return 0x0F; } }
+    public byte ID => 0x0F;
 
     /// <summary>
     /// Constructs a new PlayerBlockPlacementPacket
@@ -23,6 +23,7 @@ public struct PlayerBlockPlacementPacket : IPacket
         Z = z;
         Face = face;
         ItemID = heldItem.ID;
+
         if (heldItem.ID >= 0)
         {
             Amount = heldItem.Count;
@@ -39,6 +40,7 @@ public struct PlayerBlockPlacementPacket : IPacket
     public sbyte Y;
     public int Z;
     public BlockFace Face;
+
     /// <summary>
     /// The block or item ID. You should probably ignore this and use a server-side inventory.
     /// </summary>
@@ -59,8 +61,9 @@ public struct PlayerBlockPlacementPacket : IPacket
         X = stream.ReadInt32();
         Y = stream.ReadInt8();
         Z = stream.ReadInt32();
-        Face = (BlockFace)stream.ReadInt8();
+        Face = (BlockFace) stream.ReadInt8();
         ItemID = stream.ReadInt16();
+
         if (ItemID != -1)
         {
             Amount = stream.ReadInt8();
@@ -78,8 +81,9 @@ public struct PlayerBlockPlacementPacket : IPacket
         stream.WriteInt32(X);
         stream.WriteInt8(Y);
         stream.WriteInt32(Z);
-        stream.WriteInt8((sbyte)Face);
+        stream.WriteInt8((sbyte) Face);
         stream.WriteInt16(ItemID);
+
         if (ItemID != -1)
         {
             stream.WriteInt8(Amount);

@@ -44,9 +44,13 @@ public class ChunkTest
     public void TestHeightMap()
     {
         var chunk = new Chunk(GlobalChunkCoordinates.Zero);
-        for (int x = 0; x < Chunk.Width; ++x)
-        for (int z = 0; z < Chunk.Width; ++z)
+
+        for (var x = 0; x < Chunk.Width; ++x)
+        for (var z = 0; z < Chunk.Width; ++z)
+        {
             chunk.SetBlockID(new LocalVoxelCoordinates(x, 20, z), StoneBlock.BlockID);
+        }
+
         chunk.UpdateHeightMap();
         Assert.AreEqual(20, chunk.GetHeight(0, 0));
         Assert.AreEqual(20, chunk.GetHeight(1, 0));
@@ -59,27 +63,30 @@ public class ChunkTest
     {
         var chunk = new Chunk(GlobalChunkCoordinates.Zero);
         byte val = 0;
-        for (int y = 0; y < Chunk.Height; y++)
-        for (int x = 0; x < Chunk.Width; x++)
-        for (int z = 0; z < Chunk.Depth; z++)
+
+        for (var y = 0; y < Chunk.Height; y++)
+        for (var x = 0; x < Chunk.Width; x++)
+        for (var z = 0; z < Chunk.Depth; z++)
         {
-            LocalVoxelCoordinates coords = new LocalVoxelCoordinates(x, y, z);
+            var coords = new LocalVoxelCoordinates(x, y, z);
             chunk.SetBlockID(coords, val);
-            chunk.SetMetadata(coords, (byte)(val % 16));
-            chunk.SetBlockLight(coords, (byte)(val % 16));
-            chunk.SetSkyLight(coords, (byte)(val % 16));
+            chunk.SetMetadata(coords, (byte) (val % 16));
+            chunk.SetBlockLight(coords, (byte) (val % 16));
+            chunk.SetSkyLight(coords, (byte) (val % 16));
             val++;
         }
+
         val = 0;
-        for (int y = 0; y < Chunk.Height; y++)
-        for (int x = 0; x < Chunk.Width; x++)
-        for (int z = 0; z < Chunk.Depth; z++)
+
+        for (var y = 0; y < Chunk.Height; y++)
+        for (var x = 0; x < Chunk.Width; x++)
+        for (var z = 0; z < Chunk.Depth; z++)
         {
-            LocalVoxelCoordinates coords = new LocalVoxelCoordinates(x, y, z);
+            var coords = new LocalVoxelCoordinates(x, y, z);
             Assert.AreEqual(val, chunk.GetBlockID(coords));
-            Assert.AreEqual((byte)(val % 16), chunk.GetMetadata(coords));
-            Assert.AreEqual((byte)(val % 16), chunk.GetBlockLight(coords));
-            Assert.AreEqual((byte)(val % 16), chunk.GetSkyLight(coords));
+            Assert.AreEqual((byte) (val % 16), chunk.GetMetadata(coords));
+            Assert.AreEqual((byte) (val % 16), chunk.GetBlockLight(coords));
+            Assert.AreEqual((byte) (val % 16), chunk.GetSkyLight(coords));
             val++;
         }
     }

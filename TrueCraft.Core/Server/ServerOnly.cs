@@ -12,6 +12,8 @@ public static class ServerOnly
     public static void Assert()
     {
         if (WhoAmI.Answer != IAm.Server)
+        {
             throw new ApplicationException(Strings.SERVER_CODE_ON_CLIENT);
+        }
     }
 }

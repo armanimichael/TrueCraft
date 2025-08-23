@@ -6,7 +6,6 @@ namespace TrueCraft.Core.Server;
 // TODO: this should be a server-side only interface.
 public interface IServerSlot : ISlot
 {
-
     /// <summary>
     /// Gets whether or not this slot has been "saved" by generating
     /// a SetSlot Packet(s) to send to the Player(s).

@@ -12,10 +12,13 @@ public static class Utility
     /// <returns>The root node of the XML Document.</returns>
     public static XmlNode GetTopNode(string xml)
     {
-        XmlDocument doc = new XmlDocument();
-        using (StringReader sr = new StringReader(xml))
-        using (XmlReader xmlr = XmlReader.Create(sr))
+        var doc = new XmlDocument();
+
+        using (var sr = new StringReader(xml))
+        using (var xmlr = XmlReader.Create(sr))
+        {
             doc.Load(xmlr);
+        }
 
         return doc.FirstChild!;
     }

@@ -5,13 +5,15 @@
 /// </summary>
 public struct PlayerPositionPacket : IPacket
 {
-    public byte ID { get { return 0x0B; } }
+    public byte ID => 0x0B;
 
     public double X, Y, Z;
+
     /// <summary>
     /// The Y position of the player's eyes. This changes when crouching.
     /// </summary>
     public double Stance;
+
     public bool OnGround;
 
     public void ReadPacket(IMinecraftStream stream)

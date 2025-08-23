@@ -15,49 +15,59 @@ public class PlantDecorator : IChunkDecorator
         var noise = new Perlin(seed);
         var chanceNoise = new ClampNoise(noise);
         chanceNoise.MaxValue = 2;
-        for (int x = 0; x < Chunk.Width; x++)
+
+        for (var x = 0; x < Chunk.Width; x++)
+        for (var z = 0; z < Chunk.Depth; z++)
         {
-            for (int z = 0; z < Chunk.Depth; z++)
+            var biome = biomes.GetBiome(chunk.GetBiome(x, z));
+            var blockX = MathHelper.ChunkToBlockX(x, chunk.Coordinates.X);
+            var blockZ = MathHelper.ChunkToBlockZ(z, chunk.Coordinates.Z);
+            var height = chunk.GetHeight(x, z);
+
+            if (noise.Value2D(blockX, blockZ) > 0)
             {
-                IBiomeProvider biome = biomes.GetBiome(chunk.GetBiome(x, z));
-                var blockX = MathHelper.ChunkToBlockX(x, chunk.Coordinates.X);
-                var blockZ = MathHelper.ChunkToBlockZ(z, chunk.Coordinates.Z);
-                int height = chunk.GetHeight(x, z);
-                if (noise.Value2D(blockX, blockZ) > 0)
+                var blockLocation = new LocalVoxelCoordinates(x, height, z);
+                var plantPosition = new LocalVoxelCoordinates(blockLocation.X, blockLocation.Y + 1, blockLocation.Z);
+
+                if (chunk.GetBlockID(blockLocation) == biome.SurfaceBlock && plantPosition.Y < Chunk.Height)
                 {
-                    LocalVoxelCoordinates blockLocation = new LocalVoxelCoordinates(x, height, z);
-                    LocalVoxelCoordinates plantPosition = new LocalVoxelCoordinates(blockLocation.X, blockLocation.Y + 1, blockLocation.Z);
-                    if (chunk.GetBlockID(blockLocation) == biome.SurfaceBlock && plantPosition.Y < Chunk.Height)
+                    var chance = chanceNoise.Value2D(blockX, blockZ);
+
+                    if (chance < 1)
                     {
-                        var chance = chanceNoise.Value2D(blockX, blockZ);
-                        if (chance < 1)
+                        var bushNoise = chanceNoise.Value2D(blockX * 0.7, blockZ * 0.7);
+                        var grassNoise = chanceNoise.Value2D(blockX * 0.3, blockZ * 0.3);
+
+                        if (biome.Plants.Contains(PlantSpecies.Deadbush) && bushNoise > 1 &&
+                            chunk.GetBlockID(blockLocation) == SandBlock.BlockID)
                         {
-                            var bushNoise = chanceNoise.Value2D(blockX * 0.7, blockZ * 0.7);
-                            var grassNoise = chanceNoise.Value2D(blockX * 0.3, blockZ * 0.3);
-                            if (biome.Plants.Contains(PlantSpecies.Deadbush) && bushNoise > 1 && chunk.GetBlockID(blockLocation) == SandBlock.BlockID)
-                            {
                                 GenerateDeadBush(chunk, plantPosition);
-                                continue;
-                            }
-                                
-                            if (biome.Plants.Contains(PlantSpecies.TallGrass) && grassNoise > 0.3 && grassNoise < 0.95)
-                            {
-                                byte meta = (grassNoise > 0.3 && grassNoise < 0.45 && biome.Plants.Contains(PlantSpecies.Fern)) ? (byte)0x2 : (byte)0x1;
-                                GenerateTallGrass(chunk, plantPosition, meta);
-                                continue;
-                            }
+
+                            continue;
                         }
-                        else
+
+                        if (biome.Plants.Contains(PlantSpecies.TallGrass) && grassNoise > 0.3 && grassNoise < 0.95)
                         {
-                            var flowerTypeNoise = chanceNoise.Value2D(blockX * 1.2, blockZ * 1.2);
-                            if (biome.Plants.Contains(PlantSpecies.Rose) && flowerTypeNoise > 0.8 && flowerTypeNoise < 1.5)
-                            {
+                            var meta = grassNoise > 0.3 && grassNoise < 0.45 && biome.Plants.Contains(PlantSpecies.Fern)
+                                ? (byte) 0x2
+                                : (byte) 0x1;
+
+                                GenerateTallGrass(chunk, plantPosition, meta);
+
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        var flowerTypeNoise = chanceNoise.Value2D(blockX * 1.2, blockZ * 1.2);
+
+                        if (biome.Plants.Contains(PlantSpecies.Rose) && flowerTypeNoise > 0.8 && flowerTypeNoise < 1.5)
+                        {
                                 GenerateRose(chunk, plantPosition);
-                            }
-                            else if (biome.Plants.Contains(PlantSpecies.Dandelion) && flowerTypeNoise <= 0.8)
-                            {
+                        }
+                        else if (biome.Plants.Contains(PlantSpecies.Dandelion) && flowerTypeNoise <= 0.8)
+                        {
                                 GenerateDandelion(chunk, plantPosition);
-                            }
                         }
                     }
                 }
@@ -65,24 +75,15 @@ public class PlantDecorator : IChunkDecorator
         }
     }
 
-    void GenerateRose(IChunk chunk, LocalVoxelCoordinates location)
-    {
-        chunk.SetBlockID(location, RoseBlock.BlockID);
-    }
+    private static void GenerateRose(IChunk chunk, LocalVoxelCoordinates location) => chunk.SetBlockID(location, RoseBlock.BlockID);
 
-    void GenerateDandelion(IChunk chunk, LocalVoxelCoordinates location)
-    {
-        chunk.SetBlockID(location, DandelionBlock.BlockID);
-    }
+    private static void GenerateDandelion(IChunk chunk, LocalVoxelCoordinates location) => chunk.SetBlockID(location, DandelionBlock.BlockID);
 
-    void GenerateTallGrass(IChunk chunk, LocalVoxelCoordinates location, byte meta)
+    private static void GenerateTallGrass(IChunk chunk, LocalVoxelCoordinates location, byte meta)
     {
         chunk.SetBlockID(location, TallGrassBlock.BlockID);
         chunk.SetMetadata(location, meta);
     }
 
-    void GenerateDeadBush(IChunk chunk, LocalVoxelCoordinates location)
-    {
-        chunk.SetBlockID(location, DeadBushBlock.BlockID);
-    }
+    private static void GenerateDeadBush(IChunk chunk, LocalVoxelCoordinates location) => chunk.SetBlockID(location, DeadBushBlock.BlockID);
 }

@@ -7,7 +7,7 @@ using TrueCraft.Core.World;
 namespace TrueCraft.Test.World;
 
 // NOTE: This Fake depends upon various BlockProvider subclasses for Block ID values.
-public class FakeChunk : IChunk
+public sealed class FakeChunk : IChunk
 {
     private byte[] _blocks;
     private byte[] _blockLight;
@@ -26,26 +26,31 @@ public class FakeChunk : IChunk
         _heightMap = new byte[WorldConstants.ChunkWidth, WorldConstants.ChunkDepth];
     }
 
-    public int X { get => Coordinates.X; }
+    public int X => Coordinates.X;
 
-    public int Z { get => Coordinates.Z; }
+    public int Z => Coordinates.Z;
 
     public GlobalChunkCoordinates Coordinates { get; }
 
-    private int CoordinatesToIndex(LocalVoxelCoordinates coordinates)
-    {
-        return (coordinates.X * WorldConstants.ChunkWidth + coordinates.Z) * WorldConstants.Height + coordinates.Y;
-    }
+    private static int CoordinatesToIndex(LocalVoxelCoordinates coordinates) => (((coordinates.X * WorldConstants.ChunkWidth) + coordinates.Z) * WorldConstants.Height) + coordinates.Y;
 
     public int MaxHeight => throw new NotImplementedException();
 
     public bool IsModified => throw new NotImplementedException();
 
-    public DateTime LastAccessed { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public DateTime LastAccessed
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
 
     public byte[] Data => throw new NotImplementedException();
 
-    public bool TerrainPopulated { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public bool TerrainPopulated
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
 
     public NybbleArray Metadata => throw new NotImplementedException();
 
@@ -55,57 +60,61 @@ public class FakeChunk : IChunk
 
     public event EventHandler? Disposed;
 
-    public void Dispose()
-    {
-        Disposed?.Invoke(this, EventArgs.Empty);
-    }
+    public void Dispose() => Disposed?.Invoke(this, EventArgs.Empty);
 
-    public Biome GetBiome(int x, int z)
-    {
-        throw new NotImplementedException();
-    }
+    public Biome GetBiome(int x, int z) => throw new NotImplementedException();
 
     public byte GetBlockID(LocalVoxelCoordinates coordinates)
     {
-        int index = CoordinatesToIndex(coordinates);
+        var index = CoordinatesToIndex(coordinates);
+
         if (index < 0 || index >= _blocks.Length)
+        {
             return AirBlock.BlockID;
+        }
+
         return _blocks[index];
     }
 
     public byte GetBlockLight(LocalVoxelCoordinates coordinates)
     {
-        int index = CoordinatesToIndex(coordinates);
+        var index = CoordinatesToIndex(coordinates);
+
         if (index < 0 || index >= _blocks.Length)
+        {
             return 0;
+        }
+
         return _blockLight[index];
     }
 
-    public int GetHeight(int x, int z)
-    {
-        throw new NotImplementedException();
-    }
+    public int GetHeight(int x, int z) => throw new NotImplementedException();
 
     public byte GetMetadata(LocalVoxelCoordinates coordinates)
     {
-        int index = CoordinatesToIndex(coordinates);
+        var index = CoordinatesToIndex(coordinates);
+
         if (index < 0 || index >= _blocks.Length)
+        {
             return 0;
+        }
+
         return _metadata[index];
     }
 
     public byte GetSkyLight(LocalVoxelCoordinates coordinates)
     {
-        int index = CoordinatesToIndex(coordinates);
+        var index = CoordinatesToIndex(coordinates);
+
         if (index < 0 || index >= _blocks.Length)
+        {
             return 15;
+        }
+
         return _skyLight[index];
     }
 
-    public NbtCompound GetTileEntity(LocalVoxelCoordinates coordinates)
-    {
-        throw new NotImplementedException();
-    }
+    public NbtCompound GetTileEntity(LocalVoxelCoordinates coordinates) => throw new NotImplementedException();
 
     public void SetBlockID(LocalVoxelCoordinates coordinates, byte value)
     {
@@ -113,38 +122,34 @@ public class FakeChunk : IChunk
 
         if (coordinates.Y == _heightMap[coordinates.X, coordinates.Z] && value == AirBlock.BlockID)
         {
-            int y = coordinates.Y;
+            var y = coordinates.Y;
+
             while (y >= 0 && AirBlock.BlockID == GetBlockID(new LocalVoxelCoordinates(coordinates.X, y, coordinates.Z)))
+            {
                 y--;
-            if (y < 0) y = 0;
-            _heightMap[coordinates.X, coordinates.Z] = (byte)y;
+            }
+
+            if (y < 0)
+            {
+                y = 0;
+            }
+
+            _heightMap[coordinates.X, coordinates.Z] = (byte) y;
         }
+
         if (coordinates.Y > _heightMap[coordinates.X, coordinates.Z] && value != AirBlock.BlockID)
-            _heightMap[coordinates.X, coordinates.Z] = (byte)coordinates.Y;
+        {
+            _heightMap[coordinates.X, coordinates.Z] = (byte) coordinates.Y;
+        }
     }
 
-    public void SetBlockLight(LocalVoxelCoordinates coordinates, byte value)
-    {
-        _blockLight[CoordinatesToIndex(coordinates)] = value;
-    }
+    public void SetBlockLight(LocalVoxelCoordinates coordinates, byte value) => _blockLight[CoordinatesToIndex(coordinates)] = value;
 
-    public void SetMetadata(LocalVoxelCoordinates coordinates, byte value)
-    {
-        _metadata[CoordinatesToIndex(coordinates)] = value;
-    }
+    public void SetMetadata(LocalVoxelCoordinates coordinates, byte value) => _metadata[CoordinatesToIndex(coordinates)] = value;
 
-    public void SetSkyLight(LocalVoxelCoordinates coordinates, byte value)
-    {
-        _skyLight[CoordinatesToIndex(coordinates)] = value;
-    }
+    public void SetSkyLight(LocalVoxelCoordinates coordinates, byte value) => _skyLight[CoordinatesToIndex(coordinates)] = value;
 
-    public void SetTileEntity(LocalVoxelCoordinates coordinates, NbtCompound? value)
-    {
-        throw new NotImplementedException();
-    }
+    public void SetTileEntity(LocalVoxelCoordinates coordinates, NbtCompound? value) => throw new NotImplementedException();
 
-    public void UpdateHeightMap()
-    {
-        throw new NotImplementedException("Fix call to obsolete method.");
-    }
+    public void UpdateHeightMap() => throw new NotImplementedException("Fix call to obsolete method.");
 }

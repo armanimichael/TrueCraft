@@ -6,6 +6,7 @@ namespace TrueCraft.Core.Server;
 public interface IEventScheduler
 {
     HashSet<string> DisabledEvents { get; }
+
     /// <summary>
     /// Schedules an event to occur some time in the future.
     /// </summary>
@@ -13,6 +14,7 @@ public interface IEventScheduler
     /// <param name="when">When to trigger the event.</param>
     /// <param name="action">The event to trigger.</param>
     void ScheduleEvent(string name, IEventSubject? subject, TimeSpan when, Action<IMultiplayerServer> action);
+
     /// <summary>
     /// Triggers all pending scheduled events whose scheduled time has transpired.
     /// </summary>

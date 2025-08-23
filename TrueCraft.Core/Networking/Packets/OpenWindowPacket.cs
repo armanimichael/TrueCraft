@@ -7,7 +7,7 @@ namespace TrueCraft.Core.Networking.Packets;
 /// </summary>
 public struct OpenWindowPacket : IPacket
 {
-    public byte ID { get { return 0x64; } }
+    public byte ID => 0x64;
 
     public OpenWindowPacket(sbyte windowID, WindowType type, string title, sbyte totalSlots)
     {
@@ -28,7 +28,7 @@ public struct OpenWindowPacket : IPacket
     public void ReadPacket(IMinecraftStream stream)
     {
         WindowID = stream.ReadInt8();
-        Type = (WindowType)stream.ReadInt8();
+        Type = (WindowType) stream.ReadInt8();
         Title = stream.ReadString8();
         TotalSlots = stream.ReadInt8();
     }
@@ -36,7 +36,7 @@ public struct OpenWindowPacket : IPacket
     public void WritePacket(IMinecraftStream stream)
     {
         stream.WriteInt8(WindowID);
-        stream.WriteInt8((sbyte)Type);
+        stream.WriteInt8((sbyte) Type);
         stream.WriteString8(Title);
         stream.WriteInt8(TotalSlots);
     }

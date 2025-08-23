@@ -14,27 +14,18 @@ public abstract class FluidBlock : BlockProvider
     // is one greater than the largest value nearby. When they reach
     // MaximumFluidDepletion, the fluid stops propgetating.
 
-    public override abstract byte ID { get; }
+    public abstract override byte ID { get; }
 
-    public override BoundingBox? BoundingBox
-    {
-        get
-        {
-            return null;
-        }
-    }
+    public override BoundingBox? BoundingBox => null;
 
-    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item)
-    {
-        return new ItemStack[0];
-    }
+    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item) => new ItemStack[0];
 
     protected abstract double SecondsBetweenUpdates { get; }
     protected abstract byte MaximumFluidDepletion { get; }
     protected abstract byte FlowingID { get; }
     protected abstract byte StillID { get; }
 
-    protected virtual bool AllowSourceCreation { get { return true; } }
+    protected virtual bool AllowSourceCreation => true;
 
     private static readonly Vector3i[] Neighbors =
     {
@@ -68,27 +59,47 @@ public abstract class FluidBlock : BlockProvider
 
     private void ScheduleNextEvent(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coords)
     {
-        IChunk? chunk = dimension.GetChunk(coords);
-        if (chunk is null || dimension.GetBlockID(coords) == StillID)
-            return;
+        var chunk = dimension.GetChunk(coords);
 
-        server.Scheduler.ScheduleEvent("fluid", chunk,
-            TimeSpan.FromSeconds(SecondsBetweenUpdates), (_server) =>
-                AutomataUpdate(_server, dimension, coords));
+        if (chunk is null || dimension.GetBlockID(coords) == StillID)
+        {
+            return;
+        }
+
+        server.Scheduler.ScheduleEvent(
+            "fluid",
+            chunk,
+            TimeSpan.FromSeconds(SecondsBetweenUpdates),
+            (_server) =>
+                AutomataUpdate(_server, dimension, coords)
+        );
     }
 
-    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         if (ID == FlowingID)
+        {
             ScheduleNextEvent(user.Server, dimension, descriptor.Coordinates);
+        }
     }
 
-    public override void BlockUpdate(BlockDescriptor descriptor, BlockDescriptor source, IMultiplayerServer server, IDimension dimension)
+    public override void BlockUpdate(
+        BlockDescriptor descriptor,
+        BlockDescriptor source,
+        IMultiplayerServer server,
+        IDimension dimension
+    )
     {
         if (ID == StillID)
         {
             var outward = DetermineOutwardFlow(dimension, descriptor.Coordinates);
             var inward = DetermineInwardFlow(dimension, descriptor.Coordinates);
+
             if (outward.Length != 0 || inward != descriptor.Metadata)
             {
                 dimension.SetBlockID(descriptor.Coordinates, FlowingID);
@@ -97,24 +108,34 @@ public abstract class FluidBlock : BlockProvider
         }
     }
 
-    public override void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coordinates)
-    {
-        ScheduleNextEvent(server, dimension, coordinates);
-    }
+    public override void BlockLoadedFromChunk(
+        IMultiplayerServer server,
+        IDimension dimension,
+        GlobalVoxelCoordinates coordinates
+    ) => ScheduleNextEvent(server, dimension, coordinates);
 
     private void AutomataUpdate(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coords)
     {
-        IChunk? chunk = dimension.GetChunk(coords);
+        var chunk = dimension.GetChunk(coords);
+
         if (chunk is null || (dimension.GetBlockID(coords) != FlowingID && dimension.GetBlockID(coords) != StillID))
+        {
             return;
+        }
+
         server.BlockUpdatesEnabled = false;
         var again = DoAutomata(server, dimension, coords);
         server.BlockUpdatesEnabled = true;
+
         if (again)
         {
-            server.Scheduler.ScheduleEvent("fluid", chunk,
-                TimeSpan.FromSeconds(SecondsBetweenUpdates), (_server) =>
-                    AutomataUpdate(_server, dimension, coords));
+            server.Scheduler.ScheduleEvent(
+                "fluid",
+                chunk,
+                TimeSpan.FromSeconds(SecondsBetweenUpdates),
+                (_server) =>
+                    AutomataUpdate(_server, dimension, coords)
+            );
         }
     }
 
@@ -129,54 +150,83 @@ public abstract class FluidBlock : BlockProvider
         {
             // Exit early if we have placed a fluid block beneath us (and we aren't a source block)
             FlowOutward(dimension, outward[0], server);
+
             if (previousLevel != 0)
+            {
                 return true;
+            }
         }
 
         // Process inward flow
         if (inward > MaximumFluidDepletion)
         {
             dimension.SetBlockID(coords, 0);
+
             return true;
         }
+
         dimension.SetMetadata(coords, inward);
+
         if (inward == 0 && previousLevel != 0)
-        {
             // Exit early if we have become a source block
+        {
             return true;
         }
 
         // Process outward flow
-        for (int i = 0; i < outward.Length; i++)
+        for (var i = 0; i < outward.Length; i++)
+        {
             FlowOutward(dimension, outward[i], server);
+        }
+
         // Set our block to still fluid if we are done spreading.
         if (outward.Length == 0 && inward == previousLevel)
         {
             dimension.SetBlockID(coords, StillID);
+
             return false;
         }
+
         return true;
     }
 
     private void FlowOutward(IDimension dimension, LiquidFlow target, IMultiplayerServer server)
     {
-        IChunk? chunk = dimension.GetChunk(target.TargetBlock);
+        var chunk = dimension.GetChunk(target.TargetBlock);
+
         if (chunk is null)
+        {
             return;
+        }
 
         // For each block we can flow into, generate an item entity if appropriate
         var provider = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(target.TargetBlock));
-        provider.GenerateDropEntity(new BlockDescriptor { Coordinates = target.TargetBlock, ID = provider.ID }, dimension, server, ItemStack.EmptyStack);
+
+        provider.GenerateDropEntity(
+            new BlockDescriptor { Coordinates = target.TargetBlock, ID = provider.ID },
+            dimension,
+            server,
+            ItemStack.EmptyStack
+        );
+
         // And overwrite the block with a new fluid block.
         dimension.SetBlockID(target.TargetBlock, FlowingID);
         dimension.SetMetadata(target.TargetBlock, target.Level);
-        server.Scheduler.ScheduleEvent("fluid", chunk,
+
+        server.Scheduler.ScheduleEvent(
+            "fluid",
+            chunk,
             TimeSpan.FromSeconds(SecondsBetweenUpdates),
-            s => AutomataUpdate(s, dimension, target.TargetBlock));
+            s => AutomataUpdate(s, dimension, target.TargetBlock)
+        );
+
         if (FlowingID == LavaBlock.BlockID)
         {
             (dimension.BlockRepository.GetBlockProvider(FireBlock.BlockID) as FireBlock)?.ScheduleUpdate(
-                server, dimension, dimension.GetBlockData(target.TargetBlock));
+                server,
+                dimension,
+                dimension.GetBlockData(target.TargetBlock)
+            );
         }
     }
 
@@ -187,32 +237,50 @@ public abstract class FluidBlock : BlockProvider
     {
         var currentLevel = dimension.GetMetadata(coords);
         var up = dimension.GetBlockID(coords + Vector3i.Up);
+
         if (up == FlowingID || up == StillID) // Check for fluid above us
+        {
             return currentLevel;
+        }
         else
         {
             if (currentLevel != 0)
             {
                 byte highestNeighboringFluid = 15;
-                int neighboringSourceBlocks = 0;
-                for (int i = 0; i < Neighbors.Length; i++)
+                var neighboringSourceBlocks = 0;
+
+                for (var i = 0; i < Neighbors.Length; i++)
                 {
                     var nId = dimension.GetBlockID(coords + Neighbors[i]);
+
                     if (nId == FlowingID || nId == StillID)
                     {
                         var neighborLevel = dimension.GetMetadata(coords + Neighbors[i]);
+
                         if (neighborLevel < highestNeighboringFluid)
+                        {
                             highestNeighboringFluid = neighborLevel;
+                        }
+
                         if (neighborLevel == 0)
+                        {
                             neighboringSourceBlocks++;
+                        }
                     }
                 }
+
                 if (neighboringSourceBlocks >= 2 && AllowSourceCreation)
+                {
                     currentLevel = 0;
+                }
+
                 if (highestNeighboringFluid > 0)
-                    currentLevel = (byte)(highestNeighboringFluid + 1);
+                {
+                    currentLevel = (byte) (highestNeighboringFluid + 1);
+                }
             }
         }
+
         return currentLevel;
     }
 
@@ -228,11 +296,15 @@ public abstract class FluidBlock : BlockProvider
 
         var currentLevel = dimension.GetMetadata(coords);
         var blockBelow = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coords + Vector3i.Down));
+
         if (blockBelow.Hardness == 0 && blockBelow.ID != FlowingID && blockBelow.ID != StillID)
         {
             outwardFlow.Add(new LiquidFlow(coords + Vector3i.Down, 1));
+
             if (currentLevel != 0)
+            {
                 return outwardFlow.ToArray();
+            }
         }
 
         if (currentLevel < MaximumFluidDepletion)
@@ -243,43 +315,54 @@ public abstract class FluidBlock : BlockProvider
             // It will flow towards several equally strong candidates at once.
 
             var candidateFlowPoints = new List<Vector3i>(4);
-            Vector3i furthestPossibleCandidate = new Vector3i(dropCheckDistance + 1, -1, dropCheckDistance + 1);
+            var furthestPossibleCandidate = new Vector3i(dropCheckDistance + 1, -1, dropCheckDistance + 1);
 
             var nearestCandidate = furthestPossibleCandidate;
-            for (int x = -dropCheckDistance; x < dropCheckDistance; x++)
+
+            for (var x = -dropCheckDistance; x < dropCheckDistance; x++)
+            for (var z = -dropCheckDistance; z < dropCheckDistance; z++)
             {
-                for (int z = -dropCheckDistance; z < dropCheckDistance; z++)
+                if (Math.Abs(z) + Math.Abs(x) > dropCheckDistance)
                 {
-                    if (Math.Abs(z) + Math.Abs(x) > dropCheckDistance)
-                        continue;
-                    Vector3i check = new Vector3i(x, -1, z);
-                    var c = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(check + coords));
-                    if (c.Hardness == 0)
+                    continue;
+                }
+
+                var check = new Vector3i(x, -1, z);
+                var c = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(check + coords));
+
+                if (c.Hardness == 0)
+                {
+                    if (!LineOfSight(dimension, check + coords, coords))
                     {
-                        if (!LineOfSight(dimension, check + coords, coords))
-                            continue;
-                        if (coords.DistanceTo(check + coords) == coords.DistanceTo(nearestCandidate + coords))
-                            candidateFlowPoints.Add(check);
-                        if (coords.DistanceTo(check + coords) < coords.DistanceTo(nearestCandidate + coords))
-                        {
-                            candidateFlowPoints.Clear();
-                            nearestCandidate = check;
-                        }
+                        continue;
+                    }
+
+                    if (coords.DistanceTo(check + coords) == coords.DistanceTo(nearestCandidate + coords))
+                    {
+                        candidateFlowPoints.Add(check);
+                    }
+
+                    if (coords.DistanceTo(check + coords) < coords.DistanceTo(nearestCandidate + coords))
+                    {
+                        candidateFlowPoints.Clear();
+                        nearestCandidate = check;
                     }
                 }
             }
+
             if (nearestCandidate == furthestPossibleCandidate)
             {
                 candidateFlowPoints.Add(new Vector3i(-dropCheckDistance - 1, -1, dropCheckDistance + 1));
                 candidateFlowPoints.Add(new Vector3i(dropCheckDistance + 1, -1, -dropCheckDistance - 1));
                 candidateFlowPoints.Add(new Vector3i(-dropCheckDistance - 1, -1, -dropCheckDistance - 1));
             }
+
             candidateFlowPoints.Add(nearestCandidate);
 
             // For each candidate, determine if we are actually capable of flowing towards it.
             // We are able to flow through blocks with a hardness of zero, but no others. We are
             // not able to flow through established fluid blocks.
-            for (int i = 0; i < candidateFlowPoints.Count; i++)
+            for (var i = 0; i < candidateFlowPoints.Count; i++)
             {
                 var location = candidateFlowPoints[i];
                 location = location.Clamp(1);
@@ -293,13 +376,17 @@ public abstract class FluidBlock : BlockProvider
                 if (xID.Hardness == 0 && xID.ID != FlowingID && xID.ID != StillID)
                 {
                     if (outwardFlow.All(f => f.TargetBlock != xCoordinateCheck))
-                        outwardFlow.Add(new LiquidFlow(xCoordinateCheck, (byte)(currentLevel + 1)));
+                    {
+                        outwardFlow.Add(new LiquidFlow(xCoordinateCheck, (byte) (currentLevel + 1)));
+                    }
                 }
 
                 if (zID.Hardness == 0 && zID.ID != FlowingID && zID.ID != StillID)
                 {
                     if (outwardFlow.All(f => f.TargetBlock != zCoordinateCheck))
-                        outwardFlow.Add(new LiquidFlow(zCoordinateCheck, (byte)(currentLevel + 1)));
+                    {
+                        outwardFlow.Add(new LiquidFlow(zCoordinateCheck, (byte) (currentLevel + 1)));
+                    }
                 }
             }
 
@@ -307,45 +394,56 @@ public abstract class FluidBlock : BlockProvider
             // there is space immediately next to the block. We should fill that space.
             if (outwardFlow.Count == 0 && blockBelow.ID != FlowingID && blockBelow.ID != StillID)
             {
-                for (int i = 0; i < Neighbors.Length; i++)
+                for (var i = 0; i < Neighbors.Length; i++)
                 {
                     var b = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coords + Neighbors[i]));
+
                     if (b.Hardness == 0 && b.ID != StillID && b.ID != FlowingID)
-                        outwardFlow.Add(new LiquidFlow(Neighbors[i] + coords, (byte)(currentLevel + 1)));
+                    {
+                        outwardFlow.Add(new LiquidFlow(Neighbors[i] + coords, (byte) (currentLevel + 1)));
+                    }
                 }
             }
         }
+
         return outwardFlow.ToArray();
     }
 
     /// <summary>
     /// Returns true if the given candidate coordinate has a line-of-sight to the given target coordinate.
     /// </summary>
-    private bool LineOfSight(IDimension dimension, GlobalVoxelCoordinates candidate, GlobalVoxelCoordinates target)
+    private static bool LineOfSight(IDimension dimension, GlobalVoxelCoordinates candidate, GlobalVoxelCoordinates target)
     {
         // TODO: What does LineOfSight have to do with fluid flow?
         //       You can have an uphill line of sight, but fluid won't flow there.
         // TODO: why is the candidate elevated by one block?
         candidate = new GlobalVoxelCoordinates(candidate.X, candidate.Y + 1, candidate.Z);
-        Vector3i direction = (target - candidate).Clamp(1);
+        var direction = (target - candidate).Clamp(1);
 
         // TODO: In what sense is a non-zero hardness block ANYWHERE in the
         //       rectangle with candidate and target at its opposite corners
         //       blocking the line of sight?
         do
         {
-            int z = candidate.Z;
+            var z = candidate.Z;
+
             do
             {
                 var p = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(candidate));
+
                 // TODO: what does Hardness have to do with Line of Sight?  Not opaque?
                 //       Are these blocks that break when water flows in?
                 if (p.Hardness != 0)
+                {
                     return false;
+                }
+
                 candidate = new GlobalVoxelCoordinates(candidate.X, candidate.Y, candidate.Z + direction.Z);
             } while (target.Z != candidate.Z);
+
             candidate = new GlobalVoxelCoordinates(candidate.X + direction.X, candidate.Y, z);
         } while (target.X != candidate.X);
+
         return true;
     }
 }

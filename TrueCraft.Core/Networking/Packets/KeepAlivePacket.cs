@@ -6,7 +6,7 @@
 /// </summary>
 public struct KeepAlivePacket : IPacket
 {
-    public byte ID { get { return 0x00; } }
+    public byte ID => 0x00;
 
     public void ReadPacket(IMinecraftStream stream)
     {

@@ -6,9 +6,9 @@ public class WorldInfo
 {
     public WorldInfo(string directory, NbtFile manifest)
     {
-        this.Directory = directory;
-        this.Seed = manifest.RootTag["Seed"].IntValue;
-        this.Name = manifest.RootTag["Name"].StringValue;
+        Directory = directory;
+        Seed = manifest.RootTag["Seed"].IntValue;
+        Name = manifest.RootTag["Name"].StringValue;
     }
 
     /// <summary>

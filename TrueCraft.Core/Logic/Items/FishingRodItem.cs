@@ -6,12 +6,11 @@ public class FishingRodItem : ItemProvider, IDurableItem
 {
     public static readonly short ItemID = 0x15A;
 
-    public FishingRodItem(XmlNode node) : base(node)
-    {
-    }
+    public FishingRodItem(XmlNode node)
+        : base(node) { }
 
     /// <inheritdoc />
-    public short Durability { get { return 65; } }
+    public short Durability => 65;
 
     // TODO: requires server-side behavior
     // TODO: requires client-side rendering support.

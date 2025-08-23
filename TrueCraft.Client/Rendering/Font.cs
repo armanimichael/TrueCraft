@@ -17,12 +17,12 @@ public class Font
     /// <summary>
     /// 
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; }
 
     /// <summary>
     /// 
     /// </summary>
-    public FontStyle Style { get; private set; }
+    public FontStyle Style { get; }
 
     // _definitions, _textures & _glyphs are all initialized
     // in private methods called from the constructor.
@@ -50,10 +50,7 @@ public class Font
     /// </summary>
     /// <param name="page"></param>
     /// <returns></returns>
-    public Texture2D GetTexture(int page = 0)
-    {
-        return _textures[page];
-    }
+    public Texture2D GetTexture(int page = 0) => _textures[page];
 
     /// <summary>
     /// 
@@ -64,6 +61,7 @@ public class Font
     {
         FontChar? glyph = null;
         _glyphs.TryGetValue(ch, out glyph);
+
         return glyph;
     }
 
@@ -74,12 +72,16 @@ public class Font
     private void LoadContent(GraphicsDevice graphicsDevice)
     {
         var definitionPath = string.Format("{0}_{1}.fnt", Name, Style);
+
         using (var contents = File.OpenRead(Path.Combine(_directory, definitionPath)))
+        {
             _definition = FontLoader.Load(contents);
+        }
 
         // We need to support multiple texture pages for more than plain ASCII text.
         _textures = new Texture2D[_definition.Pages.Count];
-        for (int i = 0; i < _definition.Pages.Count; i++)
+
+        for (var i = 0; i < _definition.Pages.Count; i++)
         {
             var texturePath = Path.Combine(_directory, string.Format("{0}_{1}_{2}.png", Name, Style, i));
             _textures[i] = Texture2D.FromFile(graphicsDevice, texturePath);
@@ -92,9 +94,10 @@ public class Font
     private void GenerateGlyphs()
     {
         _glyphs = new Dictionary<char, FontChar>(_definition.Chars.Count);
+
         foreach (var glyph in _definition.Chars)
         {
-            char c = (char)glyph.ID;
+            var c = (char) glyph.ID;
             _glyphs.Add(c, glyph);
         }
     }

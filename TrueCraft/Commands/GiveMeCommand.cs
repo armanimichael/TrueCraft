@@ -4,26 +4,18 @@ namespace TrueCraft.Commands;
 
 public class GiveMeCommand : GiveCommand
 {
-    public override string Name
-    {
-        get { return "giveme"; }
-    }
+    public override string Name => "giveme";
 
-    public override string[] Aliases
-    {
-        get { return new string[0]; }
-    }
+    public override string[] Aliases => new string[0];
 
-    public override string Description
-    {
-        get { return "Give yourself an amount of items."; }
-    }
+    public override string Description => "Give yourself an amount of items.";
 
     public override void Handle(IRemoteClient client, string alias, string[] arguments)
     {
         if (arguments.Length < 1)
         {
             Help(client, alias, arguments);
+
             return;
         }
 
@@ -31,7 +23,9 @@ public class GiveMeCommand : GiveCommand
             amount = "1";
 
         if (arguments.Length >= 2)
+        {
             amount = arguments[1];
+        }
 
         var receivingPlayer = client;
 
@@ -41,8 +35,5 @@ public class GiveMeCommand : GiveCommand
         }
     }
 
-    public override void Help(IRemoteClient client, string alias, string[] arguments)
-    {
-        client.SendMessage("Correct usage is /" + alias + " <Item ID> [Amount]");
-    }
+    public override void Help(IRemoteClient client, string alias, string[] arguments) => client.SendMessage("Correct usage is /" + alias + " <Item ID> [Amount]");
 }

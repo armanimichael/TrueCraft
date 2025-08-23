@@ -28,8 +28,14 @@ public abstract class Entity : IEntity
     private readonly float _drag;
     private readonly float _terminalVelocity;
 
-    protected Entity(IDimension dimension, IEntityManager entityManager,
-        Size size, float accelerationDueToGravity, float drag, float terminalVelocity)
+    protected Entity(
+        IDimension dimension,
+        IEntityManager entityManager,
+        Size size,
+        float accelerationDueToGravity,
+        float drag,
+        float terminalVelocity
+    )
     {
         _dimension = dimension;
         _entityManager = entityManager;
@@ -48,18 +54,21 @@ public abstract class Entity : IEntity
     public int EntityID { get; set; }
 
     /// <inheritdoc />
-    public IEntityManager EntityManager { get => _entityManager; }
+    public IEntityManager EntityManager => _entityManager;
 
     /// <inheritdoc />
-    public IDimension Dimension { get => _dimension; }
+    public IDimension Dimension => _dimension;
 
     public virtual Vector3 Position
     {
-        get { return _position; }
+        get => _position;
         set
         {
             if (_position == value)
+            {
                 return;
+            }
+
             _position = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(BoundingBox));
@@ -68,11 +77,14 @@ public abstract class Entity : IEntity
 
     public virtual Vector3 Velocity
     {
-        get { return _velocity; }
+        get => _velocity;
         set
         {
             if (_velocity == value)
+            {
                 return;
+            }
+
             _velocity = value;
             OnPropertyChanged();
         }
@@ -80,11 +92,14 @@ public abstract class Entity : IEntity
 
     public float Yaw
     {
-        get { return _yaw; }
+        get => _yaw;
         set
         {
             if (_yaw == value)
+            {
                 return;
+            }
+
             _yaw = value;
             OnPropertyChanged();
         }
@@ -93,11 +108,14 @@ public abstract class Entity : IEntity
     /// <inheritdoc />
     public float Pitch
     {
-        get { return _pitch; }
+        get => _pitch;
         set
         {
             if (_pitch == value)
+            {
                 return;
+            }
+
             _pitch = value;
             OnPropertyChanged();
         }
@@ -110,26 +128,33 @@ public abstract class Entity : IEntity
         set
         {
             if (_despawned && !value)
+            {
                 throw new InvalidOperationException($"Cannot set Despawned back to true from false.");
+            }
+
             if (_despawned == value)
+            {
                 return;
+            }
+
             _despawned = value;
             OnPropertyChanged();
         }
     }
 
     /// <inheritdoc />
-    public virtual Size Size { get => _size; }
+    public virtual Size Size => _size;
 
     /// <inheritdoc />
     public BoundingBox BoundingBox
     {
         get
         {
-            double hw = _size.Width * 0.5;
-            double hd = _size.Depth * 0.5;
-            Vector3 min = new Vector3(_position.X - hw, _position.Y, _position.Z - hd);
-            Vector3 max = new Vector3(_position.X + hw, _position.Y + _size.Height, _position.Z + hd);
+            var hw = _size.Width * 0.5;
+            var hd = _size.Depth * 0.5;
+            var min = new Vector3(_position.X - hw, _position.Y, _position.Z - hd);
+            var max = new Vector3(_position.X + hw, _position.Y + _size.Height, _position.Z + hd);
+
             return new BoundingBox(min, max);
         }
     }
@@ -138,15 +163,18 @@ public abstract class Entity : IEntity
     public abstract IPacket SpawnPacket { get; }
 
     /// <inheritdoc />
-    public virtual bool SendMetadataToClients { get { return false; } }
+    public virtual bool SendMetadataToClients => false;
 
     public virtual EntityFlags EntityFlags
     {
-        get { return _entityFlags; }
+        get => _entityFlags;
         set
         {
             if (_entityFlags == value)
+            {
                 return;
+            }
+
             _entityFlags = value;
             OnPropertyChanged();
         }
@@ -158,8 +186,9 @@ public abstract class Entity : IEntity
         get
         {
             var dictionary = new MetadataDictionary();
-            dictionary[0] = new MetadataByte((byte)EntityFlags);
+            dictionary[0] = new MetadataByte((byte) EntityFlags);
             dictionary[1] = new MetadataShort(300);
+
             return dictionary;
         }
     }
@@ -169,17 +198,19 @@ public abstract class Entity : IEntity
     {
         // TODO: Losing health and all that jazz
         if (Position.Y < -50)
+        {
             entityManager.DespawnEntity(this);
+        }
     }
 
     /// <inheritdoc />
-    public virtual float AccelerationDueToGravity { get => _accelerationDueToGravity; }
+    public virtual float AccelerationDueToGravity => _accelerationDueToGravity;
 
     /// <inheritdoc />
-    public virtual float Drag { get => _drag; }
+    public virtual float Drag => _drag;
 
     /// <inheritdoc />
-    public virtual float TerminalVelocity { get => _terminalVelocity; }
+    public virtual float TerminalVelocity => _terminalVelocity;
 
     /// <inheritdoc />
     public virtual void TerrainCollision(Vector3 collisionPoint, Vector3 collisionDirection)
@@ -196,7 +227,9 @@ public abstract class Entity : IEntity
         set
         {
             if (value == _enablePropertyChange)
+            {
                 return;
+            }
 
             _enablePropertyChange = value;
             OnPropertyChanged();
@@ -207,33 +240,48 @@ public abstract class Entity : IEntity
     public virtual bool BeginUpdate()
     {
         EnablePropertyChange = false;
+
         return true;
     }
 
     /// <inheritdoc />
     public virtual void EndUpdate(Vector3 newPosition, Vector3 newVelocity)
     {
-        bool positionChanged = (newPosition != _position);
-        bool velocityChanged = (newVelocity != _velocity);
+        var positionChanged = newPosition != _position;
+        var velocityChanged = newVelocity != _velocity;
 
         if (positionChanged)
+        {
             _position = newPosition;
+        }
+
         if (velocityChanged)
+        {
             _velocity = newVelocity;
+        }
 
         EnablePropertyChange = true;
 
         if (positionChanged)
+        {
             OnPropertyChanged(nameof(Position));
+        }
+
         if (velocityChanged)
+        {
             OnPropertyChanged(nameof(Velocity));
+        }
     }
 
-
     public event PropertyChangedEventHandler? PropertyChanged;
-    protected internal virtual void OnPropertyChanged([CallerMemberName]string property = "")
+
+    protected internal virtual void OnPropertyChanged([CallerMemberName] string property = "")
     {
-        if (!EnablePropertyChange) return;
+        if (!EnablePropertyChange)
+        {
+            return;
+        }
+
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 }

@@ -3,9 +3,10 @@ using TrueCraft.Core.Windows;
 
 namespace TrueCraft.Core.Inventory;
 
-public interface IWindow<T> where T : ISlot
+public interface IWindow<T>
+    where T : ISlot
 {
-    public event EventHandler<WindowClosedEventArgs> WindowClosed;
+    event EventHandler<WindowClosedEventArgs> WindowClosed;
 
     ItemStack this[int index] { get; set; }
 

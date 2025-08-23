@@ -5,7 +5,7 @@
 /// </summary>
 public struct LoginRequestPacket : IPacket
 {
-    public byte ID { get { return 0x01; } }
+    public byte ID => 0x01;
 
     public LoginRequestPacket(int protocolVersion, string username)
     {
@@ -21,7 +21,7 @@ public struct LoginRequestPacket : IPacket
         ProtocolVersion = stream.ReadInt32();
         Username = stream.ReadString();
         stream.ReadInt64(); // Unused
-        stream.ReadInt8();  // Unused
+        stream.ReadInt8(); // Unused
     }
 
     public void WritePacket(IMinecraftStream stream)
@@ -29,6 +29,6 @@ public struct LoginRequestPacket : IPacket
         stream.WriteInt32(ProtocolVersion);
         stream.WriteString(Username);
         stream.WriteInt64(0); // Unused
-        stream.WriteInt8(0);  // Unused
+        stream.WriteInt8(0); // Unused
     }
 }

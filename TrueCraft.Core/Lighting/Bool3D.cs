@@ -26,27 +26,32 @@ public class Bool3D
         _ysize = ysize;
         _zsize = zsize;
 
-        int len = (xsize * ysize * zsize + 63) / 64;
+        var len = ((xsize * ysize * zsize) + 63) / 64;
         _array = new ulong[len];
+
         if (initial)
-            for (int j = 0; j < len; j++)
+        {
+            for (var j = 0; j < len; j++)
+            {
                 _array[j] = ulong.MaxValue;
+            }
+        }
     }
 
     /// <summary>
     /// Gets the size of the array in the x-dimension.
     /// </summary>
-    public int XSize { get => _xsize; }
+    public int XSize => _xsize;
 
     /// <summary>
     /// Gets the size of the array in the y-dimension.
     /// </summary>
-    public int YSize { get => _ysize; }
+    public int YSize => _ysize;
 
     /// <summary>
     /// Gets the size of the array in the z-direction.
     /// </summary>
-    public int ZSize { get => _zsize; }
+    public int ZSize => _zsize;
 
     /// <summary>
     /// Gets or sets the boolean value at the given indices.
@@ -59,16 +64,22 @@ public class Bool3D
     {
         get
         {
-            (ulong bitval, int longIndex) = Index(x, y, z);
+            var (bitval, longIndex) = Index(x, y, z);
+
             return (_array[longIndex] & bitval) != 0;
         }
         set
         {
-            (ulong bitval, int longIndex) = Index(x, y, z);
+            var (bitval, longIndex) = Index(x, y, z);
+
             if (value)
+            {
                 _array[longIndex] |= bitval;
+            }
             else
+            {
                 _array[longIndex] &= ~bitval;
+            }
         }
     }
 
@@ -87,9 +98,10 @@ public class Bool3D
         ValidateIndex(x, _xsize, nameof(x));
         ValidateIndex(y, _ysize, nameof(y));
         ValidateIndex(z, _zsize, nameof(z));
-        int index = (x * _zsize + z) * _ysize + y;
-        int bitIndex = index & 0x003f;
-        int arrayIndex = index >> 6;
+        var index = (((x * _zsize) + z) * _ysize) + y;
+        var bitIndex = index & 0x003f;
+        var arrayIndex = index >> 6;
+
         return (1ul << bitIndex, arrayIndex);
     }
 
@@ -104,6 +116,8 @@ public class Bool3D
     private static void ValidateIndex(int idx, int max, string name)
     {
         if (idx < 0 || idx >= max)
+        {
             throw new IndexOutOfRangeException($"{name} = {idx} is outside the range of [0, {max})");
+        }
     }
 }

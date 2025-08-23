@@ -9,25 +9,31 @@ public class CraftingPattern : IEquatable<CraftingPattern>
     private ItemStack[,] _pattern;
 
     #region Construction
+
     public static CraftingPattern? GetCraftingPattern(XmlNode pattern)
     {
         int xmax = 3, ymax = 3;
-        ItemStack[,] items = new ItemStack[xmax, ymax];
+        var items = new ItemStack[xmax, ymax];
         int x = 0, y = 0;
 
         for (x = 0; x < xmax; x++)
         for (y = 0; y < ymax; y++)
+        {
             items[x, y] = ItemStack.EmptyStack;
+        }
 
         y = 0;
-        foreach(XmlNode row in pattern.ChildNodes)
+
+        foreach (XmlNode row in pattern.ChildNodes)
         {
             x = 0;
+
             foreach (XmlNode itemNode in row.ChildNodes)
             {
                 items[x, y] = new ItemStack(itemNode);
                 x++;
             }
+
             y++;
         }
 
@@ -37,68 +43,103 @@ public class CraftingPattern : IEquatable<CraftingPattern>
     public CraftingPattern(ItemStack[,] items, int xmin, int xmax, int ymin, int ymax)
     {
         _pattern = new ItemStack[xmax - xmin + 1, ymax - ymin + 1];
-        for (int x = xmin; x <= xmax; x++)
-        for (int y = ymin; y <= ymax; y++)
+
+        for (var x = xmin; x <= xmax; x++)
+        for (var y = ymin; y <= ymax; y++)
+        {
             _pattern[x - xmin, y - ymin] = new ItemStack(items[x, y].ID, 1, items[x, y].Metadata);
+        }
     }
 
     public static CraftingPattern? GetCraftingPattern(ItemStack[,] items)
     {
-        int xul = items.GetLength(0);
-        int yul = items.GetLength(1);
+        var xul = items.GetLength(0);
+        var yul = items.GetLength(1);
 
         if (xul < 1 || xul > 3 || yul < 1 || yul > 3)
+        {
             throw new ArgumentException();
+        }
 
         // Find the smallest non-empty column index
-        int xmin = 0;
+        var xmin = 0;
         bool blank;
+
         do
         {
             blank = true;
-            for (int y = 0; y < yul && blank; y++)
-                blank = (ItemStack.EmptyStack == items[xmin, y]);
+
+            for (var y = 0; y < yul && blank; y++)
+            {
+                blank = ItemStack.EmptyStack == items[xmin, y];
+            }
+
             if (blank)
+            {
                 xmin++;
+            }
         } while (blank && xmin < xul);
+
         if (xmin == xul)
+        {
             return null;
+        }
 
         // Find the largest non-empty column index.
-        int xmax = xul - 1;
+        var xmax = xul - 1;
+
         do
         {
             blank = true;
-            for (int y = yul - 1; y >= 0 && blank; y--)
-                blank = (ItemStack.EmptyStack == items[xmax, y]);
+
+            for (var y = yul - 1; y >= 0 && blank; y--)
+            {
+                blank = ItemStack.EmptyStack == items[xmax, y];
+            }
+
             if (blank)
+            {
                 xmax--;
+            }
         } while (blank);
 
         // Find the smallest non-empty row index.
-        int ymin = 0;
+        var ymin = 0;
+
         do
         {
             blank = true;
-            for (int x = xmin; x <= xmax && blank; x++)
-                blank = (ItemStack.EmptyStack == items[x, ymin]);
+
+            for (var x = xmin; x <= xmax && blank; x++)
+            {
+                blank = ItemStack.EmptyStack == items[x, ymin];
+            }
+
             if (blank)
+            {
                 ymin++;
+            }
         } while (blank);
 
         // Find the largest non-empty row index.
-        int ymax = yul - 1;
+        var ymax = yul - 1;
+
         do
         {
             blank = true;
-            for (int x = xmax; x >= xmin && blank; x--)
-                blank = (ItemStack.EmptyStack == items[x, ymax]);
+
+            for (var x = xmax; x >= xmin && blank; x--)
+            {
+                blank = ItemStack.EmptyStack == items[x, ymax];
+            }
+
             if (blank)
+            {
                 ymax--;
+            }
         } while (blank);
 
         return new CraftingPattern(items, xmin, xmax, ymin, ymax);
-
     }
 
     //private CraftingPattern(ICraftingArea<T> area, int xmin, int xmax, int ymin, int ymax)
@@ -168,79 +209,96 @@ public class CraftingPattern : IEquatable<CraftingPattern>
 
     //    return new CraftingPattern<T>(area, xmin, xmax, ymin, ymax);
     //}
-    #endregion  // Construction
 
-    public int Width { get => _pattern.GetLength(0); }
+    #endregion // Construction
 
-    public int Height { get => _pattern.GetLength(1); }
+    public int Width => _pattern.GetLength(0);
 
-    public ItemStack this[int x, int y] { get => _pattern[x, y]; }
+    public int Height => _pattern.GetLength(1);
+
+    public ItemStack this[int x, int y] => _pattern[x, y];
 
     #region object overrides
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as CraftingPattern);
-    }
+
+    public override bool Equals(object? obj) => Equals(obj as CraftingPattern);
 
     public override int GetHashCode()
     {
         unchecked
         {
-            int xul = _pattern.GetLength(0);
-            int yul = _pattern.GetLength(1);
-            int rv = 3 * xul;
+            var xul = _pattern.GetLength(0);
+            var yul = _pattern.GetLength(1);
+            var rv = 3 * xul;
             rv += 5 * yul;
 
-            for (int x = 0; x < xul; x++)
-            for (int y = 0; y < yul; y++)
+            for (var x = 0; x < xul; x++)
+            for (var y = 0; y < yul; y++)
+            {
                 rv ^= _pattern[x, y].GetHashCode();
+            }
 
             return rv;
         }
     }
+
     #endregion
 
     #region IEquatable<CraftingPattern> & related
+
     public bool Equals(CraftingPattern? other)
     {
-        if (object.ReferenceEquals(other, null))
+        if (ReferenceEquals(other, null))
+        {
             return false;
+        }
 
         if (_pattern.GetLength(0) != other._pattern.GetLength(0) ||
             _pattern.GetLength(1) != other._pattern.GetLength(1))
+        {
             return false;
+        }
 
         // NOTE: the equality of ItemStacks includes metadata.
         //     This may or may not be a problem.
         for (int x = 0, xul = _pattern.GetLength(0); x < xul; x++)
         for (int y = 0, yul = _pattern.GetLength(1); y < yul; y++)
+        {
             if (_pattern[x, y] != other._pattern[x, y])
+            {
                 return false;
+            }
+        }
 
         return true;
     }
 
-    public static bool operator==(CraftingPattern? l, CraftingPattern? r)
+    public static bool operator ==(CraftingPattern? l, CraftingPattern? r)
     {
         if (l is not null)
         {
             if (r is not null)
+            {
                 return l.Equals(r);
+            }
             else
+            {
                 return false;
+            }
         }
         else
         {
             if (r is not null)
+            {
                 return false;
+            }
             else
+            {
                 return true;
+            }
         }
     }
 
-    public static bool operator!=(CraftingPattern? l, CraftingPattern? r)
-    {
-        return !(l == r);
-    }
+    public static bool operator !=(CraftingPattern? l, CraftingPattern? r) => !(l == r);
+
     #endregion
 }

@@ -21,8 +21,8 @@ public struct PlayerDiggingPacket : IPacket
         Z = z;
         Face = face;
     }
-        
-    public byte ID { get { return 0x0E; } }
+
+    public byte ID => 0x0E;
 
     public Action PlayerAction;
     public int X;
@@ -32,19 +32,19 @@ public struct PlayerDiggingPacket : IPacket
 
     public void ReadPacket(IMinecraftStream stream)
     {
-        PlayerAction = (Action)stream.ReadInt8();
+        PlayerAction = (Action) stream.ReadInt8();
         X = stream.ReadInt32();
         Y = stream.ReadInt8();
         Z = stream.ReadInt32();
-        Face = (BlockFace)stream.ReadInt8();
+        Face = (BlockFace) stream.ReadInt8();
     }
 
     public void WritePacket(IMinecraftStream stream)
     {
-        stream.WriteInt8((sbyte)PlayerAction);
+        stream.WriteInt8((sbyte) PlayerAction);
         stream.WriteInt32(X);
         stream.WriteInt8(Y);
         stream.WriteInt32(Z);
-        stream.WriteInt8((sbyte)Face);
+        stream.WriteInt8((sbyte) Face);
     }
 }

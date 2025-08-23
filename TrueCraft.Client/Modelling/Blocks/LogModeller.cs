@@ -10,7 +10,8 @@ public class LogModeller : BlockModeller
     static LogModeller()
     {
         RegisterRenderer(WoodBlock.BlockID, new LogModeller());
-        for (int i = 0; i < BaseTexture.Length; i++)
+
+        for (var i = 0; i < BaseTexture.Length; i++)
         {
             BaseTexture[i] *= new Vector2(16f / 256f);
             SpruceTexture[i] *= new Vector2(16f / 256f);
@@ -18,10 +19,11 @@ public class LogModeller : BlockModeller
         }
     }
 
-    private static Vector2 BaseEndsTexture = new Vector2(5, 1);
-    private static Vector2 BaseSidesTexture = new Vector2(4, 1);
-    private static Vector2 SpruceSidesTexture = new Vector2(4, 7);
-    private static Vector2 BirchSidesTexture = new Vector2(5, 7);
+    private static Vector2 BaseEndsTexture = new(5, 1);
+    private static Vector2 BaseSidesTexture = new(4, 1);
+    private static Vector2 SpruceSidesTexture = new(4, 7);
+    private static Vector2 BirchSidesTexture = new(5, 7);
+
     private static Vector2[] BaseTexture =
     {
         // Positive Z
@@ -53,8 +55,9 @@ public class LogModeller : BlockModeller
         BaseEndsTexture + Vector2.UnitX + Vector2.UnitY,
         BaseEndsTexture + Vector2.UnitY,
         BaseEndsTexture,
-        BaseEndsTexture + Vector2.UnitX,
+        BaseEndsTexture + Vector2.UnitX
     };
+
     private static Vector2[] SpruceTexture =
     {
         // Positive Z
@@ -86,8 +89,9 @@ public class LogModeller : BlockModeller
         BaseEndsTexture + Vector2.UnitX + Vector2.UnitY,
         BaseEndsTexture + Vector2.UnitY,
         BaseEndsTexture,
-        BaseEndsTexture + Vector2.UnitX,
+        BaseEndsTexture + Vector2.UnitX
     };
+
     private static Vector2[] BirchTexture =
     {
         // Positive Z
@@ -119,29 +123,64 @@ public class LogModeller : BlockModeller
         BaseEndsTexture + Vector2.UnitX + Vector2.UnitY,
         BaseEndsTexture + Vector2.UnitY,
         BaseEndsTexture,
-        BaseEndsTexture + Vector2.UnitX,
+        BaseEndsTexture + Vector2.UnitX
     };
 
-    public override VertexPositionNormalColorTexture[] Render(BlockDescriptor descriptor, Vector3 offset,
-        VisibleFaces faces, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    public override VertexPositionNormalColorTexture[] Render(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        VisibleFaces faces,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
-        int[] lighting = GetLighting(descriptor);
+        var lighting = GetLighting(descriptor);
 
-        switch ((WoodBlock.WoodType)descriptor.Metadata)
+        switch ((WoodBlock.WoodType) descriptor.Metadata)
         {
             case WoodBlock.WoodType.Spruce:
-                return CreateUniformCube(offset, SpruceTexture, faces, indiciesOffset, out indicies, Color.White, lighting);
+                return CreateUniformCube(
+                    offset,
+                    SpruceTexture,
+                    faces,
+                    indiciesOffset,
+                    out indicies,
+                    Color.White,
+                    lighting
+                );
             case WoodBlock.WoodType.Birch:
-                return CreateUniformCube(offset, BirchTexture, faces, indiciesOffset, out indicies, Color.White, lighting);
+                return CreateUniformCube(
+                    offset,
+                    BirchTexture,
+                    faces,
+                    indiciesOffset,
+                    out indicies,
+                    Color.White,
+                    lighting
+                );
             case WoodBlock.WoodType.Oak:
             default:
-                return CreateUniformCube(offset, BaseTexture, faces, indiciesOffset, out indicies, Color.White, lighting);
+                return CreateUniformCube(
+                    offset,
+                    BaseTexture,
+                    faces,
+                    indiciesOffset,
+                    out indicies,
+                    Color.White,
+                    lighting
+                );
         }
     }
 
-    public override VertexPositionNormalColorTexture[] Render(short metadata, Vector3 offset, Vector2[] texture, out int[] indices)
+    public override VertexPositionNormalColorTexture[] Render(
+        short metadata,
+        Vector3 offset,
+        Vector2[] texture,
+        out int[] indices
+    )
     {
-        switch ((WoodBlock.WoodType)metadata)
+        switch ((WoodBlock.WoodType) metadata)
         {
             case WoodBlock.WoodType.Spruce:
                 return base.Render(metadata, offset, SpruceTexture, out indices);

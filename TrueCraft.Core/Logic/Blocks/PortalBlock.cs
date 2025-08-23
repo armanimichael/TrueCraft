@@ -5,32 +5,20 @@ namespace TrueCraft.Core.Logic.Blocks;
 public class PortalBlock : BlockProvider
 {
     public static readonly byte BlockID = 0x5A;
-        
-    public override byte ID { get { return 0x5A; } }
-        
-    public override double BlastResistance { get { return 0; } }
 
-    public override double Hardness { get { return -1; } }
+    public override byte ID => 0x5A;
 
-    public override byte Luminance { get { return 0; } }
+    public override double BlastResistance => 0;
 
-    public override bool Opaque { get { return false; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Portal";
-    }
+    public override double Hardness => -1;
 
-    public override SoundEffectClass SoundEffect
-    {
-        get
-        {
-            return SoundEffectClass.Glass;
-        }
-    }
+    public override byte Luminance => 0;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(14, 0);
-    }
+    public override bool Opaque => false;
+
+    public override string GetDisplayName(short metadata) => "Portal";
+
+    public override SoundEffectClass SoundEffect => SoundEffectClass.Glass;
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(14, 0);
 }

@@ -16,8 +16,10 @@ public class CraftingRepository : ICraftingRepository, IRegisterRecipe
 
     internal static ICraftingRepository Init(IDiscover discover)
     {
-        if (!object.ReferenceEquals(_singleton, null))
+        if (!ReferenceEquals(_singleton, null))
+        {
             return _singleton;
+        }
 
         _singleton = new CraftingRepository();
         discover.DiscoverRecipes(_singleton);
@@ -27,15 +29,16 @@ public class CraftingRepository : ICraftingRepository, IRegisterRecipe
 
     public ICraftingRecipe? GetRecipe(CraftingPattern pattern)
     {
-        foreach (ICraftingRecipe r in _recipes)
+        foreach (var r in _recipes)
+        {
             if (r.Pattern == pattern)
+            {
                 return r;
+            }
+        }
 
         return null;
     }
 
-    public void RegisterRecipe(ICraftingRecipe recipe)
-    {
-        _recipes.Add(recipe);
-    }
+    public void RegisterRecipe(ICraftingRecipe recipe) => _recipes.Add(recipe);
 }

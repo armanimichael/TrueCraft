@@ -1,6 +1,7 @@
 namespace TrueCraft.Core.Inventory;
 
-public interface ICraftingBenchWindow<T> : IWindow<T> where T : ISlot
+public interface ICraftingBenchWindow<T> : IWindow<T>
+    where T : ISlot
 {
     /// <summary>
     /// Gets the 3x3 Crafting Grid (plus output slot) of the Crafting Bench Window.

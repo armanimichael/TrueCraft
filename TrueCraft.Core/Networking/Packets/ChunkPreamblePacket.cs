@@ -5,7 +5,7 @@
 /// </summary>
 public struct ChunkPreamblePacket : IPacket
 {
-    public byte ID { get { return 0x32; } }
+    public byte ID => 0x32;
 
     public ChunkPreamblePacket(int x, int z, bool load = true)
     {
@@ -15,6 +15,7 @@ public struct ChunkPreamblePacket : IPacket
     }
 
     public int X, Z;
+
     /// <summary>
     /// If false, free the chunk. If true, allocate it.
     /// </summary>

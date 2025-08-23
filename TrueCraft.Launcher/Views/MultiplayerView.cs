@@ -37,17 +37,19 @@ public class MultiplayerView : VBox
     public MultiplayerView(LauncherWindow window)
     {
         _window = window;
-        this.SetSizeRequest(250, -1);
+        SetSizeRequest(250, -1);
 
         _multiplayerLabel = new Label("Multiplayer")
-        {
-            Justify = Justification.Center
-        };
-        _serverIPEntry = new Entry()
-        {
-            PlaceholderText = "Server IP",
-            Text = UserSettings.Local.LastIP
-        };
+                            {
+                                Justify = Justification.Center
+                            };
+
+        _serverIPEntry = new Entry
+                         {
+                             PlaceholderText = "Server IP",
+                             Text = UserSettings.Local.LastIP
+                         };
+
         _connectButton = new Button("Connect");
         _backButton = new Button("Back");
 
@@ -57,21 +59,22 @@ public class MultiplayerView : VBox
         _serverListView.SetSizeRequest(-1, 200);
         _serverListView.HeadersVisible = false;
 
-        TreeSelection serverSelection = _serverListView.Selection;
+        var serverSelection = _serverListView.Selection;
         serverSelection.Mode = SelectionMode.Single;
+
         serverSelection.Changed += (sender, e) =>
         {
-            int selectedCount = ((TreeSelection)sender!).CountSelectedRows();
-            _removeServerButton!.Sensitive = (selectedCount == 1);
-            _serverIPEntry.Sensitive = (selectedCount == 0);
+            var selectedCount = ((TreeSelection) sender!).CountSelectedRows();
+            _removeServerButton!.Sensitive = selectedCount == 1;
+            _serverIPEntry.Sensitive = selectedCount == 0;
         };
 
         _addServerButton = new Button("Add server");
         _removeServerButton = new Button("Remove") { Sensitive = false };
-        _serverCreationBox = new VBox() { Visible = false };
+        _serverCreationBox = new VBox { Visible = false };
         _newServerLabel = new Label("Add new server:") { Justify = Justification.Center };
-        _newServerName = new Entry() { PlaceholderText = "Name" };
-        _newServerAddress = new Entry() { PlaceholderText = "Address" };
+        _newServerName = new Entry { PlaceholderText = "Name" };
+        _newServerAddress = new Entry { PlaceholderText = "Address" };
         _commitAddNewServer = new Button("Add server");
         _cancelAddNewServer = new Button("Cancel");
 
@@ -83,7 +86,8 @@ public class MultiplayerView : VBox
         //};
         _backButton.Clicked += (sender, e) => _window.ShowMainMenuView();
         _connectButton.Clicked += ConnectButton_Clicked;
-        _addServerButton.Clicked += (sender, e) => 
+
+        _addServerButton.Clicked += (sender, e) =>
         {
             _addServerButton.Sensitive = false;
             _removeServerButton.Sensitive = false;
@@ -92,7 +96,8 @@ public class MultiplayerView : VBox
             _serverIPEntry.Sensitive = false;
             _serverCreationBox.Visible = true;
         };
-        _cancelAddNewServer.Clicked += (sender, e) => 
+
+        _cancelAddNewServer.Clicked += (sender, e) =>
         {
             _addServerButton.Sensitive = true;
             _removeServerButton.Sensitive = true;
@@ -102,31 +107,38 @@ public class MultiplayerView : VBox
             _serverCreationBox.Visible = false;
         };
 
-        _removeServerButton.Clicked += (sender, e) => 
+        _removeServerButton.Clicked += (sender, e) =>
         {
             TreeIter iter;
             ITreeModel model;
             _serverListView.Selection.GetSelected(out model, out iter);
-            string serverName = (string)model.GetValue(iter, (int)ServerColumns.Name);
-            string serverAddress = (string)model.GetValue(iter, (int)ServerColumns.Address);
+            var serverName = (string) model.GetValue(iter, (int) ServerColumns.Name);
+            var serverAddress = (string) model.GetValue(iter, (int) ServerColumns.Address);
             _serverListStore.Remove(ref iter);
 
             // TODO: display busy cursor; surround with try/catch/finally
-            UserSettings.Local.FavoriteServers = UserSettings.Local.FavoriteServers.Where(
-                s => s.Name != serverName && s.Address != serverAddress).ToArray();
+            UserSettings.Local.FavoriteServers = UserSettings.Local.FavoriteServers
+                                                             .Where(s => s.Name != serverName && s.Address != serverAddress)
+                                                             .ToArray();
+
             UserSettings.Local.Save();
         };
 
-        _commitAddNewServer.Clicked += (sender, e) => 
+        _commitAddNewServer.Clicked += (sender, e) =>
         {
-            FavoriteServer server = new FavoriteServer(_newServerName.Text, _newServerAddress.Text);
+            var server = new FavoriteServer(_newServerName.Text, _newServerAddress.Text);
 
-            TreeIter iter = _serverListStore.Append();
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TrueCraft.Launcher.Content.default-server-icon.png"))
-                _serverListStore.SetValue(iter, (int)ServerColumns.Icon, new Image(new Gdk.Pixbuf(stream)));
-            _serverListStore.SetValue(iter, (int)ServerColumns.Name, server.Name);
-            _serverListStore.SetValue(iter, (int)ServerColumns.Address, server.Address);
-            _serverListStore.SetValue(iter, (int)ServerColumns.Players, "TODO/50");
+            var iter = _serverListStore.Append();
+
+            using (var stream = Assembly.GetExecutingAssembly()
+                                        .GetManifestResourceStream("TrueCraft.Launcher.Content.default-server-icon.png"))
+            {
+                _serverListStore.SetValue(iter, (int) ServerColumns.Icon, new Image(new Gdk.Pixbuf(stream)));
+            }
+
+            _serverListStore.SetValue(iter, (int) ServerColumns.Name, server.Name);
+            _serverListStore.SetValue(iter, (int) ServerColumns.Address, server.Address);
+            _serverListStore.SetValue(iter, (int) ServerColumns.Players, "TODO/50");
 
             // TODO: display busy cursor; surround with try/catch/finally
             UserSettings.Local.FavoriteServers = UserSettings.Local.FavoriteServers.Concat(new[] { server }).ToArray();
@@ -142,12 +154,17 @@ public class MultiplayerView : VBox
 
         foreach (var server in UserSettings.Local.FavoriteServers)
         {
-            TreeIter row = _serverListStore.Append();
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TrueCraft.Launcher.Content.default-server-icon.png"))
-                _serverListStore.SetValue(row, (int)ServerColumns.Icon, new Image(new Gdk.Pixbuf(stream)));
-            _serverListStore.SetValue(row, (int)ServerColumns.Name, server.Name);
-            _serverListStore.SetValue(row, (int)ServerColumns.Address, server.Address);
-            _serverListStore.SetValue(row, (int)ServerColumns.Players, "TODO/50");
+            var row = _serverListStore.Append();
+
+            using (var stream = Assembly.GetExecutingAssembly()
+                                        .GetManifestResourceStream("TrueCraft.Launcher.Content.default-server-icon.png"))
+            {
+                _serverListStore.SetValue(row, (int) ServerColumns.Icon, new Image(new Gdk.Pixbuf(stream)));
+            }
+
+            _serverListStore.SetValue(row, (int) ServerColumns.Name, server.Name);
+            _serverListStore.SetValue(row, (int) ServerColumns.Address, server.Address);
+            _serverListStore.SetValue(row, (int) ServerColumns.Players, "TODO/50");
         }
 
         var addServerHBox = new HBox();
@@ -163,62 +180,75 @@ public class MultiplayerView : VBox
         _serverCreationBox.PackStart(_newServerAddress, true, false, 0);
         _serverCreationBox.PackStart(commitHBox, true, false, 0);
 
-        this.PackEnd(_backButton, true, false, 0);
-        this.PackEnd(_connectButton, true, false, 0);
-        this.PackStart(_multiplayerLabel, true, false, 0);
-        this.PackStart(_serverIPEntry, true, false, 0);
-        this.PackStart(_serverListView, true, false, 0);
-        this.PackStart(addServerHBox, true, false, 0);
-        this.PackStart(_serverCreationBox, true, false, 0);
+        PackEnd(_backButton, true, false, 0);
+        PackEnd(_connectButton, true, false, 0);
+        PackStart(_multiplayerLabel, true, false, 0);
+        PackStart(_serverIPEntry, true, false, 0);
+        PackStart(_serverListView, true, false, 0);
+        PackStart(addServerHBox, true, false, 0);
+        PackStart(_serverCreationBox, true, false, 0);
     }
 
     private void AddServerColumns()
     {
         // Server Icon Column
-        CellRendererPixbuf imageRenderer = new CellRendererPixbuf();
-        TreeViewColumn column = new TreeViewColumn(String.Empty, imageRenderer,
-            "icon", ServerColumns.Icon);
-        column.SortColumnId = (int)ServerColumns.Icon;
+        var imageRenderer = new CellRendererPixbuf();
+
+        var column = new TreeViewColumn(
+            string.Empty,
+            imageRenderer,
+            "icon",
+            ServerColumns.Icon
+        );
+
+        column.SortColumnId = (int) ServerColumns.Icon;
         _serverListView.AppendColumn(column);
 
         // Server Name column
-        CellRendererText rendererText = new CellRendererText();
+        var rendererText = new CellRendererText();
         column = new TreeViewColumn("Name", rendererText, "text", ServerColumns.Name);
-        column.SortColumnId = (int)ServerColumns.Name;
+        column.SortColumnId = (int) ServerColumns.Name;
         _serverListView.AppendColumn(column);
 
         // Server Address Column
         rendererText = new CellRendererText();
         column = new TreeViewColumn("Address", rendererText, "text", ServerColumns.Address);
-        column.SortColumnId = (int)ServerColumns.Address;
+        column.SortColumnId = (int) ServerColumns.Address;
         column.Visible = false;
         _serverListView.AppendColumn(column);
 
         // Players Column
         rendererText = new CellRendererText();
         column = new TreeViewColumn("Players", rendererText, "text", ServerColumns.Players);
-        column.SortColumnId = (int)ServerColumns.Players;
+        column.SortColumnId = (int) ServerColumns.Players;
         _serverListView.AppendColumn(column);
     }
 
-    void ConnectButton_Clicked(object? sender, EventArgs e)
+    private void ConnectButton_Clicked(object? sender, EventArgs e)
     {
         var ip = _serverIPEntry.Text;
-        TreeSelection selection = _serverListView.Selection;
+        var selection = _serverListView.Selection;
+
         if (selection.CountSelectedRows() != 0)
         {
             TreeIter row;
             ITreeModel model;
             selection.GetSelected(out model, out row);
-            ip = (string)model.GetValue(row, (int)ServerColumns.Address);
+            ip = (string) model.GetValue(row, (int) ServerColumns.Address);
         }
 
-        string TrueCraftLaunchParams = string.Format("{0} {1} {2}", ip, _window.User.Username, _window.User.SessionId);
+        var TrueCraftLaunchParams = string.Format("{0} {1} {2}", ip, _window.User.Username, _window.User.SessionId);
         var process = new Process();
+
         if (RuntimeInfo.IsMono)
+        {
             process.StartInfo = new ProcessStartInfo("mono", "TrueCraft.Client.exe " + TrueCraftLaunchParams);
+        }
         else
+        {
             process.StartInfo = new ProcessStartInfo("TrueCraft.Client.exe", TrueCraftLaunchParams);
+        }
+
         process.EnableRaisingEvents = true;
         process.Exited += (s, a) => Application.Invoke(ClientExited);
         process.Start();
@@ -227,8 +257,5 @@ public class MultiplayerView : VBox
         _window.Visible = false;
     }
 
-    void ClientExited(object? sender, EventArgs e)
-    {
-        _window.Visible = true;
-    }
+    private void ClientExited(object? sender, EventArgs e) => _window.Visible = true;
 }

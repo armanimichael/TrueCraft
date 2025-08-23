@@ -5,7 +5,7 @@
 /// </summary>
 public struct DisconnectPacket : IPacket
 {
-    public byte ID { get { return 0xFF; } }
+    public byte ID => 0xFF;
 
     public DisconnectPacket(string reason)
     {
@@ -14,13 +14,7 @@ public struct DisconnectPacket : IPacket
 
     public string Reason;
 
-    public void ReadPacket(IMinecraftStream stream)
-    {
-        Reason = stream.ReadString();
-    }
+    public void ReadPacket(IMinecraftStream stream) => Reason = stream.ReadString();
 
-    public void WritePacket(IMinecraftStream stream)
-    {
-        stream.WriteString(Reason);
-    }
+    public void WritePacket(IMinecraftStream stream) => stream.WriteString(Reason);
 }

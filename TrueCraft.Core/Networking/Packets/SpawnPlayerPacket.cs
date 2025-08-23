@@ -2,18 +2,28 @@
 
 public struct SpawnPlayerPacket : IPacket
 {
-    public byte ID { get { return 0x14; } }
+    public byte ID => 0x14;
 
     public int EntityID;
     public string PlayerName;
     public int X, Y, Z;
     public sbyte Yaw, Pitch;
+
     /// <summary>
     /// Note that this should be 0 for "no item".
     /// </summary>
     public short CurrentItem;
 
-    public SpawnPlayerPacket(int entityID, string playerName, int x, int y, int z, sbyte yaw, sbyte pitch, short currentItem)
+    public SpawnPlayerPacket(
+        int entityID,
+        string playerName,
+        int x,
+        int y,
+        int z,
+        sbyte yaw,
+        sbyte pitch,
+        short currentItem
+    )
     {
         EntityID = entityID;
         PlayerName = playerName;

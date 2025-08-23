@@ -12,8 +12,12 @@ public interface ILightingQueue
     /// <param name="kind">Specifies the type of lighting operation to enqueue.</param>
     /// <param name="lightLevel">The level of the light source that was added/removed.</param>
     /// <remarks>If the kind is LightingOperationKind.Initial, the mode and lightLevel do not matter.</remarks>
-    void Enqueue(GlobalVoxelCoordinates seed, LightingOperationMode mode,
-        LightingOperationKind kind, byte lightLevel);
+    void Enqueue(
+        GlobalVoxelCoordinates seed,
+        LightingOperationMode mode,
+        LightingOperationKind kind,
+        byte lightLevel
+    );
 
     /// <summary>
     /// Dequeues a Lighting Operation from the Lighting Queue.

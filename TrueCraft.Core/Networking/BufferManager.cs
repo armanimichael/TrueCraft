@@ -5,7 +5,7 @@ namespace TrueCraft.Core.Networking;
 
 public class BufferManager
 {
-    private readonly object bufferLocker = new object();
+    private readonly object bufferLocker = new();
 
     private readonly List<byte[]> buffers;
 
@@ -24,9 +24,10 @@ public class BufferManager
     {
         if (availableBuffers.Count > 0)
         {
-            int index = availableBuffers.Pop();
+            var index = availableBuffers.Pop();
 
             byte[] buffer;
+
             lock (bufferLocker)
             {
                 buffer = buffers[index];
@@ -36,7 +37,7 @@ public class BufferManager
         }
         else
         {
-            byte[] buffer = new byte[bufferSize];
+            var buffer = new byte[bufferSize];
 
             lock (bufferLocker)
             {
@@ -50,13 +51,16 @@ public class BufferManager
     public void ClearBuffer(SocketAsyncEventArgs args)
     {
         int index;
+
         lock (bufferLocker)
         {
             index = buffers.IndexOf(args.Buffer);
         }
 
         if (index >= 0)
+        {
             availableBuffers.Push(index);
+        }
 
         args.SetBuffer(null, 0, 0);
     }

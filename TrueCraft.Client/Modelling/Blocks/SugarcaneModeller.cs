@@ -10,5 +10,5 @@ public class SugarcaneModeller : FlatQuadModeller
         RegisterRenderer(SugarcaneBlock.BlockID, new SugarcaneModeller());
     }
 
-    protected override Vector2 TextureMap { get { return new Vector2(9, 4); } }
+    protected override Vector2 TextureMap => new(9, 4);
 }

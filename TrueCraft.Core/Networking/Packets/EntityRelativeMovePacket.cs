@@ -2,7 +2,7 @@
 
 public struct EntityRelativeMovePacket : IPacket
 {
-    public byte ID { get { return 0x1F; } }
+    public byte ID => 0x1F;
 
     public int EntityID;
     public sbyte DeltaX, DeltaY, DeltaZ;

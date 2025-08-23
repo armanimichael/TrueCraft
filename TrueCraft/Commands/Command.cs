@@ -8,9 +8,9 @@ public abstract class Command : ICommand
 
     public abstract string Description { get; }
 
-    public virtual string[] Aliases { get { return new string[0]; } }
+    public virtual string[] Aliases => new string[0];
 
-    public virtual void Handle(IRemoteClient client, string alias, string[] arguments) { Help(client, alias, arguments); }
+    public virtual void Handle(IRemoteClient client, string alias, string[] arguments) => Help(client, alias, arguments);
 
-    public virtual void Help(IRemoteClient client, string alias, string[] arguments) { client.SendMessage("Command \"" + alias + "\" is not functional!"); }
+    public virtual void Help(IRemoteClient client, string alias, string[] arguments) => client.SendMessage("Command \"" + alias + "\" is not functional!");
 }

@@ -5,7 +5,7 @@
 /// </summary>
 public struct TransactionStatusPacket : IPacket
 {
-    public byte ID { get { return 0x6A; } }
+    public byte ID => 0x6A;
 
     public sbyte WindowID;
     public short ActionNumber;

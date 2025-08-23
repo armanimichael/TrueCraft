@@ -18,43 +18,36 @@ public class TorchBlock : BlockProvider
     }
 
     public static readonly byte BlockID = 0x32;
-        
-    public override byte ID { get { return 0x32; } }
-        
-    public override double BlastResistance { get { return 0; } }
 
-    public override double Hardness { get { return 0; } }
+    public override byte ID => 0x32;
 
-    public override byte Luminance { get { return 13; } }
+    public override double BlastResistance => 0;
 
-    public override bool Opaque { get { return false; } }
+    public override double Hardness => 0;
 
-    public override bool RenderOpaque { get { return true; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Torch";
-    }
+    public override byte Luminance => 13;
 
-    public override SoundEffectClass SoundEffect
-    {
-        get
-        {
-            return SoundEffectClass.Wood;
-        }
-    }
+    public override bool Opaque => false;
 
-    public override BoundingBox? BoundingBox { get { return null; } }
+    public override bool RenderOpaque => true;
 
-    public override BoundingBox? InteractiveBoundingBox
-    {
-        get
-        {
-            return new BoundingBox(new Vector3(4 / 16.0, 0, 4 / 16.0), new Vector3(12 / 16.0, 7.0 / 16.0, 12 / 16.0));
-        }
-    }
+    public override string GetDisplayName(short metadata) => "Torch";
 
-    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override SoundEffectClass SoundEffect => SoundEffectClass.Wood;
+
+    public override BoundingBox? BoundingBox => null;
+
+    public override BoundingBox? InteractiveBoundingBox => new BoundingBox(
+        new Vector3(4 / 16.0, 0, 4 / 16.0),
+        new Vector3(12 / 16.0, 7.0 / 16.0, 12 / 16.0)
+    );
+
+    public override void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         TorchDirection[] preferredDirections =
         {
@@ -62,41 +55,58 @@ public class TorchBlock : BlockProvider
             TorchDirection.North, TorchDirection.South,
             TorchDirection.Ground
         };
+
         TorchDirection direction;
+
         switch (face)
         {
             case BlockFace.PositiveZ:
                 direction = TorchDirection.South;
+
                 break;
             case BlockFace.NegativeZ:
                 direction = TorchDirection.North;
+
                 break;
             case BlockFace.PositiveX:
                 direction = TorchDirection.East;
+
                 break;
             case BlockFace.NegativeX:
                 direction = TorchDirection.West;
+
                 break;
             default:
                 direction = TorchDirection.Ground;
+
                 break;
         }
-        int i = 0;
-        descriptor.Metadata = (byte)direction;
+
+        var i = 0;
+        descriptor.Metadata = (byte) direction;
+
         while (!IsSupported(dimension, descriptor) && i < preferredDirections.Length)
         {
             direction = preferredDirections[i++];
-            descriptor.Metadata = (byte)direction;
+            descriptor.Metadata = (byte) direction;
         }
+
         dimension.SetBlockData(descriptor.Coordinates, descriptor);
     }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         coordinates += MathHelper.BlockFaceToCoordinates(face);
         var old = dimension.GetBlockData(coordinates);
+
         byte[] overwritable =
         {
             AirBlock.BlockID,
@@ -105,16 +115,19 @@ public class TorchBlock : BlockProvider
             LavaBlock.BlockID,
             StationaryLavaBlock.BlockID
         };
+
         if (overwritable.Any(b => b == old.ID))
         {
             var data = dimension.GetBlockData(coordinates);
             data.ID = ID;
-            data.Metadata = (byte)item.Metadata;
+            data.Metadata = (byte) item.Metadata;
 
             BlockPlaced(data, face, dimension, user);
 
             if (!IsSupported(dimension, dimension.GetBlockData(coordinates)))
+            {
                 dimension.SetBlockData(coordinates, old);
+            }
             else
             {
                 item.Count--;
@@ -125,7 +138,7 @@ public class TorchBlock : BlockProvider
 
     public override Vector3i GetSupportDirection(BlockDescriptor descriptor)
     {
-        switch ((TorchDirection)descriptor.Metadata)
+        switch ((TorchDirection) descriptor.Metadata)
         {
             case TorchDirection.Ground:
                 return Vector3i.Down;
@@ -138,11 +151,9 @@ public class TorchBlock : BlockProvider
             case TorchDirection.South:
                 return Vector3i.North;
         }
+
         return Vector3i.Zero;
     }
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(0, 5);
-    }
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(0, 5);
 }

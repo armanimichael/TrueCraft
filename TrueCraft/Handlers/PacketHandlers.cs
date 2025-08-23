@@ -16,13 +16,29 @@ public static class PacketHandlers
         server.RegisterPacketHandler(new HandshakePacket().ID, LoginHandlers.HandleHandshakePacket);
         server.RegisterPacketHandler(new LoginRequestPacket().ID, LoginHandlers.HandleLoginRequestPacket);
 
-        server.RegisterPacketHandler(new PlayerGroundedPacket().ID, (a, b, c) => { /* no-op */ });
+        server.RegisterPacketHandler(
+            new PlayerGroundedPacket().ID,
+            (a, b, c) =>
+            {
+                /* no-op */
+            }
+        );
+
         server.RegisterPacketHandler(new PlayerPositionPacket().ID, EntityHandlers.HandlePlayerPositionPacket);
         server.RegisterPacketHandler(new PlayerLookPacket().ID, EntityHandlers.HandlePlayerLookPacket);
-        server.RegisterPacketHandler(new PlayerPositionAndLookPacket().ID, EntityHandlers.HandlePlayerPositionAndLookPacket);
+
+        server.RegisterPacketHandler(
+            new PlayerPositionAndLookPacket().ID,
+            EntityHandlers.HandlePlayerPositionAndLookPacket
+        );
 
         server.RegisterPacketHandler(new PlayerDiggingPacket().ID, InteractionHandlers.HandlePlayerDiggingPacket);
-        server.RegisterPacketHandler(new PlayerBlockPlacementPacket().ID, InteractionHandlers.HandlePlayerBlockPlacementPacket);
+
+        server.RegisterPacketHandler(
+            new PlayerBlockPlacementPacket().ID,
+            InteractionHandlers.HandlePlayerBlockPlacementPacket
+        );
+
         server.RegisterPacketHandler(new ChangeHeldItemPacket().ID, InteractionHandlers.HandleChangeHeldItem);
         server.RegisterPacketHandler(new PlayerActionPacket().ID, InteractionHandlers.HandlePlayerAction);
         server.RegisterPacketHandler(new AnimationPacket().ID, InteractionHandlers.HandleAnimation);
@@ -40,14 +56,11 @@ public static class PacketHandlers
     {
         // TODO: Abstract this to support things like commands
         // TODO: Sanitize messages
-        var packet = (ChatMessagePacket)_packet;
-        var server = (MultiplayerServer)_server;
+        var packet = (ChatMessagePacket) _packet;
+        var server = (MultiplayerServer) _server;
         var args = new ChatMessageEventArgs(_client, packet.Message);
         server.OnChatMessageReceived(args);
     }
 
-    internal static void HandleDisconnect(IPacket _packet, IRemoteClient _client, IMultiplayerServer server)
-    {
-        throw new PlayerDisconnectException(true);
-    }
+    internal static void HandleDisconnect(IPacket _packet, IRemoteClient _client, IMultiplayerServer server) => throw new PlayerDisconnectException(true);
 }

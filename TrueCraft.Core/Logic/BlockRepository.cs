@@ -8,10 +8,7 @@ public class BlockRepository : IBlockRepository, IRegisterBlockProvider
 
     private static BlockRepository? _singleton = null;
 
-    private BlockRepository()
-    {
-
-    }
+    private BlockRepository() { }
 
     internal static IBlockRepository Init(IDiscover discover)
     {
@@ -19,11 +16,14 @@ public class BlockRepository : IBlockRepository, IRegisterBlockProvider
         // Block Provider.  Starting an existing world must also initialize
         // the Block Provider.  Thus, we cannot guarantee only one call to
         // this method.  Subsequent calls are ignored.
-        if (!(object.ReferenceEquals(_singleton, null)))
+        if (!ReferenceEquals(_singleton, null))
+        {
             return _singleton;
+        }
 
         _singleton = new BlockRepository();
         discover.DiscoverBlockProviders(_singleton);
+
         return _singleton;
     }
 
@@ -35,20 +35,16 @@ public class BlockRepository : IBlockRepository, IRegisterBlockProvider
     public static BlockRepository Get()
     {
 #if DEBUG
-        if (object.ReferenceEquals(_singleton, null))
+        if (ReferenceEquals(_singleton, null))
+        {
             throw new ApplicationException("Call to BlockRepository.Get without initialization.");
+        }
 #endif
         return _singleton;
     }
 
-    public IBlockProvider GetBlockProvider(byte id)
-    {
-        return BlockProviders[id];
-    }
+    public IBlockProvider GetBlockProvider(byte id) => BlockProviders[id];
 
     /// <inheritdoc />
-    public void RegisterBlockProvider(IBlockProvider provider)
-    {
-        BlockProviders[provider.ID] = provider;
-    }
+    public void RegisterBlockProvider(IBlockProvider provider) => BlockProviders[provider.ID] = provider;
 }

@@ -24,63 +24,70 @@ public class LocalColumnCoordinates : IEquatable<LocalColumnCoordinates>
     /// <returns>The Euclidean distance to the other instance.</returns>
     public double DistanceTo(LocalColumnCoordinates other)
     {
-        int dx = other.X - X;
-        int dz = other.Z - Z;
-        return Math.Sqrt(dx * dx + dz * dz);
+        var dx = other.X - X;
+        var dz = other.Z - Z;
+
+        return Math.Sqrt((dx * dx) + (dz * dz));
     }
 
     #region IEquatable<> & related
+
     public bool Equals(LocalColumnCoordinates? other)
     {
         if (other is null)
+        {
             return false;
-        return this.X == other.X && this.Z == other.Z;
+        }
+
+        return X == other.X && Z == other.Z;
     }
 
-    public static bool operator==(LocalColumnCoordinates? l, LocalColumnCoordinates? r)
+    public static bool operator ==(LocalColumnCoordinates? l, LocalColumnCoordinates? r)
     {
         if (l is not null)
         {
             if (r is not null)
+            {
                 return l.Equals(r);
+            }
             else
+            {
                 return false;
+            }
         }
         else
         {
             if (r is not null)
+            {
                 return false;
+            }
             else
+            {
                 return true;
+            }
         }
     }
 
-    public static bool operator!=(LocalColumnCoordinates l, LocalColumnCoordinates r)
-    {
-        return !(l == r);
-    }
+    public static bool operator !=(LocalColumnCoordinates l, LocalColumnCoordinates r) => !(l == r);
+
     #endregion
 
     #region object overrides
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LocalColumnCoordinates);
-    }
+
+    public override bool Equals(object? obj) => Equals(obj as LocalColumnCoordinates);
 
     public override int GetHashCode()
     {
         unchecked
         {
-            int rv = X * 17;
+            var rv = X * 17;
             rv += Z * 409;
 
             return rv;
         }
     }
 
-    public override string ToString()
-    {
-        return $"<{X},{Z}>";
-    }
+    public override string ToString() => $"<{X},{Z}>";
+
     #endregion
 }

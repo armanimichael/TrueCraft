@@ -50,27 +50,30 @@ public class OptionView : VBox
         _lastTexturePack = null;
 
         _window = window;
-        this.SetSizeRequest(250, -1);
+        SetSizeRequest(250, -1);
 
         _optionLabel = new Label("Options")
-        {
-            Justify = Justification.Center
-        };
+                       {
+                           Justify = Justification.Center
+                       };
 
         _resolutionLabel = new Label("Select a resolution...");
         _resolutionList = new ListStore(typeof(string));
         _resolutionComboBox = new ComboBox(_resolutionList);
 
-        int resolutionIndex = -1;
-        for (int i = 0; i < WindowResolution.Defaults.Length; i++)
+        var resolutionIndex = -1;
+
+        for (var i = 0; i < WindowResolution.Defaults.Length; i++)
         {
             _resolutionList.AppendValues(WindowResolution.Defaults[i].ToString());
 
             if (resolutionIndex == -1)
             {
                 resolutionIndex =
-                    ((WindowResolution.Defaults[i].Width == UserSettings.Local.WindowResolution.Width) &&
-                     (WindowResolution.Defaults[i].Height == UserSettings.Local.WindowResolution.Height)) ? i : -1;
+                    WindowResolution.Defaults[i].Width == UserSettings.Local.WindowResolution.Width &&
+                    WindowResolution.Defaults[i].Height == UserSettings.Local.WindowResolution.Height
+                        ? i
+                        : -1;
             }
         }
 
@@ -91,7 +94,7 @@ public class OptionView : VBox
         _texturePackListView = new TreeView(_texturePackStore);
         _texturePackListView.SetSizeRequest(-1, 200);
         _texturePackListView.HeadersVisible = false;
-        TreeSelection texturePackSelection = _texturePackListView.Selection;
+        var texturePackSelection = _texturePackListView.Selection;
         texturePackSelection.Mode = SelectionMode.Single;
         AddTexturePackColumns(_texturePackListView);
 
@@ -101,9 +104,13 @@ public class OptionView : VBox
         _resolutionComboBox.Changed += (sender, e) =>
         {
             TreeIter iter;
+
             if (!_resolutionComboBox.GetActiveIter(out iter))
+            {
                 return;
-            string resolution = (string)_resolutionList.GetValue(iter, 0);
+            }
+
+            var resolution = (string) _resolutionList.GetValue(iter, 0);
             UserSettings.Local.WindowResolution = WindowResolution.FromString(resolution);
             UserSettings.Local.Save();
         };
@@ -115,7 +122,7 @@ public class OptionView : VBox
             UserSettings.Local.Save();
         };
 
-        _invertMouseCheckBox.Clicked += (sender, e) => 
+        _invertMouseCheckBox.Clicked += (sender, e) =>
         {
             UserSettings.Local.InvertedMouse = _invertMouseCheckBox.Active;
             // TODO: show busy cursor; add try/catch/finally
@@ -124,14 +131,15 @@ public class OptionView : VBox
 
         _texturePackListView.Selection.Changed += (sender, e) =>
         {
-            TreeSelection selection = (TreeSelection)sender!;
+            var selection = (TreeSelection) sender!;
             TreeIter iter;
             ITreeModel model;
             selection.GetSelected(out model, out iter);
-            string name = (string)model.GetValue(iter, (int)TexturePackColumns.Name);
+            var name = (string) model.GetValue(iter, (int) TexturePackColumns.Name);
 
             // TODO: Are Texture Pack names sufficiently unique?
-            TexturePack texturePack = _texturePacks.Where<TexturePack>(tp => tp.Name == name).First<TexturePack>();
+            var texturePack = _texturePacks.Where<TexturePack>(tp => tp.Name == name).First<TexturePack>();
+
             if (_lastTexturePack != texturePack)
             {
                 // TODO: show busy cursor; add try/catch/finally
@@ -151,58 +159,67 @@ public class OptionView : VBox
         _officialAssetsButton = new Button("Download Minecraft assets") { Visible = false };
         _officialAssetsButton.Clicked += OfficialAssetsButton_Clicked;
         // TODO: we have to call Pulse on the Progress Bar once in a while.
-        _officialAssetsProgress = new ProgressBar() { Visible = false };
+        _officialAssetsProgress = new ProgressBar { Visible = false };
 
         LoadTexturePacks();
 
-        this.PackStart(_optionLabel, true, false, 0);
-        this.PackStart(_resolutionLabel, true, false, 0);
-        this.PackStart(_resolutionComboBox, true, false, 0);
-        this.PackStart(_fullscreenCheckBox, true, false, 0);
-        this.PackStart(_invertMouseCheckBox, true, false, 0);
-        this.PackStart(_texturePackLabel, true, false, 0);
-        this.PackStart(_texturePackListView, true, false, 0);
-        this.PackStart(_officialAssetsProgress, true, false, 0);
-        this.PackStart(_officialAssetsButton, true, false, 0);
-        this.PackStart(_openFolderButton, true, false, 0);
-        this.PackEnd(_backButton, true, false, 0);
+        PackStart(_optionLabel, true, false, 0);
+        PackStart(_resolutionLabel, true, false, 0);
+        PackStart(_resolutionComboBox, true, false, 0);
+        PackStart(_fullscreenCheckBox, true, false, 0);
+        PackStart(_invertMouseCheckBox, true, false, 0);
+        PackStart(_texturePackLabel, true, false, 0);
+        PackStart(_texturePackListView, true, false, 0);
+        PackStart(_officialAssetsProgress, true, false, 0);
+        PackStart(_officialAssetsButton, true, false, 0);
+        PackStart(_openFolderButton, true, false, 0);
+        PackEnd(_backButton, true, false, 0);
     }
 
     private static void AddTexturePackColumns(TreeView tv)
     {
         // Texture Pack Image Column
-        CellRendererPixbuf imageRenderer = new CellRendererPixbuf();
-        TreeViewColumn column = new TreeViewColumn(String.Empty, imageRenderer,
-            Array.Empty<object>());
-        column.SortColumnId = (int)TexturePackColumns.Image;
+        var imageRenderer = new CellRendererPixbuf();
+
+        var column = new TreeViewColumn(
+            string.Empty,
+            imageRenderer,
+            Array.Empty<object>()
+        );
+
+        column.SortColumnId = (int) TexturePackColumns.Image;
         tv.AppendColumn(column);
 
         // Texture Pack Name column
-        CellRendererText rendererText = new CellRendererText();
+        var rendererText = new CellRendererText();
         column = new TreeViewColumn("Name", rendererText, "text", TexturePackColumns.Name);
-        column.SortColumnId = (int)TexturePackColumns.Name;
+        column.SortColumnId = (int) TexturePackColumns.Name;
         tv.AppendColumn(column);
 
         // Texture Pack Description column
         rendererText = new CellRendererText();
         column = new TreeViewColumn("Description", rendererText, "text", TexturePackColumns.Description);
-        column.SortColumnId = (int)TexturePackColumns.Description;
+        column.SortColumnId = (int) TexturePackColumns.Description;
         tv.AppendColumn(column);
     }
 
-    void OfficialAssetsButton_Clicked(object? sender, EventArgs e)
+    private void OfficialAssetsButton_Clicked(object? sender, EventArgs e)
     {
-        using (MessageDialog msg = new MessageDialog(_window,
+        using (var msg = new MessageDialog(
+                   _window,
                    DialogFlags.Modal | DialogFlags.DestroyWithParent,
-                   MessageType.Question, ButtonsType.YesNo,
+                   MessageType.Question,
+                   ButtonsType.YesNo,
                    false,
                    "Download Mojang assets",
-                   Array.Empty<object>()))
+                   Array.Empty<object>()
+               ))
         {
             msg.SecondaryText = "This will download the official Minecraft assets from Mojang.\n\n" +
                                 "By proceeding you agree to the Mojang asset guidelines:\n\n" +
                                 "https://account.mojang.com/terms#brand\n\n" +
                                 "Proceed?";
+
             msg.Response += HandleOfficialAssetsResponse;
             msg.Run();
         }
@@ -211,103 +228,148 @@ public class OptionView : VBox
     private void HandleOfficialAssetsResponse(object sender, ResponseArgs e)
     {
         if (e.ResponseId != ResponseType.Yes)
+        {
             return;
+        }
 
         _officialAssetsButton.Visible = false;
         _officialAssetsProgress.Visible = true;
-        Task.Factory.StartNew(() =>
-        {
-            Stream ms = new MemoryStream();
 
-            try
-            {
-                using (Stream stream = new WebClient().OpenRead("http://s3.amazonaws.com/Minecraft.Download/versions/b1.7.3/b1.7.3.jar"))
+        Task.Factory.StartNew(
+                () =>
                 {
-                    CopyStream(stream, ms);
-                    ms.Seek(0, SeekOrigin.Begin);
-                }
-            }
-            catch (Exception ex)
-            {
-                Application.Invoke((sender, e) =>
-                {
-                    using (MessageDialog msg = new MessageDialog(_window,
-                               DialogFlags.DestroyWithParent | DialogFlags.Modal,
-                               MessageType.Error,
-                               ButtonsType.Close,
-                               $"Error retrieving assets:\n{ex}",
-                               Array.Empty<object>()))
+                    Stream ms = new MemoryStream();
+
+                    try
                     {
-                        msg.Run();
+                        using (var stream =
+                               new WebClient().OpenRead(
+                                   "http://s3.amazonaws.com/Minecraft.Download/versions/b1.7.3/b1.7.3.jar"
+                               ))
+                        {
+                            CopyStream(stream, ms);
+                            ms.Seek(0, SeekOrigin.Begin);
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        Application.Invoke(
+                            (sender, e) =>
+                            {
+                                using (var msg = new MessageDialog(
+                                           _window,
+                                           DialogFlags.DestroyWithParent | DialogFlags.Modal,
+                                           MessageType.Error,
+                                           ButtonsType.Close,
+                                           $"Error retrieving assets:\n{ex}",
+                                           Array.Empty<object>()
+                                       ))
+                                {
+                                    msg.Run();
+                                }
+
+                                _officialAssetsProgress.Visible = false;
+                                _officialAssetsButton.Visible = true;
+                            }
+                        );
+
+                        return;
+                    }
+
+                    var jar = new ZipArchive(ms, ZipArchiveMode.Read);
+
+                    using (Stream outputPack = new FileStream(
+                               System.IO.Path.Combine(Paths.TexturePacks, "Minecraft.zip"),
+                               FileMode.Create
+                           ))
+                    using (var outputZip = new ZipArchive(outputPack, ZipArchiveMode.Create, true))
+                    {
+                        var pack = outputZip.CreateEntry("pack.txt");
+
+                        using (var outStrm = pack.Open())
+                        using (var sw = new StreamWriter(outStrm))
+                        {
+                            sw.WriteLine("Minecraft textures");
+                        }
+
+                        // TODO: achievement? font?
+                        string[] dirs =
+                        [
+                            "terrain", "gui", "armor", "art",
+                            "environment", "item", "misc", "mob"
+                        ];
+
+                        foreach (var entry in jar.Entries)
+                        foreach (var c in dirs)
+                        {
+                            if (entry.FullName.StartsWith(c + "/"))
+                            {
+                                var outputEntry = outputZip.CreateEntry(entry.FullName);
+
+                                using (var inStrm = entry.Open())
+                                using (var outStrm = outputEntry.Open())
+                                {
+                                    CopyStream(inStrm, outStrm);
+                                }
+                            }
+                        }
+
+                        CopyBetweenZips("pack.png", jar, outputZip);
+                        CopyBetweenZips("terrain.png", jar, outputZip);
+                        CopyBetweenZips("particles.png", jar, outputZip);
+
+                        Application.Invoke(
+                            (sender, e) =>
+                            {
+                                _officialAssetsProgress.Visible = false;
+
+                                var texturePack = TexturePack.FromArchive(
+                                    System.IO.Path.Combine(
+                                        Paths.TexturePacks,
+                                        "Minecraft.zip"
+                                    )
+                                )!; // file was just created, so this won't return null.
+
+                                _texturePacks.Add(texturePack);
+                                AddTexturePackRow(texturePack);
+                            }
+                        );
+                    }
+
+                    ms.Dispose();
+                }
+            )
+            .ContinueWith(
+                (x) =>
+                {
                     _officialAssetsProgress.Visible = false;
                     _officialAssetsButton.Visible = true;
-                });
-                return;
-            }
-
-            ZipArchive jar = new ZipArchive(ms, ZipArchiveMode.Read);
-            using (Stream outputPack = new FileStream(System.IO.Path.Combine(Paths.TexturePacks, "Minecraft.zip"), FileMode.Create))
-            using (ZipArchive outputZip = new ZipArchive(outputPack, ZipArchiveMode.Create, true))
-            {
-                ZipArchiveEntry pack = outputZip.CreateEntry("pack.txt");
-                using (Stream outStrm = pack.Open())
-                using (StreamWriter sw = new StreamWriter(outStrm))
-                    sw.WriteLine("Minecraft textures");
-
-                // TODO: achievement? font?
-                string[] dirs = {
-                    "terrain", "gui", "armor", "art",
-                    "environment", "item", "misc", "mob"
-                };
-
-                foreach (ZipArchiveEntry entry in jar.Entries)
-                foreach (string c in dirs)
-                    if (entry.FullName.StartsWith(c + "/"))
-                    {
-                        ZipArchiveEntry outputEntry = outputZip.CreateEntry(entry.FullName);
-                        using (Stream inStrm = entry.Open())
-                        using (Stream outStrm = outputEntry.Open())
-                            CopyStream(inStrm, outStrm);
-                    }
-
-                CopyBetweenZips("pack.png", jar, outputZip);
-                CopyBetweenZips("terrain.png", jar, outputZip);
-                CopyBetweenZips("particles.png", jar, outputZip);
-
-                Application.Invoke((sender, e) =>
-                {
-                    _officialAssetsProgress.Visible = false;
-                    TexturePack texturePack = TexturePack.FromArchive(
-                        System.IO.Path.Combine(Paths.TexturePacks, "Minecraft.zip"))!;  // file was just created, so this won't return null.
-                    _texturePacks.Add(texturePack);
-                    AddTexturePackRow(texturePack);
-                });
-            }
-            ms.Dispose();
-        }).ContinueWith((x) =>
-        {
-            _officialAssetsProgress.Visible = false;
-            _officialAssetsButton.Visible = true;
-        });
+                }
+            );
     }
 
     public static void CopyBetweenZips(string name, ZipArchive source, ZipArchive destination)
     {
-        ZipArchiveEntry? sourceEntry = source.Entries.SingleOrDefault(f => f.FullName == name);
-        if (sourceEntry is null)
-            return;
+        var sourceEntry = source.Entries.SingleOrDefault(f => f.FullName == name);
 
-        using (Stream src = sourceEntry.Open())
-        using (Stream dest = destination.CreateEntry(name).Open())
+        if (sourceEntry is null)
+        {
+            return;
+        }
+
+        using (var src = sourceEntry.Open())
+        using (var dest = destination.CreateEntry(name).Open())
+        {
             CopyStream(src, dest);
+        }
     }
 
     public static void CopyStream(Stream input, Stream output)
     {
-        byte[] buffer = new byte[16*1024];
+        var buffer = new byte[16 * 1024];
         int read;
-        while((read = input.Read (buffer, 0, buffer.Length)) > 0)
+
+        while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
         {
             output.Write(buffer, 0, read);
         }
@@ -321,34 +383,46 @@ public class OptionView : VBox
 
         // Make sure to create the texture pack directory if there is none.
         if (!Directory.Exists(Paths.TexturePacks))
+        {
             Directory.CreateDirectory(Paths.TexturePacks);
+        }
 
         var zips = Directory.EnumerateFiles(Paths.TexturePacks);
-        bool officialPresent = false;
+        var officialPresent = false;
+
         foreach (var zip in zips)
         {
             if (!zip.EndsWith(".zip"))
+            {
                 continue;
-            if (System.IO.Path.GetFileName(zip) == "Minecraft.zip")
-                officialPresent = true;
+            }
 
-            TexturePack? texturePack = TexturePack.FromArchive(zip);
+            if (System.IO.Path.GetFileName(zip) == "Minecraft.zip")
+            {
+                officialPresent = true;
+            }
+
+            var texturePack = TexturePack.FromArchive(zip);
+
             if (texturePack is not null)
             {
                 _texturePacks.Add(texturePack);
                 AddTexturePackRow(texturePack);
             }
         }
+
         if (!officialPresent)
+        {
             _officialAssetsButton.Visible = true;
+        }
     }
 
     private void AddTexturePackRow(TexturePack pack)
     {
-        TreeIter row = _texturePackStore.Append();
+        var row = _texturePackStore.Append();
 
-        _texturePackStore.SetValue(row, (int)TexturePackColumns.Image, new Image(new Gdk.Pixbuf(pack.Image, 24, 24)));
-        _texturePackStore.SetValue(row, (int)TexturePackColumns.Name, pack.Name);
-        _texturePackStore.SetValue(row, (int)TexturePackColumns.Description, pack.Description);
+        _texturePackStore.SetValue(row, (int) TexturePackColumns.Image, new Image(new Gdk.Pixbuf(pack.Image, 24, 24)));
+        _texturePackStore.SetValue(row, (int) TexturePackColumns.Name, pack.Name);
+        _texturePackStore.SetValue(row, (int) TexturePackColumns.Description, pack.Description);
     }
 }

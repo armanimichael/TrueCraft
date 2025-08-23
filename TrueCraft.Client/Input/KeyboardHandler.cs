@@ -30,9 +30,7 @@ public sealed class KeyboardHandler : GameComponent
     /// </summary>
     /// <param name="game">The parent game for the component.</param>
     public KeyboardHandler(Game game)
-        : base(game)
-    {
-    }
+        : base(game) { }
 
     /// <summary>
     /// Initializes this keyboard component.
@@ -74,15 +72,21 @@ public sealed class KeyboardHandler : GameComponent
         foreach (var key in pressed)
         {
             var args = new KeyboardKeyEventArgs(key, true);
+
             if (KeyDown != null)
+            {
                 KeyDown(this, args);
+            }
         }
 
         foreach (var key in unpressed)
         {
             var args = new KeyboardKeyEventArgs(key, false);
+
             if (KeyUp != null)
+            {
                 KeyUp(this, args);
+            }
         }
     }
 

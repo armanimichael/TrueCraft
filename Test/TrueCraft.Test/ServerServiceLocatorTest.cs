@@ -9,40 +9,44 @@ namespace TrueCraft.Test;
 
 public class ServerServiceLocatorTest
 {
-    public ServerServiceLocatorTest()
-    {
-    }
-
     [Test]
-    public void ctor()
+    public void Ctor()
     {
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
-        Mock<ICraftingRepository> mockCraftingRepository = new Mock<ICraftingRepository>(MockBehavior.Strict);
-        Mock<IServiceLocator> mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockCraftingRepository = new Mock<ICraftingRepository>(MockBehavior.Strict);
+        var mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
         mockServiceLocator.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockServiceLocator.Setup(x => x.BlockRepository).Returns(mockBlockRepository.Object);
         mockServiceLocator.Setup(x => x.CraftingRepository).Returns(mockCraftingRepository.Object);
 
-        IServerServiceLocator locator = new ServerServiceLocator(mockServer.Object,
-            mockServiceLocator.Object);
+        var locator = new ServerServiceLocator(
+            mockServer.Object,
+            mockServiceLocator.Object
+        );
 
-        Assert.Throws<InvalidOperationException>(() => { IWorld t = locator.World; });
-        Assert.True(object.ReferenceEquals(mockServer.Object, locator.Server));
-        Assert.True(object.ReferenceEquals(mockBlockRepository.Object, locator.BlockRepository));
-        Assert.True(object.ReferenceEquals(mockItemRepository.Object, locator.ItemRepository));
-        Assert.True(object.ReferenceEquals(mockCraftingRepository.Object, locator.CraftingRepository));
+        Assert.Throws<InvalidOperationException>(
+            () =>
+            {
+                var t = locator.World;
+            }
+        );
+
+        Assert.True(ReferenceEquals(mockServer.Object, locator.Server));
+        Assert.True(ReferenceEquals(mockBlockRepository.Object, locator.BlockRepository));
+        Assert.True(ReferenceEquals(mockItemRepository.Object, locator.ItemRepository));
+        Assert.True(ReferenceEquals(mockCraftingRepository.Object, locator.CraftingRepository));
     }
 
     [Test]
     public void ctor_Throws()
     {
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
-        Mock<ICraftingRepository> mockCraftingRepository = new Mock<ICraftingRepository>(MockBehavior.Strict);
-        Mock<IServiceLocator> mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockCraftingRepository = new Mock<ICraftingRepository>(MockBehavior.Strict);
+        var mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
         mockServiceLocator.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockServiceLocator.Setup(x => x.BlockRepository).Returns(mockBlockRepository.Object);
         mockServiceLocator.Setup(x => x.CraftingRepository).Returns(mockCraftingRepository.Object);
@@ -53,23 +57,31 @@ public class ServerServiceLocatorTest
     [Test]
     public void WorldSetter()
     {
-        Mock<IMultiplayerServer> mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
-        Mock<IBlockRepository> mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
-        Mock<IItemRepository> mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
-        Mock<ICraftingRepository> mockCraftingRepository = new Mock<ICraftingRepository>(MockBehavior.Strict);
-        Mock<IServiceLocator> mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
+        var mockServer = new Mock<IMultiplayerServer>(MockBehavior.Strict);
+        var mockBlockRepository = new Mock<IBlockRepository>(MockBehavior.Strict);
+        var mockItemRepository = new Mock<IItemRepository>(MockBehavior.Strict);
+        var mockCraftingRepository = new Mock<ICraftingRepository>(MockBehavior.Strict);
+        var mockServiceLocator = new Mock<IServiceLocator>(MockBehavior.Strict);
         mockServiceLocator.Setup(x => x.ItemRepository).Returns(mockItemRepository.Object);
         mockServiceLocator.Setup(x => x.BlockRepository).Returns(mockBlockRepository.Object);
         mockServiceLocator.Setup(x => x.CraftingRepository).Returns(mockCraftingRepository.Object);
 
-        IServerServiceLocator locator = new ServerServiceLocator(mockServer.Object,
-            mockServiceLocator.Object);
+        var locator = new ServerServiceLocator(
+            mockServer.Object,
+            mockServiceLocator.Object
+        );
 
-        Mock<IWorld> mockWorld = new Mock<IWorld>(MockBehavior.Strict);
+        var mockWorld = new Mock<IWorld>(MockBehavior.Strict);
 
-        Assert.Throws<InvalidOperationException>(() => { IWorld t = locator.World; });
+        Assert.Throws<InvalidOperationException>(
+            () =>
+            {
+                var t = locator.World;
+            }
+        );
+
         locator.World = mockWorld.Object;
         Assert.Throws<InvalidOperationException>(() => locator.World = mockWorld.Object);
-        Assert.True(object.ReferenceEquals(mockWorld.Object, locator.World));
+        Assert.True(ReferenceEquals(mockWorld.Object, locator.World));
     }
 }

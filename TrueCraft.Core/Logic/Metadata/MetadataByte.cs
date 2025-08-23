@@ -4,29 +4,21 @@ namespace TrueCraft.Core;
 
 public class MetadataByte : MetadataEntry
 {
-    public override byte Identifier { get { return 0; } }
-    public override string FriendlyName { get { return "byte"; } }
+    public override byte Identifier => 0;
+    public override string FriendlyName => "byte";
 
     public byte Value;
 
-    public static implicit operator MetadataByte(byte value)
-    {
-        return new MetadataByte(value);
-    }
+    public static implicit operator MetadataByte(byte value) => new(value);
 
-    public MetadataByte()
-    {
-    }
+    public MetadataByte() { }
 
     public MetadataByte(byte value)
     {
         Value = value;
     }
 
-    public override void FromStream(IMinecraftStream stream)
-    {
-        Value = stream.ReadUInt8();
-    }
+    public override void FromStream(IMinecraftStream stream) => Value = stream.ReadUInt8();
 
     public override void WriteTo(IMinecraftStream stream, byte index)
     {

@@ -60,6 +60,7 @@ public interface IRemoteClient
     /// The slot index this user has selected in their hotbar.
     /// </summary>
     short SelectedSlot { get; }
+
     /// <summary>
     /// The item stack at the slot the user has selected in their hotbar.
     /// </summary>
@@ -68,22 +69,25 @@ public interface IRemoteClient
     /// <summary>
     /// The ItemStack held by the mouse cursor while a window is open.
     /// </summary>
-    public ItemStack ItemStaging { get; set; }
+    ItemStack ItemStaging { get; set; }
 
     /// <summary>
     /// The server this user is playing on.
     /// </summary>
     IMultiplayerServer Server { get; }
+
     /// <summary>
     /// If true, this client will be sent logging information as chat messages.
     /// </summary>
     bool EnableLogging { get; set; }
+
     /// <summary>
     /// The time the user is expected to complete the active digging operation,
     /// depending on what kind of block they are mining and what tool they're using
     /// to do it with.
     /// </summary>
     DateTime ExpectedDigComplete { get; set; }
+
     /// <summary>
     /// True if this client has been disconnected. You should cease sending packets and
     /// so on, this client is just waiting to be reaped.
@@ -94,22 +98,27 @@ public interface IRemoteClient
     /// Loads player data from disk for this client.
     /// </summary>
     bool Load();
+
     /// <summary>
     /// Saves player data to disk for this client.
     /// </summary>
     void Save();
+
     /// <summary>
     /// Queues a packet to be sent to this client.
     /// </summary>
     void QueuePacket(IPacket packet);
+
     /// <summary>
     /// Disconnects this client from the server.
     /// </summary>
     void Disconnect();
+
     /// <summary>
     /// Sends a chat message to this client.
     /// </summary>
     void SendMessage(string message);
+
     /// <summary>
     /// If logging is enabled, sends your message to the client as chat.
     /// </summary>

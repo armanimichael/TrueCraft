@@ -5,11 +5,16 @@ namespace TrueCraft.Core.Entities;
 
 public abstract class ObjectEntity : Entity
 {
-    protected ObjectEntity(IDimension dimension, IEntityManager entityManager,
-        Size size, float accelerationDueToGravity, float drag, float terminalVelocity) :
-        base(dimension, entityManager, size, accelerationDueToGravity, drag, terminalVelocity)
-    {
-    }
+    protected ObjectEntity(
+        IDimension dimension,
+        IEntityManager entityManager,
+        Size size,
+        float accelerationDueToGravity,
+        float drag,
+        float terminalVelocity
+    )
+        :
+        base(dimension, entityManager, size, accelerationDueToGravity, drag, terminalVelocity) { }
 
     // TODO: What is the meaning of this?
     public abstract byte EntityType { get; }

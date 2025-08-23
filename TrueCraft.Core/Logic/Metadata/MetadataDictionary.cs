@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 using TrueCraft.Core.Networking;
@@ -17,27 +16,29 @@ public class MetadataDictionary
         entries = new Dictionary<byte, MetadataEntry>();
     }
 
-    public int Count
-    {
-        get { return entries.Count; }
-    }
+    public int Count => entries.Count;
 
     public MetadataEntry this[byte index]
     {
-        get { return entries[index]; }
-        set { entries[index] = value; }
+        get => entries[index];
+        set => entries[index] = value;
     }
 
     public static MetadataDictionary FromStream(IMinecraftStream stream)
     {
         var value = new MetadataDictionary();
+
         while (true)
         {
-            byte key = stream.ReadUInt8();
-            if (key == 127) break;
+            var key = stream.ReadUInt8();
 
-            byte type = (byte)((key & 0xE0) >> 5);
-            byte index = (byte)(key & 0x1F);
+            if (key == 127)
+            {
+                break;
+            }
+
+            var type = (byte) ((key & 0xE0) >> 5);
+            var index = (byte) (key & 0x1F);
 
             var entry = EntryTypes[type]();
             entry.FromStream(stream);
@@ -45,34 +46,40 @@ public class MetadataDictionary
 
             value[index] = entry;
         }
+
         return value;
     }
 
     public void WriteTo(IMinecraftStream stream)
     {
         foreach (var entry in entries)
+        {
             entry.Value.WriteTo(stream, entry.Key);
+        }
+
         stream.WriteUInt8(0x7F);
     }
 
-    delegate MetadataEntry CreateEntryInstance();
+    private delegate MetadataEntry CreateEntryInstance();
 
     private static readonly CreateEntryInstance[] EntryTypes = new CreateEntryInstance[]
-    {
-        () => new MetadataByte(), // 0
-        () => new MetadataShort(), // 1
-        () => new MetadataInt(), // 2
-        () => new MetadataFloat(), // 3
-        () => new MetadataString(), // 4
-        () => new MetadataSlot(), // 5
-    };
+                                                               {
+                                                                   () => new MetadataByte(), // 0
+                                                                   () => new MetadataShort(), // 1
+                                                                   () => new MetadataInt(), // 2
+                                                                   () => new MetadataFloat(), // 3
+                                                                   () => new MetadataString(), // 4
+                                                                   () => new MetadataSlot() // 5
+                                                               };
 
     public override string ToString()
     {
         if (entries.Count == 0)
-            return String.Empty;
+        {
+            return string.Empty;
+        }
 
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 
         foreach (var entry in entries.Values)
         {

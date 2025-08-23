@@ -5,16 +5,10 @@ namespace TrueCraft.Core.Entities;
 
 public class SquidEntity : MobEntity
 {
-    public SquidEntity(IDimension dimension, IEntityManager entityManager) :
-        base(dimension, entityManager, 10, new Size(0.95))  // TODO: Size seems wrong...
-    {
-    }
+    public SquidEntity(IDimension dimension, IEntityManager entityManager)
+        :
+        base(dimension, entityManager, 10, new Size(0.95)) // TODO: Size seems wrong...
+    { }
 
-    public override sbyte MobType
-    {
-        get
-        {
-            return 94;
-        }
-    }
+    public override sbyte MobType => 94;
 }

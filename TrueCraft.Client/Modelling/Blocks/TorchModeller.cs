@@ -10,11 +10,15 @@ public class TorchModeller : BlockModeller
     static TorchModeller()
     {
         RegisterRenderer(TorchBlock.BlockID, new TorchModeller());
-        for (int i = 0; i < Texture.Length; i++)
+
+        for (var i = 0; i < Texture.Length; i++)
+        {
             Texture[i] /= 256f;
+        }
     }
 
-    private static Vector2 TextureMap = new Vector2(7, 86); // Note: this is in pixels (torch texture is not a full block)
+    private static Vector2 TextureMap = new(7, 86); // Note: this is in pixels (torch texture is not a full block)
+
     private static Vector2[] Texture =
     {
         // Positive Z
@@ -46,51 +50,94 @@ public class TorchModeller : BlockModeller
         TextureMap + new Vector2(2, 4),
         TextureMap + new Vector2(0, 4),
         TextureMap + new Vector2(0, 2),
-        TextureMap + new Vector2(2, 2),
+        TextureMap + new Vector2(2, 2)
     };
 
-    public override VertexPositionNormalColorTexture[] Render(BlockDescriptor descriptor, Vector3 offset,
-        VisibleFaces faces, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    public override VertexPositionNormalColorTexture[] Render(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        VisibleFaces faces,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
-        int[] lighting = GetLighting(descriptor);
+        var lighting = GetLighting(descriptor);
         var centerized = new Vector3(7f / 16f, 0, 7f / 16f);
-        var cube = CreateUniformCube(Vector3.Zero, Texture, VisibleFaces.All,
-            indiciesOffset, out indicies, Color.White, lighting);
-        for (int i = 0; i < cube.Length; i++)
+
+        var cube = CreateUniformCube(
+            Vector3.Zero,
+            Texture,
+            VisibleFaces.All,
+            indiciesOffset,
+            out indicies,
+            Color.White,
+            lighting
+        );
+
+        for (var i = 0; i < cube.Length; i++)
         {
             cube[i].Position.X *= 1f / 8f;
             cube[i].Position.Z *= 1f / 8f;
+
             if (cube[i].Position.Y > 0)
+            {
                 cube[i].Position.Y *= 5f / 8f;
-            switch ((TorchBlock.TorchDirection)descriptor.Metadata)
+            }
+
+            switch ((TorchBlock.TorchDirection) descriptor.Metadata)
             {
                 case TorchBlock.TorchDirection.West:
                     if (cube[i].Position.Y == 0)
+                    {
                         cube[i].Position.X += 8f / 16f;
+                    }
                     else
+                    {
                         cube[i].Position.X += 3f / 16f;
+                    }
+
                     cube[i].Position.Y += 5f / 16f;
+
                     break;
                 case TorchBlock.TorchDirection.East:
                     if (cube[i].Position.Y == 0)
+                    {
                         cube[i].Position.X -= 8f / 16f;
+                    }
                     else
+                    {
                         cube[i].Position.X -= 3f / 16f;
+                    }
+
                     cube[i].Position.Y += 5f / 16f;
+
                     break;
                 case TorchBlock.TorchDirection.North:
                     if (cube[i].Position.Y == 0)
+                    {
                         cube[i].Position.Z += 8f / 16f;
+                    }
                     else
+                    {
                         cube[i].Position.Z += 3f / 16f;
+                    }
+
                     cube[i].Position.Y += 5f / 16f;
+
                     break;
                 case TorchBlock.TorchDirection.South:
                     if (cube[i].Position.Y == 0)
+                    {
                         cube[i].Position.Z -= 8f / 16f;
+                    }
                     else
+                    {
                         cube[i].Position.Z -= 3f / 16f;
+                    }
+
                     cube[i].Position.Y += 5f / 16f;
+
                     break;
                 case TorchBlock.TorchDirection.Ground:
                 default:
@@ -101,15 +148,27 @@ public class TorchModeller : BlockModeller
             cube[i].Position += offset;
             cube[i].Position += centerized;
         }
+
         return cube;
     }
 
-    public override VertexPositionNormalColorTexture[] Render(short metadata, Vector3 offset, Vector2[] texture, out int[] indices)
+    public override VertexPositionNormalColorTexture[] Render(
+        short metadata,
+        Vector3 offset,
+        Vector2[] texture,
+        out int[] indices
+    )
     {
-        VertexPositionNormalColorTexture[] cube = CreateUniformCube(
-            new Vector3(-0.5f), Texture, VisibleFaces.All,
-            0, out indices, Color.White);
-        for (int i = 0; i < cube.Length; i++)
+        var cube = CreateUniformCube(
+            new Vector3(-0.5f),
+            Texture,
+            VisibleFaces.All,
+            0,
+            out indices,
+            Color.White
+        );
+
+        for (var i = 0; i < cube.Length; i++)
         {
             cube[i].Position.X *= 1f / 8f;
             cube[i].Position.Z *= 1f / 8f;

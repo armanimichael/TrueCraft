@@ -5,7 +5,7 @@
 /// </summary>
 public struct EntityTeleportPacket : IPacket
 {
-    public byte ID { get { return 0x22; } }
+    public byte ID => 0x22;
 
     public int EntityID;
     public int X, Y, Z;

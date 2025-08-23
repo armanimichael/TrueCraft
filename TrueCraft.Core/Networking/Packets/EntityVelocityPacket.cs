@@ -6,7 +6,7 @@
 /// </summary>
 public struct EntityVelocityPacket : IPacket
 {
-    public byte ID { get { return 0x1C; } }
+    public byte ID => 0x1C;
 
     public int EntityID;
     public short XVelocity;

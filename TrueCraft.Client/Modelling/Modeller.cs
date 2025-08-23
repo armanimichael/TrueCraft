@@ -14,7 +14,7 @@ public abstract class Modeller<T> : IDisposable
 {
     // TODO: remove this object - it appears to only protect the ConcurrentQueue
     // instances, and certainly should not be locked in Dispose.
-    private readonly object _syncLock = new object();
+    private readonly object _syncLock = new();
 
     /// <summary>
     /// 
@@ -35,7 +35,10 @@ public abstract class Modeller<T> : IDisposable
         get
         {
             if (_isDisposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
+
             return _isRunning;
         }
     }
@@ -43,10 +46,7 @@ public abstract class Modeller<T> : IDisposable
     /// <summary>
     /// Gets whether this renderer is disposed of.
     /// </summary>
-    public bool IsDisposed
-    {
-        get { return _isDisposed; }
-    }
+    public bool IsDisposed => _isDisposed;
 
     /// <summary>
     /// 
@@ -57,14 +57,21 @@ public abstract class Modeller<T> : IDisposable
         {
             _isRunning = false;
             var threads = Environment.ProcessorCount - 2;
+
             if (threads < 1)
+            {
                 threads = 1;
+            }
+
             _rendererThreads = new Thread[threads];
-            for (int i = 0; i < _rendererThreads.Length; i++)
+
+            for (var i = 0; i < _rendererThreads.Length; i++)
             {
                 _rendererThreads[i] = new Thread(DoRendering) { IsBackground = true };
             }
-            _items = new ConcurrentQueue<T>(); _priorityItems = new ConcurrentQueue<T>();
+
+            _items = new ConcurrentQueue<T>();
+            _priorityItems = new ConcurrentQueue<T>();
             _pending = new HashSet<T>();
             _isDisposed = false;
         }
@@ -76,14 +83,23 @@ public abstract class Modeller<T> : IDisposable
     public void Start()
     {
         if (_isDisposed)
+        {
             throw new ObjectDisposedException(GetType().Name);
+        }
 
-        if (_isRunning) return;
+        if (_isRunning)
+        {
+            return;
+        }
+
         lock (_syncLock)
         {
             _isRunning = true;
-            for (int i = 0; i < _rendererThreads.Length; i++)
+
+            for (var i = 0; i < _rendererThreads.Length; i++)
+            {
                 _rendererThreads[i].Start(null);
+            }
         }
     }
 
@@ -113,7 +129,9 @@ public abstract class Modeller<T> : IDisposable
             }
 
             if (item is null) // We don't have any work, so sleep for a bit.
+            {
                 Thread.Sleep(100);
+            }
         }
     }
 
@@ -131,14 +149,23 @@ public abstract class Modeller<T> : IDisposable
     public void Stop()
     {
         if (_isDisposed)
+        {
             throw new ObjectDisposedException(GetType().Name);
+        }
 
-        if (!_isRunning) return;
+        if (!_isRunning)
+        {
+            return;
+        }
+
         lock (_syncLock)
         {
             _isRunning = false;
-            for (int i = 0; i < _rendererThreads.Length; i++)
+
+            for (var i = 0; i < _rendererThreads.Length; i++)
+            {
                 _rendererThreads[i].Join();
+            }
         }
     }
 
@@ -150,17 +177,31 @@ public abstract class Modeller<T> : IDisposable
     public bool Enqueue(T item, bool hasPriority = false)
     {
         if (_isDisposed)
+        {
             throw new ObjectDisposedException(GetType().Name);
+        }
 
         if (_pending.Contains(item))
+        {
             return false;
+        }
+
         _pending.Add(item);
 
-        if (!_isRunning) return false;
+        if (!_isRunning)
+        {
+            return false;
+        }
+
         if (hasPriority)
+        {
             _priorityItems.Enqueue(item);
+        }
         else
+        {
             _items.Enqueue(item);
+        }
+
         return true;
     }
 
@@ -170,7 +211,9 @@ public abstract class Modeller<T> : IDisposable
     public void Dispose()
     {
         if (_isDisposed)
+        {
             return;
+        }
 
         Dispose(true);
         GC.SuppressFinalize(this);
@@ -183,6 +226,7 @@ public abstract class Modeller<T> : IDisposable
     protected virtual void Dispose(bool disposing)
     {
         Stop();
+
         lock (_syncLock)
         {
             _rendererThreads = null!;

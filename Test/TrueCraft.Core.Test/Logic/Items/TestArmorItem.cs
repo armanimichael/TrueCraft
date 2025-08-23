@@ -10,16 +10,22 @@ public class TestArmorItem
 {
     private static XmlNode GetTopNode(string xml)
     {
-        XmlDocument doc = new XmlDocument();
-        using (StringReader sr = new StringReader(xml))
-        using (XmlReader xmlr = XmlReader.Create(sr))
+        var doc = new XmlDocument();
+
+        using (var sr = new StringReader(xml))
+        using (var xmlr = XmlReader.Create(sr))
+        {
             doc.Load(xmlr);
+        }
 
         return doc.FirstChild!;
     }
 
     [TestCase(
-        ArmorKind.Helmet, ArmorMaterial.Leather, 34, 1.5f,
+        ArmorKind.Helmet,
+        ArmorMaterial.Leather,
+        34,
+        1.5f,
         @"    <item>
       <id>298</id>
       <maximumstack>1</maximumstack>
@@ -40,8 +46,13 @@ public class TestArmorItem
         <durability>34</durability>
         <defencepoints>1.5</defencepoints>
       </armor>
-    </item>")]
-    [TestCase(ArmorKind.Chestplate, ArmorMaterial.Chain, 96, 4f,
+    </item>"
+    )]
+    [TestCase(
+        ArmorKind.Chestplate,
+        ArmorMaterial.Chain,
+        96,
+        4f,
         @"    <item>
       <id>303</id>
       <maximumstack>1</maximumstack>
@@ -62,8 +73,13 @@ public class TestArmorItem
         <durability>96</durability>
         <defencepoints>4</defencepoints>
       </armor>
-    </item>")]
-    [TestCase(ArmorKind.Leggings, ArmorMaterial.Iron, 184, 3f, 
+    </item>"
+    )]
+    [TestCase(
+        ArmorKind.Leggings,
+        ArmorMaterial.Iron,
+        184,
+        3f,
         @"    <item>
       <id>308</id>
       <maximumstack>1</maximumstack>
@@ -84,8 +100,13 @@ public class TestArmorItem
         <durability>184</durability>
         <defencepoints>3</defencepoints>
       </armor>
-    </item>")]
-    [TestCase(ArmorKind.Boots, ArmorMaterial.Gold, 80, 1.5f,
+    </item>"
+    )]
+    [TestCase(
+        ArmorKind.Boots,
+        ArmorMaterial.Gold,
+        80,
+        1.5f,
         @"    <item>
       <id>317</id>
       <maximumstack>1</maximumstack>
@@ -106,8 +127,13 @@ public class TestArmorItem
         <durability>80</durability>
         <defencepoints>1.5</defencepoints>
       </armor>
-    </item>")]
-    [TestCase(ArmorKind.Helmet, ArmorMaterial.Diamond, 272, 1.5f,
+    </item>"
+    )]
+    [TestCase(
+        ArmorKind.Helmet,
+        ArmorMaterial.Diamond,
+        272,
+        1.5f,
         @"    <item>
       <id>310</id>
       <maximumstack>1</maximumstack>
@@ -128,12 +154,18 @@ public class TestArmorItem
         <durability>272</durability>
         <defencepoints>1.5</defencepoints>
       </armor>
-    </item>")]
-    public void ctor(ArmorKind expectedKind, ArmorMaterial expectedMaterial,
-        short expectedDurability, float expectedDefencePoints, string xml)
+    </item>"
+    )]
+    public void Ctor(
+        ArmorKind expectedKind,
+        ArmorMaterial expectedMaterial,
+        short expectedDurability,
+        float expectedDefencePoints,
+        string xml
+    )
     {
-        XmlNode itemNode = GetTopNode(xml);
-        IArmorItem actual = new ArmorItem(itemNode);
+        var itemNode = GetTopNode(xml);
+        var actual = new ArmorItem(itemNode);
 
         Assert.AreEqual(expectedKind, actual.Kind);
         Assert.AreEqual(expectedMaterial, actual.Material);

@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using TrueCraft.Core.Networking;
 
 namespace TrueCraft.Core;
@@ -14,49 +12,36 @@ public abstract class MetadataEntry
 
     internal byte Index { get; set; }
 
-    public static implicit operator MetadataEntry(byte value)
-    {
-        return new MetadataByte(value);
-    }
+    public static implicit operator MetadataEntry(byte value) => new MetadataByte(value);
 
-    public static implicit operator MetadataEntry(short value)
-    {
-        return new MetadataShort(value);
-    }
+    public static implicit operator MetadataEntry(short value) => new MetadataShort(value);
 
-    public static implicit operator MetadataEntry(int value)
-    {
-        return new MetadataInt(value);
-    }
+    public static implicit operator MetadataEntry(int value) => new MetadataInt(value);
 
-    public static implicit operator MetadataEntry(float value)
-    {
-        return new MetadataFloat(value);
-    }
+    public static implicit operator MetadataEntry(float value) => new MetadataFloat(value);
 
-    public static implicit operator MetadataEntry(string value)
-    {
-        return new MetadataString(value);
-    }
+    public static implicit operator MetadataEntry(string value) => new MetadataString(value);
 
-    public static implicit operator MetadataEntry(ItemStack value)
-    {
-        return new MetadataSlot(value);
-    }
+    public static implicit operator MetadataEntry(ItemStack value) => new MetadataSlot(value);
 
     protected byte GetKey(byte index)
     {
         Index = index; // Cheat to get this for ToString
-        return (byte)((Identifier << 5) | (index & 0x1F));
+
+        return (byte) ((Identifier << 5) | (index & 0x1F));
     }
 
     public override string ToString()
     {
-        Type type = GetType();
-        FieldInfo[] fields = type.GetFields();
-        string result = FriendlyName + "[" + Index + "]: ";
+        var type = GetType();
+        var fields = type.GetFields();
+        var result = FriendlyName + "[" + Index + "]: ";
+
         if (fields.Length != 0)
-            result += fields[0].GetValue(this)?.ToString() ?? String.Empty;
+        {
+            result += fields[0].GetValue(this)?.ToString() ?? string.Empty;
+        }
+
         return result;
     }
 }

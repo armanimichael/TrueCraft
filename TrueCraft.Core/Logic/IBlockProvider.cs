@@ -30,9 +30,29 @@ public interface IBlockProvider
     /// </summary>
     IEnumerable<short> VisibleMetadata { get; }
 
-    void GenerateDropEntity(BlockDescriptor descriptor, IDimension world, IMultiplayerServer server, ItemStack heldItem);
-    void BlockLeftClicked(IServiceLocator serviceLocator, BlockDescriptor descriptor, BlockFace face, IDimension world, IRemoteClient user);
-    bool BlockRightClicked(IServiceLocator serviceLocator, BlockDescriptor descriptor, BlockFace face, IDimension world, IRemoteClient user);
+    void GenerateDropEntity(
+        BlockDescriptor descriptor,
+        IDimension world,
+        IMultiplayerServer server,
+        ItemStack heldItem
+    );
+
+    void BlockLeftClicked(
+        IServiceLocator serviceLocator,
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension world,
+        IRemoteClient user
+    );
+
+    bool BlockRightClicked(
+        IServiceLocator serviceLocator,
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension world,
+        IRemoteClient user
+    );
+
     void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension world, IRemoteClient user);
     void BlockMined(BlockDescriptor descriptor, BlockFace face, IDimension world, IRemoteClient user);
     void BlockUpdate(BlockDescriptor descriptor, BlockDescriptor source, IMultiplayerServer server, IDimension world);
@@ -45,5 +65,10 @@ public interface IBlockProvider
     /// <param name="coordinates">The coordinates of the Block within the Dimension.</param>
     void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coordinates);
 
-    void TileEntityLoadedForClient(BlockDescriptor descriptor, IDimension world, NbtCompound compound, IRemoteClient client);
+    void TileEntityLoadedForClient(
+        BlockDescriptor descriptor,
+        IDimension world,
+        NbtCompound compound,
+        IRemoteClient client
+    );
 }

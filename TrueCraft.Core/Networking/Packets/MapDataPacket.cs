@@ -2,7 +2,7 @@
 
 public struct MapDataPacket : IPacket
 {
-    public byte ID { get { return 0x83; } }
+    public byte ID => 0x83;
 
     public short ItemID;
     public short Metadata;
@@ -12,7 +12,7 @@ public struct MapDataPacket : IPacket
     {
         ItemID = stream.ReadInt16();
         Metadata = stream.ReadInt16();
-        byte length = stream.ReadUInt8();
+        var length = stream.ReadUInt8();
         Data = stream.ReadUInt8Array(length);
     }
 
@@ -20,7 +20,7 @@ public struct MapDataPacket : IPacket
     {
         stream.WriteInt16(ItemID);
         stream.WriteInt16(Metadata);
-        stream.WriteUInt8((byte)Data.Length);
+        stream.WriteUInt8((byte) Data.Length);
         stream.WriteUInt8Array(Data);
     }
 }

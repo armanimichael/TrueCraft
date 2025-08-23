@@ -5,7 +5,7 @@
 /// </summary>
 public struct AttachEntityPacket : IPacket
 {
-    public byte ID { get { return 0x27; } }
+    public byte ID => 0x27;
 
     public int EntityID;
     public int VehicleID;

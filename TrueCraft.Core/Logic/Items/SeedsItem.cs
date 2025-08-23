@@ -9,17 +9,28 @@ public class SeedsItem : ItemProvider
 {
     public static readonly short ItemID = 0x127;
 
-    public SeedsItem(XmlNode node) : base(node)
-    {
-    }
+    public SeedsItem(XmlNode node)
+        : base(node) { }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         if (dimension.GetBlockID(coordinates) == FarmlandBlock.BlockID)
         {
             dimension.SetBlockID(coordinates + MathHelper.BlockFaceToCoordinates(face), CropsBlock.BlockID);
-            dimension.BlockRepository.GetBlockProvider(CropsBlock.BlockID).BlockPlaced(
-                new BlockDescriptor { Coordinates = coordinates }, face, dimension, user);
+
+            dimension.BlockRepository.GetBlockProvider(CropsBlock.BlockID)
+                     .BlockPlaced(
+                         new BlockDescriptor { Coordinates = coordinates },
+                         face,
+                         dimension,
+                         user
+                     );
         }
     }
 }

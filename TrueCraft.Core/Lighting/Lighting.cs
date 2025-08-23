@@ -22,12 +22,12 @@ public class Lighting
     private readonly IBlockRepository _blockRepository;
     public IDimension Dimension { get; }
 
-    private ConcurrentQueue<LightingOperation> PendingOperations { get; set; }
+    private ConcurrentQueue<LightingOperation> PendingOperations { get; }
 
     /// <summary>
     /// 
     /// </summary>
-    private Dictionary<GlobalChunkCoordinates, byte[,]> HeightMaps { get; set; }
+    private Dictionary<GlobalChunkCoordinates, byte[,]> HeightMaps { get; }
 
     public Lighting(IDimension dimension, IBlockRepository blockRepository)
     {
@@ -53,51 +53,68 @@ public class Lighting
     {
         LocalVoxelCoordinates coords;
         var map = new byte[WorldConstants.ChunkWidth, WorldConstants.ChunkDepth];
+
         for (byte x = 0; x < WorldConstants.ChunkWidth; x++)
+        for (byte z = 0; z < WorldConstants.ChunkDepth; z++)
+        for (var y = (byte) (chunk.GetHeight(x, z) + 2); y > 0; y--)
         {
-            for (byte z = 0; z < WorldConstants.ChunkDepth; z++)
+            if (y >= WorldConstants.Height)
             {
-                for (byte y = (byte)(chunk.GetHeight(x, z) + 2); y > 0; y--)
-                {
-                    if (y >= WorldConstants.Height)
-                        continue;
-                    coords = new LocalVoxelCoordinates(x, y - 1, z);
-                    var id = chunk.GetBlockID(coords);
-                    if (id == AirBlock.BlockID)
-                        continue;
-                    var provider = _blockRepository.GetBlockProvider(id);
-                    if (provider == null || provider.LightOpacity != 0)
-                    {
-                        map[x, z] = y;
-                        break;
-                    }
-                }
+                continue;
+            }
+
+            coords = new LocalVoxelCoordinates(x, y - 1, z);
+            var id = chunk.GetBlockID(coords);
+
+            if (id == AirBlock.BlockID)
+            {
+                continue;
+            }
+
+            var provider = _blockRepository.GetBlockProvider(id);
+
+            if (provider == null || provider.LightOpacity != 0)
+            {
+                map[x, z] = y;
+
+                break;
             }
         }
+
         HeightMaps[chunk.Coordinates] = map;
     }
 
     private void UpdateHeightMap(GlobalVoxelCoordinates coords)
     {
         IChunk? chunk;
-        LocalVoxelCoordinates adjusted = Dimension.FindBlockPosition(coords, out chunk);
+        var adjusted = Dimension.FindBlockPosition(coords, out chunk);
 
         if (!HeightMaps.ContainsKey(chunk!.Coordinates))
+        {
             return;
+        }
 
         var map = HeightMaps[chunk.Coordinates];
-        byte x = (byte)adjusted.X; byte z = (byte)adjusted.Z;
+        var x = (byte) adjusted.X;
+        var z = (byte) adjusted.Z;
         LocalVoxelCoordinates localCoords;
-        for (byte y = (byte)(Math.Min(WorldConstants.Height, chunk.GetHeight(x, z) + 2)); y > 0; y--)
+
+        for (var y = (byte) Math.Min(WorldConstants.Height, chunk.GetHeight(x, z) + 2); y > 0; y--)
         {
             localCoords = new LocalVoxelCoordinates(x, y - 1, z);
             var id = chunk.GetBlockID(localCoords);
+
             if (id == 0)
+            {
                 continue;
+            }
+
             var provider = _blockRepository.GetBlockProvider(id);
+
             if (provider.LightOpacity != 0)
             {
                 map[x, z] = y;
+
                 break;
             }
         }
@@ -105,16 +122,22 @@ public class Lighting
 
     private void LightBox(LightingOperation op)
     {
-        IChunk? chunk = Dimension.GetChunk((GlobalVoxelCoordinates)op.Box.Center);
+        var chunk = Dimension.GetChunk((GlobalVoxelCoordinates) op.Box.Center);
+
         if (chunk is null || !chunk.TerrainPopulated)
+        {
             return;
+        }
+
         Profiler.Start("lighting.box");
-        for (int x = (int)op.Box.Min.X; x < (int)op.Box.Max.X; x++)
-        for (int z = (int)op.Box.Min.Z; z < (int)op.Box.Max.Z; z++)
-        for (int y = (int)op.Box.Max.Y - 1; y >= (int)op.Box.Min.Y; y--)
+
+        for (var x = (int) op.Box.Min.X; x < (int) op.Box.Max.X; x++)
+        for (var z = (int) op.Box.Min.Z; z < (int) op.Box.Max.Z; z++)
+        for (var y = (int) op.Box.Max.Y - 1; y >= (int) op.Box.Min.Y; y--)
         {
             LightVoxel(x, y, z, op);
         }
+
         Profiler.Done();
     }
 
@@ -124,24 +147,46 @@ public class Lighting
     private void PropegateLightEvent(int x, int y, int z, byte value, LightingOperation op)
     {
         var coords = new GlobalVoxelCoordinates(x, y, z);
+
         if (!Dimension.IsValidPosition(coords))
+        {
             return;
+        }
+
         IChunk? chunk;
         var adjustedCoords = Dimension.FindBlockPosition(coords, out chunk);
+
         if (chunk is null || !chunk.TerrainPopulated)
+        {
             return;
-        byte current = op.SkyLight ? Dimension.GetSkyLight(coords) : Dimension.GetBlockLight(coords);
+        }
+
+        var current = op.SkyLight
+            ? Dimension.GetSkyLight(coords)
+            : Dimension.GetBlockLight(coords);
+
         if (value == current)
+        {
             return;
+        }
+
         var provider = _blockRepository.GetBlockProvider(Dimension.GetBlockID(coords));
+
         if (op.Initial)
         {
-            byte emissiveness = provider.Luminance;
-            if (chunk.GetHeight((byte)adjustedCoords.X, (byte)adjustedCoords.Z) <= y)
+            var emissiveness = provider.Luminance;
+
+            if (chunk.GetHeight((byte) adjustedCoords.X, (byte) adjustedCoords.Z) <= y)
+            {
                 emissiveness = 15;
+            }
+
             if (emissiveness >= current)
+            {
                 return;
+            }
         }
+
         EnqueueOperation(new BoundingBox(new Vector3(x, y, z), new Vector3(x, y, z) + 1), op.SkyLight, op.Initial);
     }
 
@@ -150,13 +195,15 @@ public class Lighting
     /// </summary>
     private void LightVoxel(int x, int y, int z, LightingOperation op)
     {
-        GlobalVoxelCoordinates coords = new GlobalVoxelCoordinates(x, y, z);
+        var coords = new GlobalVoxelCoordinates(x, y, z);
 
         IChunk? chunk;
         var adjustedCoords = Dimension.FindBlockPosition(coords, out chunk);
 
         if (chunk is null || !chunk.TerrainPopulated) // Move on if this chunk is empty
+        {
             return;
+        }
 
         Profiler.Start("lighting.voxel");
 
@@ -166,39 +213,52 @@ public class Lighting
         // The opacity of the block determines the amount of light it receives from
         // neighboring blocks. This is subtracted from the max of the neighboring
         // block values. We must subtract at least 1.
-        byte opacity = Math.Max(provider.LightOpacity, (byte)1);
+        var opacity = Math.Max(provider.LightOpacity, (byte) 1);
 
-        byte current = op.SkyLight ? Dimension.GetSkyLight(coords) : Dimension.GetBlockLight(coords);
+        var current = op.SkyLight
+            ? Dimension.GetSkyLight(coords)
+            : Dimension.GetBlockLight(coords);
+
         byte final = 0;
 
         // Calculate emissiveness
-        byte emissiveness = provider.Luminance;
+        var emissiveness = provider.Luminance;
+
         if (op.SkyLight)
         {
             byte[,]? map;
+
             if (!HeightMaps.TryGetValue(chunk.Coordinates, out map))
             {
                 GenerateHeightMap(chunk);
                 map = HeightMaps[chunk.Coordinates];
             }
+
             var height = map[adjustedCoords.X, adjustedCoords.Z];
+
             // For skylight, the emissiveness is 15 if y >= height
             if (y >= height)
+            {
                 emissiveness = 15;
+            }
             else
             {
                 if (provider.LightOpacity >= 15)
+                {
                     emissiveness = 0;
+                }
             }
         }
-            
+
         if (opacity < 15 || emissiveness != 0)
         {
             // Compute the light based on the max of the neighbors
             byte max = 0;
-            for (int i = 0; i < Vector3i.Neighbors6.Length; i++)
+
+            for (var i = 0; i < Vector3i.Neighbors6.Length; i++)
             {
-                GlobalVoxelCoordinates neighbor = coords + Vector3i.Neighbors6[i];
+                var neighbor = coords + Vector3i.Neighbors6[i];
+
                 // NOTE: If the neighbor is in a different chunk, which is already generated,
                 //    that chunk will be loaded and lit as well.  If a sufficient number of nearby chunks
                 //    have been previously generated, this recursion will cause a stack overflow.
@@ -208,62 +268,98 @@ public class Lighting
                 {
                     IChunk? c;
                     var adjusted = Dimension.FindBlockPosition(neighbor, out c);
+
                     if (c is not null) // We don't want to generate new chunks just to light this voxel
                     {
                         byte val;
+
                         if (op.SkyLight)
+                        {
                             val = c.GetSkyLight(adjusted);
+                        }
                         else
+                        {
                             val = c.GetBlockLight(adjusted);
+                        }
+
                         max = Math.Max(max, val);
                     }
                 }
             }
+
             // final = MAX(max - opacity, emissiveness, 0)
-            final = (byte)Math.Max(max - opacity, emissiveness);
+            final = (byte) Math.Max(max - opacity, emissiveness);
+
             if (final < 0)
+            {
                 final = 0;
+            }
         }
 
         if (final != current)
         {
             // Apply changes
             if (op.SkyLight)
+            {
                 chunk.SetSkyLight(adjustedCoords, final);
+            }
             else
+            {
                 chunk.SetBlockLight(adjustedCoords, final);
-                
-            byte propegated = (byte)Math.Max(final - 1, 0);
+            }
+
+            var propegated = (byte) Math.Max(final - 1, 0);
 
             // Propegate lighting change to neighboring blocks
             PropegateLightEvent(x - 1, y, z, propegated, op);
             PropegateLightEvent(x, y - 1, z, propegated, op);
             PropegateLightEvent(x, y, z - 1, propegated, op);
+
             if (x + 1 >= op.Box.Max.X)
+            {
                 PropegateLightEvent(x + 1, y, z, propegated, op);
+            }
+
             if (y + 1 >= op.Box.Max.Y)
-                PropegateLightEvent(x,  y + 1, z, propegated, op);
+            {
+                PropegateLightEvent(x, y + 1, z, propegated, op);
+            }
+
             if (z + 1 >= op.Box.Max.Z)
+            {
                 PropegateLightEvent(x, y, z + 1, propegated, op);
+            }
         }
+
         Profiler.Done();
     }
 
     public bool TryLightNext()
     {
         LightingOperation op;
-        if (PendingOperations.Count == 0)
+
+        if (PendingOperations.IsEmpty)
+        {
             return false;
+        }
+
         // TODO: Maybe a timeout or something?
-        bool dequeued = false;
-        while (!(dequeued = PendingOperations.TryDequeue(out op)) && PendingOperations.Count > 0) ;
+        var dequeued = false;
+
+        while (!(dequeued = PendingOperations.TryDequeue(out op)) && !PendingOperations.IsEmpty)
+        {
+            ;
+        }
+
         if (dequeued)
+        {
             LightBox(op);
+        }
+
         return dequeued;
     }
 
-    public void EnqueueOperation(BoundingBox box, bool skyLight, bool initial = false)
-    {
+    public void EnqueueOperation(BoundingBox box, bool skyLight, bool initial = false) =>
         // Try to merge with existing operation
         /*
         for (int i = PendingOperations.Count - 1; i > PendingOperations.Count - 5 && i > 0; i--)
@@ -277,18 +373,19 @@ public class Lighting
         }
         */
         PendingOperations.Enqueue(new LightingOperation { SkyLight = skyLight, Box = box, Initial = initial });
-    }
 
     /// <summary>
     /// Sets the skylight of all voxels above any non-air blocks to maximum
     /// </summary>
     /// <param name="chunk">The Chunk to operate on.</param>
-    private void SetUpperVoxels(IChunk chunk)
+    private static void SetUpperVoxels(IChunk chunk)
     {
-        for (int x = 0; x < WorldConstants.ChunkWidth; x++)
-        for (int z = 0; z < WorldConstants.ChunkDepth; z++)
-        for (int y = chunk.MaxHeight + 1; y < WorldConstants.Height; y++)
+        for (var x = 0; x < WorldConstants.ChunkWidth; x++)
+        for (var z = 0; z < WorldConstants.ChunkDepth; z++)
+        for (var y = chunk.MaxHeight + 1; y < WorldConstants.Height; y++)
+        {
             chunk.SetSkyLight(new LocalVoxelCoordinates(x, y, z), 15);
+        }
     }
 
     /// <summary>
@@ -298,13 +395,23 @@ public class Lighting
     {
         // Set voxels above max height to 0xFF
         SetUpperVoxels(chunk);
-        GlobalVoxelCoordinates coords = (GlobalVoxelCoordinates)chunk.Coordinates;
-        EnqueueOperation(new BoundingBox(new Vector3(coords.X, 0, coords.Z),
-                new Vector3(coords.X + WorldConstants.ChunkWidth, chunk.MaxHeight + 2, coords.Z + WorldConstants.ChunkDepth)),
-            true, true);
+        var coords = (GlobalVoxelCoordinates) chunk.Coordinates;
+
+        EnqueueOperation(
+            new BoundingBox(
+                new Vector3(coords.X, 0, coords.Z),
+                new Vector3(
+                    coords.X + WorldConstants.ChunkWidth,
+                    chunk.MaxHeight + 2,
+                    coords.Z + WorldConstants.ChunkDepth
+                )
+            ),
+            true,
+            true
+        );
+
         TryLightNext();
-        while (flush && TryLightNext())
-        {
-        }
+
+        while (flush && TryLightNext()) { }
     }
 }

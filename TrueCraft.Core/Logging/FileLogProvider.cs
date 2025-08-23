@@ -7,7 +7,10 @@ public class FileLogProvider : ILogProvider
     public StreamWriter Stream { get; set; }
     public LogCategory EnabledCategories { get; set; }
 
-    public FileLogProvider(StreamWriter stream, LogCategory enabledCategories = LogCategory.Notice | LogCategory.Warning | LogCategory.Error)
+    public FileLogProvider(
+        StreamWriter stream,
+        LogCategory enabledCategories = LogCategory.Notice | LogCategory.Warning | LogCategory.Error
+    )
     {
         Stream = stream;
         EnabledCategories = enabledCategories;

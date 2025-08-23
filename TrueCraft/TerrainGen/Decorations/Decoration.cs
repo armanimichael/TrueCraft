@@ -7,40 +7,46 @@ namespace TrueCraft.TerrainGen.Decorations;
 
 public abstract class Decoration : IDecoration
 {
-    public virtual bool ValidLocation(LocalVoxelCoordinates location) { return true; }
+    public virtual bool ValidLocation(LocalVoxelCoordinates location) => true;
 
     public abstract bool GenerateAt(int seed, IChunk chunk, LocalVoxelCoordinates location);
 
-    protected static bool IsCuboidWall(LocalVoxelCoordinates location, LocalVoxelCoordinates start, Vector3 size)
-    {
-        return location.X.Equals(start.X)
-               || location.Z.Equals(start.Z)
-               || location.X.Equals(start.X + (int)size.X - 1)
-               || location.Z.Equals(start.Z + (int)size.Z - 1);
-    }
+    protected static bool IsCuboidWall(LocalVoxelCoordinates location, LocalVoxelCoordinates start, Vector3 size) => location.X.Equals(start.X)
+                                                                                                                     || location.Z.Equals(start.Z)
+                                                                                                                     || location.X.Equals(start.X + (int) size.X - 1)
+                                                                                                                     || location.Z.Equals(start.Z + (int) size.Z - 1);
 
-    protected static bool IsCuboidCorner(LocalVoxelCoordinates location, LocalVoxelCoordinates start, Vector3 size)
-    {
-        return location.X.Equals(start.X) && location.Z.Equals(start.Z)
-               || location.X.Equals(start.X) && location.Z.Equals(start.Z + (int)size.Z - 1)
-               || location.X.Equals(start.X + (int)size.X - 1) && location.Z.Equals(start.Z)
-               || location.X.Equals(start.X + (int)size.X - 1) && location.Z.Equals(start.Z + (int)size.Z - 1);
-    }
+    protected static bool IsCuboidCorner(LocalVoxelCoordinates location, LocalVoxelCoordinates start, Vector3 size) => (location.X.Equals(start.X) && location.Z.Equals(start.Z))
+                                                                                                                       || (location.X.Equals(start.X) &&
+                                                                                                                           location.Z.Equals(start.Z + (int) size.Z - 1))
+                                                                                                                       || (location.X.Equals(start.X + (int) size.X - 1) &&
+                                                                                                                           location.Z.Equals(start.Z))
+                                                                                                                       || (location.X.Equals(start.X + (int) size.X - 1) &&
+                                                                                                                           location.Z.Equals(start.Z + (int) size.Z - 1));
 
     public static bool NeighboursBlock(IChunk chunk, LocalVoxelCoordinates location, byte block, byte meta = 0x0)
     {
-        foreach(Vector3i neighbor in Vector3i.Neighbors4)
+        foreach (var neighbor in Vector3i.Neighbors4)
         {
-            int x = location.X + neighbor.X;
-            int y = location.Y + neighbor.Y;
-            int z = location.Z + neighbor.Z;
-            if (x < 0 || x >= WorldConstants.ChunkWidth || z < 0 || z >= WorldConstants.ChunkDepth || y < 0 || y >= WorldConstants.Height)
+            var x = location.X + neighbor.X;
+            var y = location.Y + neighbor.Y;
+            var z = location.Z + neighbor.Z;
+
+            if (x < 0 || x >= WorldConstants.ChunkWidth || z < 0 || z >= WorldConstants.ChunkDepth || y < 0 ||
+                y >= WorldConstants.Height)
+            {
                 return false;
-            LocalVoxelCoordinates toCheck = new LocalVoxelCoordinates(x, y, z);
+            }
+
+            var toCheck = new LocalVoxelCoordinates(x, y, z);
+
             if (chunk.GetBlockID(toCheck).Equals(block))
             {
                 if (meta != 0x0 && chunk.GetMetadata(toCheck) != meta)
+                {
                     return false;
+                }
+
                 return true;
             }
         }
@@ -48,13 +54,22 @@ public abstract class Decoration : IDecoration
         return false;
     }
 
-    public static void GenerateColumn(IChunk chunk, LocalVoxelCoordinates location, int height, byte block, byte meta = 0x0)
+    public static void GenerateColumn(
+        IChunk chunk,
+        LocalVoxelCoordinates location,
+        int height,
+        byte block,
+        byte meta = 0x0
+    )
     {
-        for (int offset = 0; offset < height; offset++)
+        for (var offset = 0; offset < height; offset++)
         {
             if (location.Y + offset >= WorldConstants.Height)
+            {
                 return;
-            LocalVoxelCoordinates blockLocation = new LocalVoxelCoordinates(location.X, location.Y + offset, location.Z);
+            }
+
+            var blockLocation = new LocalVoxelCoordinates(location.X, location.Y + offset, location.Z);
             chunk.SetBlockID(blockLocation, block);
             chunk.SetMetadata(blockLocation, meta);
         }
@@ -66,7 +81,14 @@ public abstract class Decoration : IDecoration
      * 0x1 - Hollow cuboid of the specified block
      * 0x2 - Outlines the area of the cuboid using the specified block
      */
-    protected static void GenerateCuboid(IChunk chunk, LocalVoxelCoordinates location, Vector3 size, byte block, byte meta = 0x0, byte mode = 0x0)
+    protected static void GenerateCuboid(
+        IChunk chunk,
+        LocalVoxelCoordinates location,
+        Vector3 size,
+        byte block,
+        byte meta = 0x0,
+        byte mode = 0x0
+    )
     {
         //If mode is 0x2 offset the size by 2 and change mode to 0x1
         if (mode.Equals(0x2))
@@ -75,125 +97,168 @@ public abstract class Decoration : IDecoration
             mode = 0x1;
         }
 
-        for (int w = location.X; w < location.X + size.X; w++)
+        for (var w = location.X; w < location.X + size.X; w++)
+        for (var l = location.Z; l < location.Z + size.Z; l++)
+        for (var h = location.Y; h < location.Y + size.Y; h++)
         {
-            for (int l = location.Z; l < location.Z + size.Z; l++)
+            if (w < 0 || w >= WorldConstants.ChunkWidth || l < 0 || l >= WorldConstants.ChunkDepth || h < 0 ||
+                h >= WorldConstants.Height)
             {
-                for (int h = location.Y; h < location.Y + size.Y; h++)
-                {
-                    if (w < 0 || w >= WorldConstants.ChunkWidth || l < 0 || l >= WorldConstants.ChunkDepth || h < 0 || h >= WorldConstants.Height)
-                        continue;
-
-                    LocalVoxelCoordinates BlockLocation = new LocalVoxelCoordinates(w, h, l);
-
-                    if (!h.Equals(location.Y) && !h.Equals(location.Y + (int)size.Y - 1)
-                                              && !IsCuboidWall(new LocalVoxelCoordinates(w, 0, l), location, size)
-                                              && !IsCuboidCorner(new LocalVoxelCoordinates(w, 0, l), location, size))
-                        continue;
-
-                    chunk.SetBlockID(BlockLocation, block);
-                    if (meta != 0x0)
-                        chunk.SetMetadata(BlockLocation, meta);
-                }
-            }
-        }
-    }
-
-    protected void GenerateVanillaLeaves(IChunk chunk, LocalVoxelCoordinates location, int radius, byte block, byte meta = 0x0)
-    {
-        int radiusOffset = radius;
-        for (int yOffset = -radius; yOffset <= radius; yOffset = (yOffset + 1))
-        {
-            int y = location.Y + yOffset;
-            if (y > WorldConstants.Height)
                 continue;
-            GenerateVanillaCircle(chunk, new LocalVoxelCoordinates(location.X, y, location.Z), radiusOffset, block, meta);
+            }
+
+            var BlockLocation = new LocalVoxelCoordinates(w, h, l);
+
+            if (!h.Equals(location.Y) && !h.Equals(location.Y + (int) size.Y - 1)
+                                      && !IsCuboidWall(new LocalVoxelCoordinates(w, 0, l), location, size)
+                                      && !IsCuboidCorner(new LocalVoxelCoordinates(w, 0, l), location, size))
+            {
+                continue;
+            }
+
+            chunk.SetBlockID(BlockLocation, block);
+
+            if (meta != 0x0)
+            {
+                chunk.SetMetadata(BlockLocation, meta);
+            }
+        }
+    }
+
+    protected static void GenerateVanillaLeaves(
+        IChunk chunk,
+        LocalVoxelCoordinates location,
+        int radius,
+        byte block,
+        byte meta = 0x0
+    )
+    {
+        var radiusOffset = radius;
+
+        for (var yOffset = -radius; yOffset <= radius; yOffset = yOffset + 1)
+        {
+            var y = location.Y + yOffset;
+
+            if (y > WorldConstants.Height)
+            {
+                continue;
+            }
+
+            GenerateVanillaCircle(
+                chunk,
+                new LocalVoxelCoordinates(location.X, y, location.Z),
+                radiusOffset,
+                block,
+                meta
+            );
+
             if (yOffset != -radius && yOffset % 2 == 0)
+            {
                 radiusOffset--;
-        }
-    }
-
-    protected void GenerateVanillaCircle(IChunk chunk, LocalVoxelCoordinates location, int radius, byte block, byte meta = 0x0, double corner = 0)
-    {
-        for (int i = -radius; i <= radius; i = (i + 1))
-        {
-            for (int j = -radius; j <= radius; j = (j + 1))
-            {
-                int max = (int)Math.Sqrt((i * i) + (j * j));
-                if (max <= radius)
-                {
-                    if (i.Equals(-radius) && j.Equals(-radius)
-                        || i.Equals(-radius) && j.Equals(radius)
-                        || i.Equals(radius) && j.Equals(-radius)
-                        || i.Equals(radius) && j.Equals(radius))
-                    {
-                        if (corner + radius * 0.2 < 0.4 || corner + radius * 0.2 > 0.7 || corner.Equals(0))
-                            continue;
-                    }
-                    int x = location.X + i;
-                    int z = location.Z + j;
-                    var currentBlock = new LocalVoxelCoordinates(x, location.Y, z);
-                    if (chunk.GetBlockID(currentBlock).Equals(0))
-                    {
-                        chunk.SetBlockID(currentBlock, block);
-                        chunk.SetMetadata(currentBlock, meta);
-                    }
-                }
             }
         }
     }
 
-    protected void GenerateCircle(IChunk chunk, LocalVoxelCoordinates location, int radius, byte block, byte meta = 0x0)
+    protected static void GenerateVanillaCircle(
+        IChunk chunk,
+        LocalVoxelCoordinates location,
+        int radius,
+        byte block,
+        byte meta = 0x0,
+        double corner = 0
+    )
     {
-        for (int i = -radius; i <= radius; i = (i + 1))
+        for (var i = -radius; i <= radius; i = i + 1)
+        for (var j = -radius; j <= radius; j = j + 1)
         {
-            for (int j = -radius; j <= radius; j = (j + 1))
-            {
-                int max = (int)Math.Sqrt((i * i) + (j * j));
-                if (max <= radius)
-                {
-                    int x = location.X + i;
-                    int z = location.Z + j;
+            var max = (int) Math.Sqrt((i * i) + (j * j));
 
-                    if (x < 0 || x >= WorldConstants.ChunkWidth || z < 0 || z >= WorldConstants.ChunkDepth)
+            if (max <= radius)
+            {
+                if ((i.Equals(-radius) && j.Equals(-radius))
+                    || (i.Equals(-radius) && j.Equals(radius))
+                    || (i.Equals(radius) && j.Equals(-radius))
+                    || (i.Equals(radius) && j.Equals(radius)))
+                {
+                    if (corner + (radius * 0.2) < 0.4 || corner + (radius * 0.2) > 0.7 || corner.Equals(0))
+                    {
                         continue;
-
-                    var currentBlock = new LocalVoxelCoordinates(x, location.Y, z);
-                    if (chunk.GetBlockID(currentBlock).Equals(0))
-                    {
-                        chunk.SetBlockID(currentBlock, block);
-                        chunk.SetMetadata(currentBlock, meta);
                     }
+                }
+
+                var x = location.X + i;
+                var z = location.Z + j;
+                var currentBlock = new LocalVoxelCoordinates(x, location.Y, z);
+
+                if (chunk.GetBlockID(currentBlock).Equals(0))
+                {
+                    chunk.SetBlockID(currentBlock, block);
+                    chunk.SetMetadata(currentBlock, meta);
                 }
             }
         }
     }
 
-    protected static void GenerateSphere(IChunk chunk, LocalVoxelCoordinates location, int radius, byte block, byte meta = 0x0)
+    protected static void GenerateCircle(IChunk chunk, LocalVoxelCoordinates location, int radius, byte block, byte meta = 0x0)
     {
-        for (int i = -radius; i <= radius; i = (i + 1))
+        for (var i = -radius; i <= radius; i = i + 1)
+        for (var j = -radius; j <= radius; j = j + 1)
         {
-            for (int j = -radius; j <= radius; j = (j + 1))
+            var max = (int) Math.Sqrt((i * i) + (j * j));
+
+            if (max <= radius)
             {
-                for (int k = -radius; k <= radius; k = (k + 1))
+                var x = location.X + i;
+                var z = location.Z + j;
+
+                if (x < 0 || x >= WorldConstants.ChunkWidth || z < 0 || z >= WorldConstants.ChunkDepth)
                 {
-                    int max = (int)Math.Sqrt((i * i) + (j * j) + (k * k));
-                    if (max <= radius)
-                    {
-                        int x = location.X + i;
-                        int y = location.Y + k;
-                        int z = location.Z + j;
+                    continue;
+                }
 
-                        if (x < 0 || x >= WorldConstants.ChunkWidth || z < 0 || z >= WorldConstants.ChunkDepth || y < 0 || y >= WorldConstants.Height)
-                            continue;
+                var currentBlock = new LocalVoxelCoordinates(x, location.Y, z);
 
-                        var currentBlock = new LocalVoxelCoordinates(x, y, z);
-                        if (chunk.GetBlockID(currentBlock).Equals(0))
-                        {
-                            chunk.SetBlockID(currentBlock, block);
-                            chunk.SetMetadata(currentBlock, meta);
-                        }
-                    }
+                if (chunk.GetBlockID(currentBlock).Equals(0))
+                {
+                    chunk.SetBlockID(currentBlock, block);
+                    chunk.SetMetadata(currentBlock, meta);
+                }
+            }
+        }
+    }
+
+    protected static void GenerateSphere(
+        IChunk chunk,
+        LocalVoxelCoordinates location,
+        int radius,
+        byte block,
+        byte meta = 0x0
+    )
+    {
+        for (var i = -radius; i <= radius; i = i + 1)
+        for (var j = -radius; j <= radius; j = j + 1)
+        for (var k = -radius; k <= radius; k = k + 1)
+        {
+            var max = (int) Math.Sqrt((i * i) + (j * j) + (k * k));
+
+            if (max <= radius)
+            {
+                var x = location.X + i;
+                var y = location.Y + k;
+                var z = location.Z + j;
+
+                if (x < 0 || x >= WorldConstants.ChunkWidth || z < 0 || z >= WorldConstants.ChunkDepth || y < 0 ||
+                    y >= WorldConstants.Height)
+                {
+                    continue;
+                }
+
+                var currentBlock = new LocalVoxelCoordinates(x, y, z);
+
+                if (chunk.GetBlockID(currentBlock).Equals(0))
+                {
+                    chunk.SetBlockID(currentBlock, block);
+                    chunk.SetMetadata(currentBlock, meta);
                 }
             }
         }

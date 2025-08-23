@@ -11,8 +11,7 @@ public class MissingProviderException : ApplicationException
     /// Constructs the MissingProviderException
     /// </summary>
     /// <param name="missingTypeName">The fully qualified name of the missing provider class.</param>
-    public MissingProviderException(string missingTypeName) :
-        base($"The provider of type \"{missingTypeName}\" could not be found.")
-    {
-    }
+    public MissingProviderException(string missingTypeName)
+        :
+        base($"The provider of type \"{missingTypeName}\" could not be found.") { }
 }

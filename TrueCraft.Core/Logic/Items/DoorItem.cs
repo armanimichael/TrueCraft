@@ -22,41 +22,56 @@ public abstract class DoorItem : ItemProvider
         Open = 0x4
     }
 
-    public DoorItem(XmlNode node) : base(node)
-    {
-    }
+    public DoorItem(XmlNode node)
+        : base(node) { }
 
     protected abstract byte BlockID { get; }
 
-    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         var bottom = coordinates + MathHelper.BlockFaceToCoordinates(face);
         var top = bottom + Vector3i.Up;
+
         if (dimension.GetBlockID(top) != 0 || dimension.GetBlockID(bottom) != 0)
+        {
             return;
+        }
+
         DoorFlags direction;
+
         switch (MathHelper.DirectionByRotationFlat(user.Entity!.Yaw))
         {
             case Direction.North:
                 direction = DoorFlags.Northwest;
+
                 break;
             case Direction.South:
                 direction = DoorFlags.Southeast;
+
                 break;
             case Direction.East:
                 direction = DoorFlags.Northeast;
+
                 break;
             default: // Direction.West:
                 direction = DoorFlags.Southwest;
+
                 break;
         }
+
         user.Server.BlockUpdatesEnabled = false;
         dimension.SetBlockID(bottom, BlockID);
-        dimension.SetMetadata(bottom, (byte)direction);
+        dimension.SetMetadata(bottom, (byte) direction);
         dimension.SetBlockID(top, BlockID);
-        dimension.SetMetadata(top, (byte)(direction | DoorFlags.Upper));
+        dimension.SetMetadata(top, (byte) (direction | DoorFlags.Upper));
         user.Server.BlockUpdatesEnabled = true;
         item.Count--;
         user.Hotbar[user.SelectedSlot].Item = item;
@@ -67,20 +82,18 @@ public class IronDoorItem : DoorItem
 {
     public static readonly short ItemID = 0x14A;
 
-    public IronDoorItem(XmlNode node) : base(node)
-    {
-    }
+    public IronDoorItem(XmlNode node)
+        : base(node) { }
 
-    protected override byte BlockID { get { return IronDoorBlock.BlockID; } }
+    protected override byte BlockID => IronDoorBlock.BlockID;
 }
 
 public class WoodenDoorItem : DoorItem
 {
     public static readonly short ItemID = 0x144;
 
-    public WoodenDoorItem(XmlNode node) : base(node)
-    {
-    }
+    public WoodenDoorItem(XmlNode node)
+        : base(node) { }
 
-    protected override byte BlockID { get { return WoodenDoorBlock.BlockID; } }
+    protected override byte BlockID => WoodenDoorBlock.BlockID;
 }

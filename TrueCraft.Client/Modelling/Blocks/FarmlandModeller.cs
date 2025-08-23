@@ -10,16 +10,17 @@ public class FarmlandModeller : BlockModeller
     static FarmlandModeller()
     {
         RegisterRenderer(FarmlandBlock.BlockID, new FarmlandModeller());
-        for (int i = 0; i < DryTexture.Length; i++)
+
+        for (var i = 0; i < DryTexture.Length; i++)
         {
             DryTexture[i] *= new Vector2(16f / 256f);
             MoistTexture[i] *= new Vector2(16f / 256f);
         }
     }
 
-    private static Vector2 DryTopTexture = new Vector2(7, 5);
-    private static Vector2 MoistTopTexture = new Vector2(6, 5);
-    private static Vector2 SideTexture = new Vector2(2, 0);
+    private static Vector2 DryTopTexture = new(7, 5);
+    private static Vector2 MoistTopTexture = new(6, 5);
+    private static Vector2 SideTexture = new(2, 0);
 
     private static Vector2[] DryTexture =
     {
@@ -52,7 +53,7 @@ public class FarmlandModeller : BlockModeller
         SideTexture + Vector2.UnitX + Vector2.UnitY,
         SideTexture + Vector2.UnitY,
         SideTexture,
-        SideTexture + Vector2.UnitX,
+        SideTexture + Vector2.UnitX
     };
 
     private static Vector2[] MoistTexture =
@@ -86,29 +87,41 @@ public class FarmlandModeller : BlockModeller
         SideTexture + Vector2.UnitX + Vector2.UnitY,
         SideTexture + Vector2.UnitY,
         SideTexture,
-        SideTexture + Vector2.UnitX,
+        SideTexture + Vector2.UnitX
     };
 
-    public override VertexPositionNormalColorTexture[] Render(BlockDescriptor descriptor, Vector3 offset,
-        VisibleFaces faces, Tuple<int, int> textureMap, int indiciesOffset, out int[] indicies)
+    public override VertexPositionNormalColorTexture[] Render(
+        BlockDescriptor descriptor,
+        Vector3 offset,
+        VisibleFaces faces,
+        Tuple<int, int> textureMap,
+        int indiciesOffset,
+        out int[] indicies
+    )
     {
         var texture = DryTexture;
-        if (descriptor.Metadata == (byte)FarmlandBlock.MoistureLevel.Moist)
-            texture = MoistTexture;
 
-        int[] lighting = GetLighting(descriptor);
+        if (descriptor.Metadata == (byte) FarmlandBlock.MoistureLevel.Moist)
+        {
+            texture = MoistTexture;
+        }
+
+        var lighting = GetLighting(descriptor);
 
         var overhead = new Vector3(0.5f, 0.5f, 0.5f);
         var cube = CreateUniformCube(overhead, texture, faces, indiciesOffset, out indicies, Color.White, lighting);
-        for (int i = 0; i < cube.Length; i++)
+
+        for (var i = 0; i < cube.Length; i++)
         {
             if (cube[i].Position.Y > 0)
             {
                 cube[i].Position.Y *= 15f / 16f;
             }
+
             cube[i].Position += offset;
             cube[i].Position -= overhead;
         }
+
         return cube;
     }
 }

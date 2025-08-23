@@ -4,29 +4,21 @@ namespace TrueCraft.Core;
 
 public class MetadataInt : MetadataEntry
 {
-    public override byte Identifier { get { return 2; } }
-    public override string FriendlyName { get { return "int"; } }
+    public override byte Identifier => 2;
+    public override string FriendlyName => "int";
 
     public int Value;
 
-    public static implicit operator MetadataInt(int value)
-    {
-        return new MetadataInt(value);
-    }
+    public static implicit operator MetadataInt(int value) => new(value);
 
-    public MetadataInt()
-    {
-    }
+    public MetadataInt() { }
 
     public MetadataInt(int value)
     {
         Value = value;
     }
 
-    public override void FromStream(IMinecraftStream stream)
-    {
-        Value = stream.ReadInt32();
-    }
+    public override void FromStream(IMinecraftStream stream) => Value = stream.ReadInt32();
 
     public override void WriteTo(IMinecraftStream stream, byte index)
     {

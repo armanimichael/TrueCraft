@@ -19,106 +19,123 @@ public class FarmlandBlock : BlockProvider
     public static readonly int UpdateIntervalSeconds = 30;
 
     public static readonly byte BlockID = 0x3C;
-        
-    public override byte ID { get { return 0x3C; } }
-        
-    public override double BlastResistance { get { return 3; } }
 
-    public override double Hardness { get { return 0.6; } }
+    public override byte ID => 0x3C;
 
-    public override byte Luminance { get { return 0; } }
+    public override double BlastResistance => 3;
 
-    public override bool Opaque { get { return true; } }
+    public override double Hardness => 0.6;
 
-    public override byte LightOpacity { get { return 255; } }
-        
-    public override string GetDisplayName(short metadata)
-    {
-        return "Farmland";
-    }
+    public override byte Luminance => 0;
 
-    public override SoundEffectClass SoundEffect
-    {
-        get
-        {
-            return SoundEffectClass.Gravel;
-        }
-    }
+    public override bool Opaque => true;
 
-    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item)
-    {
-        return new[] { new ItemStack(DirtBlock.BlockID) };
-    }
+    public override byte LightOpacity => 255;
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(7, 5);
-    }
+    public override string GetDisplayName(short metadata) => "Farmland";
 
-    public bool IsHydrated(GlobalVoxelCoordinates coordinates, IDimension dimension)
+    public override SoundEffectClass SoundEffect => SoundEffectClass.Gravel;
+
+    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item) => new[] { new ItemStack(DirtBlock.BlockID) };
+
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(7, 5);
+
+    public static bool IsHydrated(GlobalVoxelCoordinates coordinates, IDimension dimension)
     {
         var min = new GlobalVoxelCoordinates(-6 + coordinates.X, coordinates.Y, -6 + coordinates.Z);
         var max = new GlobalVoxelCoordinates(6 + coordinates.X, coordinates.Y + 1, 6 + coordinates.Z);
-        for (int x = min.X; x < max.X; x++)
+
+        for (var x = min.X; x < max.X; x++)
+        for (var y = min.Y; y < max.Y; y++) // TODO: This does not check one above the farmland block for some reason
+        for (var z = min.Z; z < max.Z; z++)
         {
-            for (int y = min.Y; y < max.Y; y++) // TODO: This does not check one above the farmland block for some reason
+            // TODO: what if this crosses a Chunk border and the other Chunk is not loaded?
+            var id = dimension.GetBlockID(new GlobalVoxelCoordinates(x, y, z));
+
+            if (id == WaterBlock.BlockID || id == StationaryWaterBlock.BlockID)
             {
-                for (int z = min.Z; z < max.Z; z++)
-                {
-                    // TODO: what if this crosses a Chunk border and the other Chunk is not loaded?
-                    var id = dimension.GetBlockID(new GlobalVoxelCoordinates(x, y, z));
-                    if (id == WaterBlock.BlockID || id == StationaryWaterBlock.BlockID)
-                        return true;
-                }
+                return true;
             }
         }
+
         return false;
     }
 
-    private void HydrationCheckEvent(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coords)
+    private static void HydrationCheckEvent(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coords)
     {
-        IChunk? chunk = dimension.GetChunk(coords);
+        var chunk = dimension.GetChunk(coords);
+
         if (chunk is null || dimension.GetBlockID(coords) != BlockID)
+        {
             return;
+        }
 
         if (MathHelper.Random.Next(3) == 0)
         {
             var meta = dimension.GetMetadata(coords);
+
             if (IsHydrated(coords, dimension) && meta != 15)
+            {
                 meta++;
+            }
             else
             {
                 meta--;
+
                 if (meta == 0)
                 {
                     dimension.SetBlockID(coords, BlockID); // TODO: shouldn't this be a Dirt Block???
+
                     return;
                 }
             }
+
             dimension.SetMetadata(coords, meta);
         }
-        server.Scheduler.ScheduleEvent("farmland", chunk,
+
+        server.Scheduler.ScheduleEvent(
+            "farmland",
+            chunk,
             TimeSpan.FromSeconds(UpdateIntervalSeconds),
-            _server => HydrationCheckEvent(_server, dimension, coords));
+            _server => HydrationCheckEvent(_server, dimension, coords)
+        );
     }
 
-    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         if (IsHydrated(descriptor.Coordinates, dimension))
         {
             dimension.SetMetadata(descriptor.Coordinates, 1);
         }
-        IChunk chunk = dimension.GetChunk(descriptor.Coordinates)!;
-        user.Server.Scheduler.ScheduleEvent("farmland", chunk,
+
+        var chunk = dimension.GetChunk(descriptor.Coordinates)!;
+
+        user.Server.Scheduler.ScheduleEvent(
+            "farmland",
+            chunk,
             TimeSpan.FromSeconds(UpdateIntervalSeconds),
-            server => HydrationCheckEvent(server, dimension, descriptor.Coordinates));
+            server => HydrationCheckEvent(server, dimension, descriptor.Coordinates)
+        );
     }
 
-    public override void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coords)
+    public override void BlockLoadedFromChunk(
+        IMultiplayerServer server,
+        IDimension dimension,
+        GlobalVoxelCoordinates coords
+    )
     {
-        IChunk chunk = dimension.GetChunk(coords)!;
-        server.Scheduler.ScheduleEvent("farmland", chunk,
+        var chunk = dimension.GetChunk(coords)!;
+
+        server.Scheduler.ScheduleEvent(
+            "farmland",
+            chunk,
             TimeSpan.FromSeconds(UpdateIntervalSeconds),
-            s => HydrationCheckEvent(s, dimension, coords));
+            s => HydrationCheckEvent(s, dimension, coords)
+        );
     }
 }

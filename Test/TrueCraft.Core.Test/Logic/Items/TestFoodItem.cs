@@ -10,15 +10,20 @@ public class TestFoodItem
 {
     private static XmlNode GetTopNode(string xml)
     {
-        XmlDocument doc = new XmlDocument();
-        using (StringReader sr = new StringReader(xml))
-        using (XmlReader xmlr = XmlReader.Create(sr))
+        var doc = new XmlDocument();
+
+        using (var sr = new StringReader(xml))
+        using (var xmlr = XmlReader.Create(sr))
+        {
             doc.Load(xmlr);
+        }
 
         return doc.FirstChild!;
     }
 
-    [TestCase(2, @"<item>
+    [TestCase(
+        2,
+        @"<item>
       <id>260</id>
       <maximumstack>1</maximumstack>
       <visiblemetadata>
@@ -36,11 +41,12 @@ public class TestFoodItem
         <restores>2</restores>
       </food>
     </item>
-")]
-    public void ctor(float expectedRestores, string xml)
+"
+    )]
+    public void Ctor(float expectedRestores, string xml)
     {
-        XmlNode itemNode = GetTopNode(xml);
-        IFoodItem actual = new FoodItem(itemNode);
+        var itemNode = GetTopNode(xml);
+        var actual = new FoodItem(itemNode);
 
         Assert.AreEqual(expectedRestores, actual.Restores);
     }

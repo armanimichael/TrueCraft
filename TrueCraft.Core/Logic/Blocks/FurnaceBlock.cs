@@ -35,18 +35,25 @@ public class FurnaceBlock : BlockProvider
         /// </summary>
         public FurnaceState()
         {
-            _furnaceState = new NbtCompound(new NbtTag[]
-            {
-                new NbtShort("BurnTime", 0),
-                new NbtShort("BurnTotal", 0),
-                new NbtShort("CookTime", -1),
-                new NbtList("Items", new[]
+            _furnaceState = new NbtCompound(
+                new NbtTag[]
                 {
-                    ItemStack.EmptyStack.ToNbt(),
-                    ItemStack.EmptyStack.ToNbt(),
-                    ItemStack.EmptyStack.ToNbt()
-                }, NbtTagType.Compound)
-            });
+                    new NbtShort("BurnTime", 0),
+                    new NbtShort("BurnTotal", 0),
+                    new NbtShort("CookTime", -1),
+                    new NbtList(
+                        "Items",
+                        new[]
+                        {
+                            ItemStack.EmptyStack.ToNbt(),
+                            ItemStack.EmptyStack.ToNbt(),
+                            ItemStack.EmptyStack.ToNbt()
+                        },
+                        NbtTagType.Compound
+                    )
+                }
+            );
+
             IngredientSlot = new IngredientSlotImpl(IngredientIndex, this);
             FuelSlot = new FuelSlotImpl(FuelIndex, this);
             OutputSlot = new OutputSlotImpl(OutputIndex, this);
@@ -68,7 +75,7 @@ public class FurnaceBlock : BlockProvider
         {
             lock (_furnaceState)
             {
-                return (short)(_furnaceState.Get<NbtShort>(tag)?.Value ?? 0);
+                return (short) (_furnaceState.Get<NbtShort>(tag)?.Value ?? 0);
             }
         }
 
@@ -76,12 +83,14 @@ public class FurnaceBlock : BlockProvider
         {
             lock (_furnaceState)
             {
-                NbtShort burnTime = _furnaceState.Get<NbtShort>(tag);
+                var burnTime = _furnaceState.Get<NbtShort>(tag);
+
                 if (burnTime == null)
                 {
                     burnTime = new NbtShort(tag);
                     _furnaceState.Add(burnTime);
                 }
+
                 burnTime.Value = value;
             }
         }
@@ -117,18 +126,19 @@ public class FurnaceBlock : BlockProvider
 
         private ItemStack InternalSlotGet(int slotIndex)
         {
-            lock(_furnaceState)
+            lock (_furnaceState)
             {
-                NbtList items = _furnaceState.Get<NbtList>("Items");
+                var items = _furnaceState.Get<NbtList>("Items");
+
                 return ItemStack.FromNbt(items.Get<NbtCompound>(slotIndex));
             }
         }
 
         private void InternalSlotSet(int slotIndex, ItemStack stack)
         {
-            lock(_furnaceState)
+            lock (_furnaceState)
             {
-                NbtList items = _furnaceState.Get<NbtList>("Items");
+                var items = _furnaceState.Get<NbtList>("Items");
                 items[slotIndex] = stack.ToNbt();
             }
         }
@@ -139,10 +149,7 @@ public class FurnaceBlock : BlockProvider
             set => InternalSlotSet(IngredientIndex, value);
         }
 
-        public void DecrementIngredient()
-        {
-            InternalDecrement(IngredientIndex);
-        }
+        public void DecrementIngredient() => InternalDecrement(IngredientIndex);
 
         public ItemStack Fuel
         {
@@ -154,17 +161,14 @@ public class FurnaceBlock : BlockProvider
         {
             lock (_furnaceState)
             {
-                NbtList items = _furnaceState.Get<NbtList>("Items");
-                NbtCompound fuel = (NbtCompound)items[slotIndex];
-                NbtByte cnt = (NbtByte)fuel["Count"];
+                var items = _furnaceState.Get<NbtList>("Items");
+                var fuel = (NbtCompound) items[slotIndex];
+                var cnt = (NbtByte) fuel["Count"];
                 cnt.Value -= 1;
             }
         }
 
-        public void DecrementFuel()
-        {
-            InternalDecrement(FuelIndex);
-        }
+        public void DecrementFuel() => InternalDecrement(FuelIndex);
 
         public ItemStack Output
         {
@@ -172,12 +176,10 @@ public class FurnaceBlock : BlockProvider
             set => InternalSlotSet(OutputIndex, value);
         }
 
-        public void Save(IDimension dimension, GlobalVoxelCoordinates coordinates)
-        {
-            ((IDimensionServer)dimension).SetTileEntity(coordinates, _furnaceState);
-        }
+        public void Save(IDimension dimension, GlobalVoxelCoordinates coordinates) => ((IDimensionServer) dimension).SetTileEntity(coordinates, _furnaceState);
 
         #region IFurnaceSlots
+
         // TODO It is not possible to robustly implement the INotifyPropertyChanged
         //    as the NbtTag class does not implement it.  So we have no way to
         //    detect if the underlying storage is changed through other means.
@@ -193,26 +195,24 @@ public class FurnaceBlock : BlockProvider
                 _parent = parent;
             }
 
-            protected virtual void OnPropertyChanged([CallerMemberName]string name = "")
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            }
+            protected virtual void OnPropertyChanged([CallerMemberName] string name = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
             public bool Dirty
             {
                 get => _dirty;
                 protected set
                 {
-                    if (_dirty == value) return;
+                    if (_dirty == value)
+                    {
+                        return;
+                    }
+
                     _dirty = value;
                     OnPropertyChanged();
                 }
             }
 
-            public void SetClean()
-            {
-                Dirty = false;
-            }
+            public void SetClean() => Dirty = false;
 
             public int Index { get; }
 
@@ -222,16 +222,23 @@ public class FurnaceBlock : BlockProvider
 
             public int CanAccept(ItemStack other)
             {
-                if (other.Empty) return 0;
+                if (other.Empty)
+                {
+                    return 0;
+                }
 
-                ItemStack item = this.Item;
+                var item = Item;
 
-                if (item.Empty) return other.Count;
+                if (item.Empty)
+                {
+                    return other.Count;
+                }
 
                 if (item.CanMerge(other))
                 {
-                    IItemProvider provider = ItemRepository.Get().GetItemProvider(item.ID)!;
+                    var provider = ItemRepository.Get().GetItemProvider(item.ID)!;
                     int maxStack = provider.MaximumStack;
+
                     return Math.Min(maxStack - item.Count, other.Count);
                 }
 
@@ -241,17 +248,16 @@ public class FurnaceBlock : BlockProvider
             public SetSlotPacket GetSetSlotPacket(sbyte windowID)
             {
                 Dirty = false;
-                ItemStack item = Item;
-                return new SetSlotPacket(windowID, (short)Index, item.ID, item.Count, item.Metadata);
+                var item = Item;
+
+                return new SetSlotPacket(windowID, (short) Index, item.ID, item.Count, item.Metadata);
             }
         }
 
         private class IngredientSlotImpl : SlotImpl
         {
-
-            public IngredientSlotImpl(int slotIndex, FurnaceState parent) : base(slotIndex, parent)
-            {
-            }
+            public IngredientSlotImpl(int slotIndex, FurnaceState parent)
+                : base(slotIndex, parent) { }
 
             public override ItemStack Item
             {
@@ -269,10 +275,8 @@ public class FurnaceBlock : BlockProvider
 
         private class FuelSlotImpl : SlotImpl
         {
-            public FuelSlotImpl(int slotIndex, FurnaceState parent) : base(slotIndex, parent)
-            {
-
-            }
+            public FuelSlotImpl(int slotIndex, FurnaceState parent)
+                : base(slotIndex, parent) { }
 
             public override ItemStack Item
             {
@@ -292,10 +296,8 @@ public class FurnaceBlock : BlockProvider
 
         private class OutputSlotImpl : SlotImpl
         {
-            public OutputSlotImpl(int slotIndex, FurnaceState parent) : base (slotIndex, parent)
-            {
-
-            }
+            public OutputSlotImpl(int slotIndex, FurnaceState parent)
+                : base(slotIndex, parent) { }
 
             public override ItemStack Item
             {
@@ -308,6 +310,7 @@ public class FurnaceBlock : BlockProvider
                 }
             }
         }
+
         #endregion
     }
 
@@ -315,10 +318,7 @@ public class FurnaceBlock : BlockProvider
     {
         public event EventHandler? Disposed;
 
-        public void Dispose()
-        {
-            Disposed?.Invoke(this, EventArgs.Empty);
-        }
+        public void Dispose() => Disposed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -328,8 +328,8 @@ public class FurnaceBlock : BlockProvider
     {
         public FurnaceWindowUser(IFurnaceWindow<IServerSlot> window, IRemoteClient user)
         {
-            this.Window = window;
-            this.User = user;
+            Window = window;
+            User = user;
         }
 
         public IFurnaceWindow<IServerSlot> Window { get; }
@@ -338,49 +338,41 @@ public class FurnaceBlock : BlockProvider
 
     public static readonly byte BlockID = 0x3D;
 
-    public override byte ID { get { return 0x3D; } }
+    public override byte ID => 0x3D;
 
-    public override double BlastResistance { get { return 17.5; } }
+    public override double BlastResistance => 17.5;
 
-    public override double Hardness { get { return 3.5; } }
+    public override double Hardness => 3.5;
 
-    public override byte Luminance { get { return 0; } }
+    public override byte Luminance => 0;
 
-    public override string GetDisplayName(short metadata)
-    {
-        return "Furnace";
-    }
+    public override string GetDisplayName(short metadata) => "Furnace";
 
-    public override ToolType EffectiveTools
-    {
-        get
-        {
-            return ToolType.Pickaxe;
-        }
-    }
+    public override ToolType EffectiveTools => ToolType.Pickaxe;
 
-    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item)
-    {
+    protected override ItemStack[] GetDrop(BlockDescriptor descriptor, ItemStack item) =>
         // TODO: should Furnaces also drop their contents?
-        return new[] { new ItemStack(BlockID) };
-    }
+        new[] { new ItemStack(BlockID) };
 
     // TODO: An instance of GlobalVoxelCoordinates is not sufficient.  If a
     //       furnace is placed in another dimension at the same coordinates,
     //       this will fail.
-    protected static Dictionary<GlobalVoxelCoordinates, FurnaceEventSubject> _scheduledFurnaces = new Dictionary<GlobalVoxelCoordinates, FurnaceEventSubject>();
-    protected static Dictionary<GlobalVoxelCoordinates, List<FurnaceWindowUser>> _trackedFurnaceWindows = new Dictionary<GlobalVoxelCoordinates, List<FurnaceWindowUser>>();
-    protected static Dictionary<GlobalVoxelCoordinates, FurnaceState> _trackedFurnaceStates = new Dictionary<GlobalVoxelCoordinates, FurnaceState>();
+    protected static Dictionary<GlobalVoxelCoordinates, FurnaceEventSubject> _scheduledFurnaces = new();
+    protected static Dictionary<GlobalVoxelCoordinates, List<FurnaceWindowUser>> _trackedFurnaceWindows = new();
+    protected static Dictionary<GlobalVoxelCoordinates, FurnaceState> _trackedFurnaceStates = new();
 
-    private FurnaceState GetState(IDimension dimension, GlobalVoxelCoordinates coords)
+    private static FurnaceState GetState(IDimension dimension, GlobalVoxelCoordinates coords)
     {
         ServerOnly.Assert();
 
         if (_trackedFurnaceStates.ContainsKey(coords))
+        {
             return _trackedFurnaceStates[coords];
+        }
 
         FurnaceState rv;
-        NbtCompound? tileEntity = ((IDimensionServer)dimension).GetTileEntity(coords);
+        var tileEntity = ((IDimensionServer) dimension).GetTileEntity(coords);
+
         if (tileEntity is null)
         {
             rv = new FurnaceState();
@@ -392,6 +384,7 @@ public class FurnaceBlock : BlockProvider
         }
 
         _trackedFurnaceStates.Add(coords, rv);
+
         return rv;
     }
 
@@ -401,16 +394,16 @@ public class FurnaceBlock : BlockProvider
     /// </summary>
     /// <param name="coords"></param>
     /// <param name="state"></param>
-    private void UpdateWindows(GlobalVoxelCoordinates coords, FurnaceState state)
+    private static void UpdateWindows(GlobalVoxelCoordinates coords, FurnaceState state)
     {
         ServerOnly.Assert();
 
         if (_trackedFurnaceWindows.ContainsKey(coords))
         {
-            Handling = true;
             foreach (var window in _trackedFurnaceWindows[coords])
+            {
                 UpdateWindow(window.Window, window.User, state);
-            Handling = false;
+            }
         }
     }
 
@@ -420,68 +413,116 @@ public class FurnaceBlock : BlockProvider
     /// <param name="window"></param>
     /// <param name="user"></param>
     /// <param name="state"></param>
-    private void UpdateWindow(IFurnaceWindow<IServerSlot> window, IRemoteClient user, FurnaceState state)
+    private static void UpdateWindow(IFurnaceWindow<IServerSlot> window, IRemoteClient user, FurnaceState state)
     {
-        user.QueuePacket(new UpdateProgressPacket(
-            window.WindowID, UpdateProgressPacket.ProgressTarget.ItemCompletion, state.CookTime));
-        double burnProgress = state.BurnTimeRemaining / (double)state.BurnTimeTotal;
-        short burn = (short)(burnProgress * 250);
-        user.QueuePacket(new UpdateProgressPacket(
-            window.WindowID, UpdateProgressPacket.ProgressTarget.AvailableHeat, burn));
+        user.QueuePacket(
+            new UpdateProgressPacket(
+                window.WindowID,
+                UpdateProgressPacket.ProgressTarget.ItemCompletion,
+                state.CookTime
+            )
+        );
+
+        var burnProgress = state.BurnTimeRemaining / (double) state.BurnTimeTotal;
+        var burn = (short) (burnProgress * 250);
+
+        user.QueuePacket(
+            new UpdateProgressPacket(
+                window.WindowID,
+                UpdateProgressPacket.ProgressTarget.AvailableHeat,
+                burn
+            )
+        );
     }
 
-    private void SetState(IDimension dimension, GlobalVoxelCoordinates coords, FurnaceState state)
-    {
-        state.Save(dimension, coords);
-        UpdateWindows(coords, state);
-    }
-
-    public override void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coords)
+    public override void BlockLoadedFromChunk(
+        IMultiplayerServer server,
+        IDimension dimension,
+        GlobalVoxelCoordinates coords
+    )
     {
         ServerOnly.Assert();
 
-        FurnaceState state = GetState(dimension, coords);
+        var state = GetState(dimension, coords);
+
         if (state.BurnTimeRemaining > 0)
+        {
             ScheduleFurnace(server.Scheduler, dimension, coords, ItemRepository.Get());
+        }
     }
 
-    public override void BlockMined(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override void BlockMined(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
         // TODO clean up running Furnace
 
-        IDimensionServer dimensionServer = (IDimensionServer)dimension;
-        NbtCompound? entity = dimensionServer.GetTileEntity(descriptor.Coordinates);
+        var dimensionServer = (IDimensionServer) dimension;
+        var entity = dimensionServer.GetTileEntity(descriptor.Coordinates);
+
         if (entity is not null)
         {
-            foreach (var item in (NbtList)entity["Items"])
+            foreach (var item in (NbtList) entity["Items"])
             {
-                IEntityManager manager = ((IDimensionServer)dimension).EntityManager;
-                var slot = ItemStack.FromNbt((NbtCompound)item);
-                manager.SpawnEntity(new ItemEntity(dimension, manager,
-                    new Vector3(descriptor.Coordinates.X + 0.5, descriptor.Coordinates.Y + 0.5, descriptor.Coordinates.Z + 0.5), slot));
+                var manager = ((IDimensionServer) dimension).EntityManager;
+                var slot = ItemStack.FromNbt((NbtCompound) item);
+
+                manager.SpawnEntity(
+                    new ItemEntity(
+                        dimension,
+                        manager,
+                        new Vector3(
+                            descriptor.Coordinates.X + 0.5,
+                            descriptor.Coordinates.Y + 0.5,
+                            descriptor.Coordinates.Z + 0.5
+                        ),
+                        slot
+                    )
+                );
             }
+
             dimensionServer.SetTileEntity(descriptor.Coordinates, null);
         }
+
         base.BlockMined(descriptor, face, dimension, user);
     }
 
-    public override bool BlockRightClicked(IServiceLocator serviceLocator,
-        BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    public override bool BlockRightClicked(
+        IServiceLocator serviceLocator,
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    )
     {
         ServerOnly.Assert();
 
-        FurnaceState state = GetState(dimension, descriptor.Coordinates);
-        IInventoryFactory<IServerSlot> factory = new InventoryFactory<IServerSlot>();
-        IFurnaceWindow<IServerSlot> window = factory.NewFurnaceWindow(serviceLocator,
-            SlotFactory<IServerSlot>.Get(), WindowIDs.GetWindowID(),
-            state, user.Inventory, user.Hotbar,
-            dimension, descriptor.Coordinates);
+        var state = GetState(dimension, descriptor.Coordinates);
+        var factory = new InventoryFactory<IServerSlot>();
+
+        var window = factory.NewFurnaceWindow(
+            serviceLocator,
+            SlotFactory<IServerSlot>.Get(),
+            WindowIDs.GetWindowID(),
+            state,
+            user.Inventory,
+            user.Hotbar,
+            dimension,
+            descriptor.Coordinates
+        );
 
         user.OpenWindow(window);
+
         if (!_trackedFurnaceWindows.ContainsKey(descriptor.Coordinates))
+        {
             _trackedFurnaceWindows[descriptor.Coordinates] = new List<FurnaceWindowUser>();
+        }
+
         _trackedFurnaceWindows[descriptor.Coordinates].Add(new FurnaceWindowUser(window, user));
         window.WindowClosed += (sender, e) => _trackedFurnaceWindows.Remove(descriptor.Coordinates);
 
@@ -490,8 +531,6 @@ public class FurnaceBlock : BlockProvider
         return false;
     }
 
-    private bool Handling = false;
-
     /// <summary>
     /// Tries to change the Furnace from the Off state to the Lit state.
     /// </summary>
@@ -499,35 +538,54 @@ public class FurnaceBlock : BlockProvider
     /// <param name="dimension"></param>
     /// <param name="coords"></param>
     /// <param name="itemRepository"></param>
-    public void TryStartFurnace(IEventScheduler scheduler, IDimension dimension,
-        GlobalVoxelCoordinates coords, IItemRepository itemRepository)
+    public void TryStartFurnace(
+        IEventScheduler scheduler,
+        IDimension dimension,
+        GlobalVoxelCoordinates coords,
+        IItemRepository itemRepository
+    )
     {
         // If the furnace is already scheduled, it is already lit.
         if (_scheduledFurnaces.ContainsKey(coords))
+        {
             return;
+        }
 
-        FurnaceState state = GetState(dimension, coords);
-        ItemStack inputStack = state.Ingredient;
-        ItemStack fuelStack = state.Fuel;
-        ItemStack outputStack = state.Output;
+        var state = GetState(dimension, coords);
+        var inputStack = state.Ingredient;
+        var fuelStack = state.Fuel;
+        var outputStack = state.Output;
 
-        ISmeltableItem? input = itemRepository.GetItemProvider(inputStack.ID) as ISmeltableItem;
-        IBurnableItem? fuel = itemRepository.GetItemProvider(fuelStack.ID) as IBurnableItem;
+        var input = itemRepository.GetItemProvider(inputStack.ID) as ISmeltableItem;
+        var fuel = itemRepository.GetItemProvider(fuelStack.ID) as IBurnableItem;
 
         if (!CanStartBurningFuel(itemRepository, fuel, input, outputStack))
+        {
             return;
+        }
 
         ScheduleFurnace(scheduler, dimension, coords, itemRepository);
 
         dimension.SetBlockID(coords, LitFurnaceBlock.BlockID);
 
-        state.BurnTimeTotal = (short)(fuel!.BurnTime.TotalSeconds * 20);  // TODO hard-coded ticks per second
+        state.BurnTimeTotal = (short) (fuel!.BurnTime.TotalSeconds * 20); // TODO hard-coded ticks per second
         state.BurnTimeRemaining = state.BurnTimeTotal;
         state.CookTime = 0;
         state.DecrementFuel();
         fuelStack = state.Fuel;
-        foreach (FurnaceWindowUser fwu in _trackedFurnaceWindows[coords])
-            fwu.User.QueuePacket(new SetSlotPacket(fwu.Window.WindowID, (short)fwu.Window.FuelSlotIndex, fuelStack.ID, fuelStack.Count, fuelStack.Metadata));
+
+        foreach (var fwu in _trackedFurnaceWindows[coords])
+        {
+            fwu.User.QueuePacket(
+                new SetSlotPacket(
+                    fwu.Window.WindowID,
+                    (short) fwu.Window.FuelSlotIndex,
+                    fuelStack.ID,
+                    fuelStack.Count,
+                    fuelStack.Metadata
+                )
+            );
+        }
 
         UpdateWindows(coords, state);
     }
@@ -549,70 +607,123 @@ public class FurnaceBlock : BlockProvider
     /// <item>room for the output</item>
     /// </list>
     /// </para></remarks>
-    private bool CanStartBurningFuel(IItemRepository itemRepository,
-        IBurnableItem? fuel, ISmeltableItem? input, ItemStack outputStack)
+    private static bool CanStartBurningFuel(
+        IItemRepository itemRepository,
+        IBurnableItem? fuel,
+        ISmeltableItem? input,
+        ItemStack outputStack
+    )
     {
         if (fuel is null || input is null)
+        {
             return false;
+        }
 
         if (!outputStack.CanMerge(input.SmeltingOutput))
+        {
             return false;
+        }
 
-        IItemProvider? provider = itemRepository.GetItemProvider(input.SmeltingOutput.ID);
+        var provider = itemRepository.GetItemProvider(input.SmeltingOutput.ID);
+
         if (provider is null || outputStack.Count == provider.MaximumStack)
+        {
             return false;
+        }
 
         return true;
     }
 
-    private void ScheduleFurnace(IEventScheduler scheduler,
-        IDimension dimension, GlobalVoxelCoordinates coords, IItemRepository itemRepository)
+    private void ScheduleFurnace(
+        IEventScheduler scheduler,
+        IDimension dimension,
+        GlobalVoxelCoordinates coords,
+        IItemRepository itemRepository
+    )
     {
-        FurnaceEventSubject subject = new FurnaceEventSubject();
+        var subject = new FurnaceEventSubject();
         _scheduledFurnaces[coords] = subject;
+
         // TODO hard-coded TimeSpan that must be coordinated with hard-coded values in other places.
-        scheduler.ScheduleEvent("smelting", subject, TimeSpan.FromSeconds(1),
-            server => UpdateFurnace(server.Scheduler, dimension, coords, itemRepository));
+        scheduler.ScheduleEvent(
+            "smelting",
+            subject,
+            TimeSpan.FromSeconds(1),
+            server => UpdateFurnace(server.Scheduler, dimension, coords, itemRepository)
+        );
     }
 
-    private void UpdateFurnace(IEventScheduler scheduler, IDimension dimension, GlobalVoxelCoordinates coords, IItemRepository itemRepository)
+    private void UpdateFurnace(
+        IEventScheduler scheduler,
+        IDimension dimension,
+        GlobalVoxelCoordinates coords,
+        IItemRepository itemRepository
+    )
     {
         // This furnace is no longer scheduled, so remove it.
         if (!_scheduledFurnaces.ContainsKey(coords))
+        {
             return;
+        }
+
         _scheduledFurnaces.Remove(coords);
 
-        FurnaceState state = GetState(dimension, coords);
-        ItemStack inputStack = state.Ingredient;
-        ItemStack fuelStack = state.Fuel;
-        ItemStack outputStack = state.Output;
+        var state = GetState(dimension, coords);
+        var inputStack = state.Ingredient;
+        var fuelStack = state.Fuel;
+        var outputStack = state.Output;
 
-        ISmeltableItem? input = itemRepository.GetItemProvider(inputStack.ID) as ISmeltableItem;
-        IBurnableItem? fuel = itemRepository.GetItemProvider(fuelStack.ID) as IBurnableItem;
+        var input = itemRepository.GetItemProvider(inputStack.ID) as ISmeltableItem;
+        var fuel = itemRepository.GetItemProvider(fuelStack.ID) as IBurnableItem;
 
         if (input is not null)
         {
             // Increase CookTime
-            state.CookTime += 20;   // TODO hard-coded value that must be coordinated with TimeSpan in ScheduleFurnace
-            if (state.CookTime >= 200)   // TODO Hard-coded constant
+            state.CookTime += 20; // TODO hard-coded value that must be coordinated with TimeSpan in ScheduleFurnace
+
+            if (state.CookTime >= 200) // TODO Hard-coded constant
             {
                 state.DecrementIngredient();
                 inputStack = state.Ingredient;
 
-                IItemProvider outputItemProvider = itemRepository.GetItemProvider(input.SmeltingOutput.ID)!;
+                var outputItemProvider = itemRepository.GetItemProvider(input.SmeltingOutput.ID)!;
                 int maxStack = outputItemProvider.MaximumStack;
+
                 if (outputStack.Empty)
+                {
                     outputStack = input.SmeltingOutput;
+                }
                 else
-                    outputStack.Count += (sbyte)Math.Min(maxStack - outputStack.Count, input.SmeltingOutput.Count);
+                {
+                    outputStack.Count += (sbyte) Math.Min(maxStack - outputStack.Count, input.SmeltingOutput.Count);
+                }
+
                 state.Output = outputStack;
 
-                foreach(FurnaceWindowUser fwu in _trackedFurnaceWindows[coords])
+                foreach (var fwu in _trackedFurnaceWindows[coords])
                 {
-                    IFurnaceWindow<IServerSlot> window = fwu.Window;
-                    IRemoteClient user = fwu.User;
-                    user.QueuePacket(new SetSlotPacket(window.WindowID, (short)window.IngredientSlotIndex, inputStack.ID, inputStack.Count, inputStack.Metadata));
-                    user.QueuePacket(new SetSlotPacket(window.WindowID, (short)window.OutputSlotIndex, outputStack.ID, outputStack.Count, outputStack.Metadata));
+                    var window = fwu.Window;
+                    var user = fwu.User;
+
+                    user.QueuePacket(
+                        new SetSlotPacket(
+                            window.WindowID,
+                            (short) window.IngredientSlotIndex,
+                            inputStack.ID,
+                            inputStack.Count,
+                            inputStack.Metadata
+                        )
+                    );
+
+                    user.QueuePacket(
+                        new SetSlotPacket(
+                            window.WindowID,
+                            (short) window.OutputSlotIndex,
+                            outputStack.ID,
+                            outputStack.Count,
+                            outputStack.Metadata
+                        )
+                    );
                 }
 
                 state.CookTime = 0;
@@ -620,17 +731,30 @@ public class FurnaceBlock : BlockProvider
         }
 
         // Reduce BurnTimeRemaining
-        state.BurnTimeRemaining -= 20;   // TODO hard-coded value that must be coordinated with TimeSpan in ScheduleFurnace
+        state.BurnTimeRemaining -=
+            20; // TODO hard-coded value that must be coordinated with TimeSpan in ScheduleFurnace
+
         if (state.BurnTimeRemaining <= 0)
         {
             if (CanStartBurningFuel(itemRepository, fuel, input, outputStack))
             {
-                state.BurnTimeTotal = (short)(fuel!.BurnTime.TotalSeconds * 20);  // TODO hard-coded ticks per second
+                state.BurnTimeTotal = (short) (fuel!.BurnTime.TotalSeconds * 20); // TODO hard-coded ticks per second
                 state.BurnTimeRemaining = state.BurnTimeTotal;
                 state.DecrementFuel();
                 fuelStack = state.Fuel;
-                foreach (FurnaceWindowUser fwu in _trackedFurnaceWindows[coords])
-                    fwu.User.QueuePacket(new SetSlotPacket(fwu.Window.WindowID, (short)fwu.Window.FuelSlotIndex, fuelStack.ID, fuelStack.Count, fuelStack.Metadata));
+
+                foreach (var fwu in _trackedFurnaceWindows[coords])
+                {
+                    fwu.User.QueuePacket(
+                        new SetSlotPacket(
+                            fwu.Window.WindowID,
+                            (short) fwu.Window.FuelSlotIndex,
+                            fuelStack.ID,
+                            fuelStack.Count,
+                            fuelStack.Metadata
+                        )
+                    );
+                }
             }
             else
             {
@@ -641,34 +765,32 @@ public class FurnaceBlock : BlockProvider
         }
 
         if (state.BurnTimeRemaining > 0)
+        {
             ScheduleFurnace(scheduler, dimension, coords, itemRepository);
+        }
 
         UpdateWindows(coords, state);
     }
 
-    public override Tuple<int, int> GetTextureMap(byte metadata)
-    {
-        return new Tuple<int, int>(13, 2);
-    }
+    public override Tuple<int, int> GetTextureMap(byte metadata) => new(13, 2);
 
-    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
-    {
-        dimension.SetMetadata(descriptor.Coordinates, (byte)MathHelper.DirectionByRotationFlat(user.Entity!.Yaw, true));
-    }
+    public override void BlockPlaced(
+        BlockDescriptor descriptor,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    ) => dimension.SetMetadata(descriptor.Coordinates, (byte) MathHelper.DirectionByRotationFlat(user.Entity!.Yaw, true));
 }
 
 public class LitFurnaceBlock : FurnaceBlock
 {
-    public static readonly new byte BlockID = 0x3E;
+    public new static readonly byte BlockID = 0x3E;
 
-    public override byte ID { get { return 0x3E; } }
+    public override byte ID => 0x3E;
 
-    public override byte Luminance { get { return 13; } }
+    public override byte Luminance => 13;
 
-    public override bool Opaque { get { return false; } }
+    public override bool Opaque => false;
 
-    public override string GetDisplayName(short metadata)
-    {
-        return "Furnace (lit)";
-    }
+    public override string GetDisplayName(short metadata) => "Furnace (lit)";
 }

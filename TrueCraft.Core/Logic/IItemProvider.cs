@@ -27,7 +27,14 @@ public interface IItemProvider
 
     void ItemUsedOnNothing(ItemStack item, IDimension dimension, IRemoteClient user);
     void ItemUsedOnEntity(ItemStack item, IEntity usedOn, IDimension dimension, IRemoteClient user);
-    void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user);
+
+    void ItemUsedOnBlock(
+        GlobalVoxelCoordinates coordinates,
+        ItemStack item,
+        BlockFace face,
+        IDimension dimension,
+        IRemoteClient user
+    );
 
     /// <summary>
     /// Gets the location of this item's icon texture within the items.png spritesheet.

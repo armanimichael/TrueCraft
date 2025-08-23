@@ -26,19 +26,14 @@ public class DyeItem : ItemProvider
 
     public static readonly short ItemID = 0x15F;
 
-    public DyeItem(XmlNode node) : base(node)
-    {
-    }
+    public DyeItem(XmlNode node)
+        : base(node) { }
 
-    public override Tuple<int, int> GetIconTexture(byte metadata)
-    {
+    public override Tuple<int, int> GetIconTexture(byte metadata) =>
         // TODO: Support additional textures
-        return new Tuple<int, int>(14, 4);
-    }
+        new(14, 4);
 
-    public override string GetDisplayName(short metadata)
-    {
+    public override string GetDisplayName(short metadata) =>
         // TODO: check if Beta1.7.3 uses different names for each dye.
-        return "Dye";
-    }
+        "Dye";
 }

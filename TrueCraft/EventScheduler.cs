@@ -10,15 +10,14 @@ namespace TrueCraft;
 
 public class EventScheduler : IEventScheduler
 {
-    private IList<ScheduledEvent> Events { get; set; } // Sorted
-    private readonly object EventLock = new object();
-    private IMultiplayerServer Server { get; set; }
-    private HashSet<IEventSubject> Subjects { get; set; }
-    private Stopwatch Stopwatch { get; set; }
-    private ConcurrentQueue<ScheduledEvent> ImmediateEventQueue { get; set; }
-    private ConcurrentQueue<ScheduledEvent> LaterEventQueue { get; set; }
-    private ConcurrentQueue<IEventSubject> DisposedSubjects { get; set; }
-    public HashSet<string> DisabledEvents { get; private set; }
+    private List<ScheduledEvent> Events { get; } // Sorted
+    private IMultiplayerServer Server { get; }
+    private HashSet<IEventSubject> Subjects { get; }
+    private Stopwatch Stopwatch { get; }
+    private ConcurrentQueue<ScheduledEvent> ImmediateEventQueue { get; }
+    private ConcurrentQueue<ScheduledEvent> LaterEventQueue { get; }
+    private ConcurrentQueue<IEventSubject> DisposedSubjects { get; }
+    public HashSet<string> DisabledEvents { get; }
 
     public EventScheduler(IMultiplayerServer server)
     {
@@ -32,94 +31,131 @@ public class EventScheduler : IEventScheduler
         DisabledEvents = new HashSet<string>();
         Stopwatch.Start();
     }
-        
+
     private void ScheduleEvent(ScheduledEvent e)
     {
         int i;
+
         for (i = 0; i < Events.Count; i++)
         {
             if (Events[i].When > e.When)
+            {
                 break;
+            }
         }
+
         Events.Insert(i, e);
     }
 
     public void ScheduleEvent(string name, IEventSubject? subject, TimeSpan when, Action<IMultiplayerServer> action)
     {
         if (DisabledEvents.Contains(name))
+        {
             return;
+        }
 
-        long _when = Stopwatch.ElapsedTicks + TimeSpanTicksToStopWatchTicks(when.Ticks);
+        var _when = Stopwatch.ElapsedTicks + TimeSpanTicksToStopWatchTicks(when.Ticks);
+
         if (subject is not null && !Subjects.Contains(subject))
         {
             Subjects.Add(subject);
             subject.Disposed += Subject_Disposed;
         }
 
-        var queue = when.TotalSeconds > 3 ? LaterEventQueue : ImmediateEventQueue;
-        queue.Enqueue(new ScheduledEvent
-        {
-            Name = name,
-            Subject = subject,
-            When = _when,
-            Action = action
-        });
+        var queue = when.TotalSeconds > 3
+            ? LaterEventQueue
+            : ImmediateEventQueue;
+
+        queue.Enqueue(
+            new ScheduledEvent
+            {
+                Name = name,
+                Subject = subject,
+                When = _when,
+                Action = action
+            }
+        );
     }
 
-    private long TimeSpanTicksToStopWatchTicks(long tsTicks)
+    private static long TimeSpanTicksToStopWatchTicks(long tsTicks)
     {
         double tsTicksPerSecond = 10_000_000;
         double swTicksPerSecond = Stopwatch.Frequency;
 
-        return (long)(tsTicks * (swTicksPerSecond / tsTicksPerSecond));
+        return (long) (tsTicks * (swTicksPerSecond / tsTicksPerSecond));
     }
 
-    void Subject_Disposed(object? sender, EventArgs e)
+    private void Subject_Disposed(object? sender, EventArgs e)
     {
         if (sender is null)
+        {
             return;
+        }
 
-        DisposedSubjects.Enqueue((IEventSubject)sender);
+        DisposedSubjects.Enqueue((IEventSubject) sender);
     }
 
     public void Update()
     {
         Profiler.Start("scheduler");
         Profiler.Start("scheduler.receive-events");
-        long start = Stopwatch.ElapsedTicks;
-        long limit = Stopwatch.ElapsedMilliseconds + 10;
-        while (ImmediateEventQueue.Count > 0 && Stopwatch.ElapsedMilliseconds < limit)
+        var start = Stopwatch.ElapsedTicks;
+        var limit = Stopwatch.ElapsedMilliseconds + 10;
+
+        while (!ImmediateEventQueue.IsEmpty && Stopwatch.ElapsedMilliseconds < limit)
         {
             ScheduledEvent e;
-            bool dequeued = false;
+            var dequeued = false;
+
             while (!(dequeued = ImmediateEventQueue.TryDequeue(out e))
-                   && Stopwatch.ElapsedMilliseconds < limit) ;
+                   && Stopwatch.ElapsedMilliseconds < limit)
+            {
+                ;
+            }
+
             if (dequeued)
+            {
                 ScheduleEvent(e);
+            }
         }
-        while (LaterEventQueue.Count > 0 && Stopwatch.ElapsedMilliseconds < limit)
+
+        while (!LaterEventQueue.IsEmpty && Stopwatch.ElapsedMilliseconds < limit)
         {
             ScheduledEvent e;
-            bool dequeued = false;
+            var dequeued = false;
+
             while (!(dequeued = LaterEventQueue.TryDequeue(out e))
-                   && Stopwatch.ElapsedMilliseconds < limit) ;
+                   && Stopwatch.ElapsedMilliseconds < limit)
+            {
+                ;
+            }
+
             if (dequeued)
+            {
                 ScheduleEvent(e);
+            }
         }
+
         Profiler.Done();
 
         Profiler.Start("scheduler.dispose-subjects");
-        while (DisposedSubjects.Count > 0 && Stopwatch.ElapsedMilliseconds < limit)
+
+        while (!DisposedSubjects.IsEmpty && Stopwatch.ElapsedMilliseconds < limit)
         {
             IEventSubject? subject;
-            bool dequeued = false;
+            var dequeued = false;
+
             // TODO why spin in a tight loop when nothing is there to dequeue?
             while (!(dequeued = DisposedSubjects.TryDequeue(out subject))
-                   && Stopwatch.ElapsedMilliseconds < limit) ;
+                   && Stopwatch.ElapsedMilliseconds < limit)
+            {
+                ;
+            }
+
             if (dequeued)
             {
                 // Cancel all events with this subject
-                for (int i = 0; i < Events.Count; i++)
+                for (var i = 0; i < Events.Count; i++)
                 {
                     if (Events[i].Subject == subject)
                     {
@@ -127,15 +163,18 @@ public class EventScheduler : IEventScheduler
                         i--;
                     }
                 }
+
                 Subjects.Remove(subject!);
             }
         }
+
         limit = Stopwatch.ElapsedMilliseconds + 10;
         Profiler.Done();
 
-        for (int i = 0; i < Events.Count && Stopwatch.ElapsedMilliseconds < limit; i++)
+        for (var i = 0; i < Events.Count && Stopwatch.ElapsedMilliseconds < limit; i++)
         {
             var e = Events[i];
+
             if (e.When <= start)
             {
                 Profiler.Start("scheduler." + e.Name);
@@ -144,9 +183,13 @@ public class EventScheduler : IEventScheduler
                 i--;
                 Profiler.Done();
             }
+
             if (e.When > start)
+            {
                 break; // List is sorted, we can exit early
+            }
         }
+
         Profiler.Done(20);
     }
 

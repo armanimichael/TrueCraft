@@ -1,6 +1,7 @@
 namespace TrueCraft.Core.Inventory;
 
-public interface IFurnaceWindow<T> : IWindow<T> where T : ISlot
+public interface IFurnaceWindow<T> : IWindow<T>
+    where T : ISlot
 {
     ISlots<T> Ingredient { get; }
 

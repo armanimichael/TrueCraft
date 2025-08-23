@@ -95,15 +95,19 @@ public static class ChatColor
     public static string RemoveColors(string text)
     {
         var sb = new StringBuilder(text.Length);
-        for (int i = 0; i < text.Length; i++)
+
+        for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '§')
             {
                 i++;
+
                 continue;
             }
+
             sb.Append(text[i]);
         }
+
         return sb.ToString();
     }
 }

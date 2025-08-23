@@ -1,4 +1,5 @@
 using System;
+
 namespace TrueCraft.Client.Handlers;
 
 /// <summary>
@@ -14,10 +15,13 @@ public class ActionConfirmation
 
     public static ActionConfirmation GetActionConfirmation(Action action)
     {
-        ActionConfirmation rv = new ActionConfirmation(_nextActionNumber, action);
+        var rv = new ActionConfirmation(_nextActionNumber, action);
         _nextActionNumber++;
+
         if ((_nextActionNumber & 0xffff8000) != 0)
+        {
             _nextActionNumber = 1;
+        }
 
         return rv;
     }
@@ -28,10 +32,7 @@ public class ActionConfirmation
         _action = action;
     }
 
-    public short ActionNumber { get => (short)_actionNumber; }
+    public short ActionNumber => (short) _actionNumber;
 
-    public void TakeAction()
-    {
-        _action();
-    }
+    public void TakeAction() => _action();
 }

@@ -64,7 +64,7 @@ public class ServerConfiguration : Configuration
     public string MOTD { get; set; }
 
     [YamlMember(Alias = "bind-port")]
-    public int ServerPort {get; set; }
+    public int ServerPort { get; set; }
 
     [YamlMember(Alias = "bind-endpoint")]
     public string ServerAddress { get; set; }
@@ -86,10 +86,10 @@ public class ServerConfiguration : Configuration
 
     [YamlMember(Alias = "enable-lighting")]
     public bool EnableLighting { get; set; }
-        
+
     [YamlMember(Alias = "enable-event-loading")]
     public bool EnableEventLoading { get; set; }
-        
+
     [YamlMember(Alias = "disable-events")]
     public string[] DisabledEvents { get; set; }
 }

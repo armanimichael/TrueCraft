@@ -42,62 +42,67 @@ public class SingleplayerView : VBox
         _worlds = new Worlds(Paths.Worlds);
 
         _window = window;
-        this.SetSizeRequest(250, -1);
+        SetSizeRequest(250, -1);
 
         _singleplayerLabel = new Label("Singleplayer")
-        {
-            Justify = Justification.Center
-        };
+                             {
+                                 Justify = Justification.Center
+                             };
 
         _worldListStore = new ListStore(typeof(string), typeof(WorldInfo));
         _worldListView = new TreeView(_worldListStore);
         _worldListView.SetSizeRequest(-1, 200);
         _worldListView.HeadersVisible = false;
         AddWorldColumns(_worldListView);
-        TreeSelection worldListSelection = _worldListView.Selection;
+        var worldListSelection = _worldListView.Selection;
         worldListSelection.Mode = SelectionMode.Single;
+
         worldListSelection.Changed += (sender, e) =>
         {
-            int selectedCount = worldListSelection.CountSelectedRows();
-            _playButton!.Sensitive = (selectedCount == 1);
-            _deleteWorldButton!.Sensitive = (selectedCount == 1);
+            var selectedCount = worldListSelection.CountSelectedRows();
+            _playButton!.Sensitive = selectedCount == 1;
+            _deleteWorldButton!.Sensitive = selectedCount == 1;
         };
 
         _createWorldButton = new Button("New world");
         _deleteWorldButton = new Button("Delete") { Sensitive = false };
         _playButton = new Button("Play") { Sensitive = false };
         _backButton = new Button("Back");
-        _createWorldBox = new VBox() { Visible = false };
-        _newWorldName = new Entry() { PlaceholderText = "Name" };
-        _newWorldSeed = new Entry() { PlaceholderText = "Seed (optional)" };
+        _createWorldBox = new VBox { Visible = false };
+        _newWorldName = new Entry { PlaceholderText = "Name" };
+        _newWorldSeed = new Entry { PlaceholderText = "Seed (optional)" };
         _newWorldCommit = new Button("Create") { Sensitive = false };
         _newWorldCancel = new Button("Cancel");
 
         _progressLabel = new Label("Loading world...") { Visible = false };
         // TODO: we have to call Pulse on the Progress Bar once in a while.
-        _progressBar = new ProgressBar() { Visible = false, Fraction = 0 };
+        _progressBar = new ProgressBar { Visible = false, Fraction = 0 };
 
         _backButton.Clicked += (sender, e) => _window.ShowMainMenuView();
+
         _createWorldButton.Clicked += (sender, e) =>
         {
             _createWorldBox.Visible = true;
         };
+
         _newWorldCancel.Clicked += (sender, e) =>
         {
             _createWorldBox.Visible = false;
         };
+
         _newWorldName.Changed += (sender, e) =>
         {
             _newWorldCommit.Sensitive = !string.IsNullOrEmpty(_newWorldName.Text);
         };
+
         _newWorldCommit.Clicked += NewWorldCommit_Clicked;
 
         _playButton.Clicked += PlayButton_Clicked;
         _deleteWorldButton.Clicked += DeleteButton_Clicked;
 
-        foreach (WorldInfo worldInfo in _worlds)
+        foreach (var worldInfo in _worlds)
         {
-            TreeIter row = _worldListStore.Append();
+            var row = _worldListStore.Append();
             _worldListStore.SetValue(row, 0, worldInfo.Name);
             _worldListStore.SetValue(row, 1, worldInfo);
         }
@@ -113,27 +118,28 @@ public class SingleplayerView : VBox
         newWorldHbox.PackStart(_newWorldCancel, true, false, 0);
         _createWorldBox.PackStart(newWorldHbox, true, false, 0);
 
-        this.PackStart(_singleplayerLabel, true, false, 0);
-        this.PackStart(_worldListView, true, false, 0);
-        this.PackStart(createDeleteHbox, true, false, 0);
-        this.PackStart(_playButton, true, false, 0);
-        this.PackStart(_createWorldBox, true, false, 0);
-        this.PackStart(_progressLabel, true, false, 0);
-        this.PackStart(_progressBar, true, false, 0);
-        this.PackEnd(_backButton, true, false, 0);
+        PackStart(_singleplayerLabel, true, false, 0);
+        PackStart(_worldListView, true, false, 0);
+        PackStart(createDeleteHbox, true, false, 0);
+        PackStart(_playButton, true, false, 0);
+        PackStart(_createWorldBox, true, false, 0);
+        PackStart(_progressLabel, true, false, 0);
+        PackStart(_progressBar, true, false, 0);
+        PackEnd(_backButton, true, false, 0);
     }
 
     private static void AddWorldColumns(TreeView worldView)
     {
-        CellRendererText rendererText = new CellRendererText();
-        TreeViewColumn column = new TreeViewColumn("Name", rendererText, "text", 0);
+        var rendererText = new CellRendererText();
+        var column = new TreeViewColumn("Name", rendererText, "text", 0);
         column.SortColumnId = 0;
         worldView.AppendColumn(column);
     }
 
     private void DeleteButton_Clicked(object? sender, EventArgs e)
     {
-        Cursor origCursor = _window.Window.Cursor;
+        var origCursor = _window.Window.Cursor;
+
         try
         {
             _window.Window.Cursor = new Cursor(CursorType.Watch);
@@ -142,8 +148,8 @@ public class SingleplayerView : VBox
             ITreeModel model;
             _worldListView.Selection.GetSelected(out model, out iter);
 
-            string worldName = (string)model.GetValue(iter, 0);
-            WorldInfo worldInfo = (WorldInfo)model.GetValue(iter, 1);
+            var worldName = (string) model.GetValue(iter, 0);
+            var worldInfo = (WorldInfo) model.GetValue(iter, 1);
 
             // Remove the World from the UI
             _worldListStore.Remove(ref iter);
@@ -167,99 +173,152 @@ public class SingleplayerView : VBox
             TreeIter iter;
             _worldListView.Selection.GetSelected(out iter);
             //string worldName = (string)_worldListStore.GetValue(iter, 0);
-            WorldInfo worldInfo = (WorldInfo)_worldListStore.GetValue(iter, 1);
+            var worldInfo = (WorldInfo) _worldListStore.GetValue(iter, 1);
 
-            IServiceLocator coreServiceLocator = Discover.DoDiscovery(new Discover());
-            MultiplayerServer _server = new MultiplayerServer(coreServiceLocator);
+            var coreServiceLocator = Discover.DoDiscovery(new Discover());
+            var _server = new MultiplayerServer(coreServiceLocator);
             TrueCraft.Program.ServiceLocator = new ServerServiceLocator(_server, coreServiceLocator);
-            TrueCraft.World.IWorld world = TrueCraft.World.World.LoadWorld(TrueCraft.Program.ServiceLocator, worldInfo.Directory);
+            var world = World.World.LoadWorld(TrueCraft.Program.ServiceLocator, worldInfo.Directory);
             _server.World = world;
-            TrueCraft.Program.ServerConfiguration = new ServerConfiguration()
-            {
-                Singleplayer = true
-            };
-            _server.AddLogProvider(new ConsoleLogProvider(LogCategory.Notice | LogCategory.Warning | LogCategory.Error | LogCategory.Debug));
+
+            TrueCraft.Program.ServerConfiguration = new ServerConfiguration
+                                                    {
+                                                        Singleplayer = true
+                                                    };
+
+            _server.AddLogProvider(
+                new ConsoleLogProvider(
+                    LogCategory.Notice | LogCategory.Warning | LogCategory.Error |
+                    LogCategory.Debug
+                )
+            );
 
             _playButton.Sensitive = _backButton.Sensitive = _createWorldButton.Sensitive =
                 _createWorldBox.Visible = _worldListView.Sensitive = false;
+
             _progressBar.Visible = _progressLabel.Visible = true;
-            Task.Factory.StartNew(() =>
-            {
-                // TODO: What if the player exitted the game from another dimension?
-                IDimensionServer overWorld = (IDimensionServer)world[Core.World.DimensionID.Overworld];
-                GlobalChunkCoordinates spawnChunk = new GlobalChunkCoordinates(0, 0);
-                overWorld.Initialize(spawnChunk, _server, (value, stage) =>
-                    Application.Invoke((sender, e) =>
-                    {
-                        _progressLabel.Text = stage;
-                        _progressBar.Fraction = value;
-                    }));
-                _server.Start(new IPEndPoint(IPAddress.Loopback, 0));
-                Application.Invoke((sender, e) =>
-                {
-                    _playButton.Sensitive = _backButton.Sensitive = _createWorldButton.Sensitive = _worldListView.Sensitive = true;
-                    var process = new Process();
 
-                    string clientLocation = Assembly.GetExecutingAssembly().Location;
-                    clientLocation = System.IO.Path.GetDirectoryName(clientLocation)!;
-                    clientLocation = System.IO.Path.Combine(clientLocation, "TrueCraft.Client.dll");
-
-                    string launchParams = string.Format("{0} {1} {2} {3}", clientLocation, _server.EndPoint, _window.User.Username, _window.User.SessionId);
-
-                    process.StartInfo = new ProcessStartInfo($"dotnet",
-                        launchParams);
-                    process.StartInfo.UseShellExecute = false;
-                    process.EnableRaisingEvents = true;
-                    process.Exited += (s, a) => Application.Invoke((s, a) =>
+            Task.Factory.StartNew(
+                    () =>
                     {
-                        _progressBar.Visible = _progressLabel.Visible = false;
-                        _window.Show();
-                        _server.Stop();
-                    });
-                    process.Start();
-                    _window.Hide();
-                });
-            }).ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    Application.Invoke((sender, e) =>
+                        // TODO: What if the player exitted the game from another dimension?
+                        var overWorld = (IDimensionServer) world[DimensionID.Overworld];
+                        var spawnChunk = new GlobalChunkCoordinates(0, 0);
+
+                        overWorld.Initialize(
+                            spawnChunk,
+                            _server,
+                            (value, stage) =>
+                                Application.Invoke(
+                                    (sender, e) =>
+                                    {
+                                        _progressLabel.Text = stage;
+                                        _progressBar.Fraction = value;
+                                    }
+                                )
+                        );
+
+                        _server.Start(new IPEndPoint(IPAddress.Loopback, 0));
+
+                        Application.Invoke(
+                            (sender, e) =>
+                            {
+                                _playButton.Sensitive = _backButton.Sensitive =
+                                    _createWorldButton.Sensitive = _worldListView.Sensitive = true;
+
+                                var process = new Process();
+
+                                var clientLocation = Assembly.GetExecutingAssembly().Location;
+                                clientLocation = System.IO.Path.GetDirectoryName(clientLocation)!;
+                                clientLocation = System.IO.Path.Combine(clientLocation, "TrueCraft.Client.dll");
+
+                                var launchParams = string.Format(
+                                    "{0} {1} {2} {3}",
+                                    clientLocation,
+                                    _server.EndPoint,
+                                    _window.User.Username,
+                                    _window.User.SessionId
+                                );
+
+                                process.StartInfo = new ProcessStartInfo(
+                                    $"dotnet",
+                                    launchParams
+                                );
+
+                                process.StartInfo.UseShellExecute = false;
+                                process.EnableRaisingEvents = true;
+
+                                process.Exited += (s, a) => Application.Invoke(
+                                    (s, a) =>
+                                    {
+                                        _progressBar.Visible = _progressLabel.Visible = false;
+                                        _window.Show();
+                                        _server.Stop();
+                                    }
+                                );
+
+                                process.Start();
+                                _window.Hide();
+                            }
+                        );
+                    }
+                )
+                .ContinueWith(
+                    task =>
                     {
-                        using (MessageDialog msg = new MessageDialog(_window,
-                                   DialogFlags.DestroyWithParent | DialogFlags.Modal,
-                                   MessageType.Error,
-                                   ButtonsType.Close,
-                                   "Error loading world",
-                                   Array.Empty<object>()))
+                        if (task.IsFaulted)
                         {
-                            msg.SecondaryText = "It's possible that this world is corrupted.";
-                            msg.Run();
-                        }
+                            Application.Invoke(
+                                (sender, e) =>
+                                {
+                                    using (var msg = new MessageDialog(
+                                               _window,
+                                               DialogFlags.DestroyWithParent | DialogFlags.Modal,
+                                               MessageType.Error,
+                                               ButtonsType.Close,
+                                               "Error loading world",
+                                               Array.Empty<object>()
+                                           ))
+                                    {
+                                        msg.SecondaryText = "It's possible that this world is corrupted.";
+                                        msg.Run();
+                                    }
 
-                        _progressBar.Visible = _progressLabel.Visible = false;
-                        _playButton.Sensitive = _backButton.Sensitive = _createWorldButton.Sensitive =
-                            _worldListView.Sensitive = true;
-                    });
-                }
-            });
+                                    _progressBar.Visible = _progressLabel.Visible = false;
+
+                                    _playButton.Sensitive = _backButton.Sensitive = _createWorldButton.Sensitive =
+                                        _worldListView.Sensitive = true;
+                                }
+                            );
+                        }
+                    }
+                );
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex.Message);
             Console.Error.WriteLine(ex.StackTrace);
-            using (MessageDialog msg = new MessageDialog(_window, DialogFlags.DestroyWithParent | DialogFlags.DestroyWithParent,
-                       MessageType.Error, ButtonsType.Close,
-                       ex.Message + "\n" + ex.StackTrace, Array.Empty<object>()))
+
+            using (var msg = new MessageDialog(
+                       _window,
+                       DialogFlags.DestroyWithParent | DialogFlags.DestroyWithParent,
+                       MessageType.Error,
+                       ButtonsType.Close,
+                       ex.Message + "\n" + ex.StackTrace,
+                       Array.Empty<object>()
+                   ))
+            {
                 msg.Run();
+            }
         }
     }
 
     private void NewWorldCommit_Clicked(object? sender, EventArgs e)
     {
-        WorldInfo world = _worlds.CreateNewWorld(_newWorldName.Text, _newWorldSeed.Text);
+        var world = _worlds.CreateNewWorld(_newWorldName.Text, _newWorldSeed.Text);
         _createWorldBox.Visible = false;
 
-        TreeIter row = _worldListStore.Append();
+        var row = _worldListStore.Append();
         _worldListStore.SetValue(row, 0, world.Name);
         _worldListStore.SetValue(row, 1, world);
     }

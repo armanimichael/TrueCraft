@@ -34,7 +34,7 @@ public struct OreData
 
 public class OreDecorator : IChunkDecorator
 {
-    private readonly List<OreData> Ores = new List<OreData>();
+    private readonly List<OreData> Ores = new();
 
     public OreDecorator()
     {
@@ -63,64 +63,87 @@ public class OreDecorator : IChunkDecorator
         var random = new Random(seed);
         var lowWeightOffset = new int[2] { 2, 3 };
         var highWeightOffset = new int[2] { 2, 2 };
+
         foreach (var data in Ores)
         {
             var midpoint = (data.MaxY + data.MinY) / 2;
-            var weightOffsets = (data.MaxY > 30) ? highWeightOffset : lowWeightOffset;
+
+            var weightOffsets = data.MaxY > 30
+                ? highWeightOffset
+                : lowWeightOffset;
+
             const int weightPasses = 4;
-            for (int i = 0; i < data.Veins; i++)
+
+            for (var i = 0; i < data.Veins; i++)
             {
                 double weight = 0;
-                for (int j = 0; j < weightPasses; j++)
+
+                for (var j = 0; j < weightPasses; j++)
                 {
                     weight += random.NextDouble();
                 }
+
                 weight /= data.Rarity;
                 weight = weightOffsets[0] - Math.Abs(weight - weightOffsets[1]);
                 double x = random.Next(0, Chunk.Width);
                 double z = random.Next(0, Chunk.Depth);
-                double y = weight * midpoint;
+                var y = weight * midpoint;
 
-                double randomOffsetX = (float)random.NextDouble() - 1;
-                double randomOffsetY = (float)random.NextDouble() - 1;
-                double randomOffsetZ = (float)random.NextDouble() - 1;
+                double randomOffsetX = (float) random.NextDouble() - 1;
+                double randomOffsetY = (float) random.NextDouble() - 1;
+                double randomOffsetZ = (float) random.NextDouble() - 1;
 
-                int abundance = random.Next(0, data.Abundance);
-                for (int k = 0; k < abundance; k++)
+                var abundance = random.Next(0, data.Abundance);
+
+                for (var k = 0; k < abundance; k++)
                 {
                     x += randomOffsetX;
                     y += randomOffsetY;
                     z += randomOffsetZ;
+
                     if (x >= 0 && z >= 0 && y >= data.MinY && x < Chunk.Width && y < data.MaxY && z < Chunk.Depth)
                     {
-                        IBiomeProvider biome = biomes.GetBiome(chunk.GetBiome((int)x, (int)z));
-                        LocalVoxelCoordinates cur = new LocalVoxelCoordinates((int)x, (int)y, (int)z);
+                        var biome = biomes.GetBiome(chunk.GetBiome((int) x, (int) z));
+                        var cur = new LocalVoxelCoordinates((int) x, (int) y, (int) z);
+
                         if (biome.Ores.Contains(data.Type) && chunk.GetBlockID(cur).Equals(StoneBlock.BlockID))
+                        {
                             chunk.SetBlockID(cur, data.ID);
+                        }
                     }
-                    var blockX = MathHelper.ChunkToBlockX((int)(x), chunk.Coordinates.X);
-                    var blockZ = MathHelper.ChunkToBlockZ((int)(z), chunk.Coordinates.Z);
+
+                    var blockX = MathHelper.ChunkToBlockX((int) x, chunk.Coordinates.X);
+                    var blockZ = MathHelper.ChunkToBlockZ((int) z, chunk.Coordinates.Z);
 
                     double offsetX = 0;
                     double offsetY = 0;
                     double offsetZ = 0;
-                    int offset = random.Next(0, 3);
-                    double offset2 = random.NextDouble();
+                    var offset = random.Next(0, 3);
+                    var offset2 = random.NextDouble();
 
                     if (offset.Equals(0) && offset2 < 0.4)
-                        offsetX += 1;
-                    else if (offset.Equals(1) && offset2 >= 0.4 && offset2 < 0.65)
-                        offsetY += 1;
-                    else
-                        offsetZ += 1;
-
-                    var newX = (int)(x + offsetX);
-                    var newY = (int)(y + offsetY);
-                    var newZ = (int)(z + offsetZ);
-                    if (newX >= 0 && newZ >= 0 && newY >= data.MinY && newX < Chunk.Width && newY < data.MaxY && newZ < Chunk.Depth)
                     {
-                        IBiomeProvider Biome = biomes.GetBiome(chunk.GetBiome(newX, newZ));
-                        LocalVoxelCoordinates coordinates = new LocalVoxelCoordinates((int)newX, (int)newY, (int)newZ);
+                        offsetX += 1;
+                    }
+                    else if (offset.Equals(1) && offset2 >= 0.4 && offset2 < 0.65)
+                    {
+                        offsetY += 1;
+                    }
+                    else
+                    {
+                        offsetZ += 1;
+                    }
+
+                    var newX = (int) (x + offsetX);
+                    var newY = (int) (y + offsetY);
+                    var newZ = (int) (z + offsetZ);
+
+                    if (newX >= 0 && newZ >= 0 && newY >= data.MinY && newX < Chunk.Width && newY < data.MaxY &&
+                        newZ < Chunk.Depth)
+                    {
+                        var Biome = biomes.GetBiome(chunk.GetBiome(newX, newZ));
+                        var coordinates = new LocalVoxelCoordinates((int) newX, (int) newY, (int) newZ);
+
                         if (Biome.Ores.Contains(data.Type) && chunk.GetBlockID(coordinates).Equals(StoneBlock.BlockID))
                         {
                             chunk.SetBlockID(coordinates, data.ID);

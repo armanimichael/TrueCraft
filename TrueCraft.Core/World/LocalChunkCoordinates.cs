@@ -32,9 +32,18 @@ public class LocalChunkCoordinates : IEquatable<LocalChunkCoordinates>
     {
 #if DEBUG
         if (x < 0 || x >= WorldConstants.RegionWidth)
-            throw new ArgumentOutOfRangeException($"{nameof(x)} is outside the valid range of [0,{WorldConstants.RegionWidth - 1}]");
+        {
+            throw new ArgumentOutOfRangeException(
+                $"{nameof(x)} is outside the valid range of [0,{WorldConstants.RegionWidth - 1}]"
+            );
+        }
+
         if (z < 0 || z >= WorldConstants.RegionDepth)
-            throw new ArgumentOutOfRangeException($"{nameof(z)} is outside the valid range of [0,{WorldConstants.RegionDepth - 1}]");
+        {
+            throw new ArgumentOutOfRangeException(
+                $"{nameof(z)} is outside the valid range of [0,{WorldConstants.RegionDepth - 1}]"
+            );
+        }
 #endif
 
         X = x;
@@ -51,45 +60,51 @@ public class LocalChunkCoordinates : IEquatable<LocalChunkCoordinates>
     public bool Equals(LocalChunkCoordinates? other)
     {
         if (other is null)
+        {
             return false;
-        return this.X == other.X && this.Z == other.Z;
+        }
+
+        return X == other.X && Z == other.Z;
     }
 
-    public static bool operator !=(LocalChunkCoordinates? a, LocalChunkCoordinates? b)
-    {
-        return !(a == b);
-    }
+    public static bool operator !=(LocalChunkCoordinates? a, LocalChunkCoordinates? b) => !(a == b);
 
     public static bool operator ==(LocalChunkCoordinates? a, LocalChunkCoordinates? b)
     {
-        if (object.ReferenceEquals(a, null))
+        if (ReferenceEquals(a, null))
         {
-            if (object.ReferenceEquals(b, null))
+            if (ReferenceEquals(b, null))
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
         else
         {
-            if (object.ReferenceEquals(b, null))
+            if (ReferenceEquals(b, null))
+            {
                 return false;
+            }
             else
+            {
                 return a.Equals(b);
-
+            }
         }
     }
-    #endregion  // IEquatable<LocalChunkCoordinates>
+
+    #endregion // IEquatable<LocalChunkCoordinates>
 
     #region Object overrides
+
     /// <summary>
     /// Determines whether this and another object are equal.
     /// </summary>
     /// <param name="obj">The other object.</param>
     /// <returns></returns>
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LocalChunkCoordinates);
-    }
+    public override bool Equals(object? obj) => Equals(obj as LocalChunkCoordinates);
 
     /// <summary>
     /// Returns the hash code for this 3D coordinates.
@@ -99,8 +114,9 @@ public class LocalChunkCoordinates : IEquatable<LocalChunkCoordinates>
     {
         unchecked
         {
-            int result = X.GetHashCode();
+            var result = X.GetHashCode();
             result = (result * 397) ^ Z.GetHashCode();
+
             return result;
         }
     }
@@ -109,61 +125,79 @@ public class LocalChunkCoordinates : IEquatable<LocalChunkCoordinates>
     /// Converts this LocalChunkCoordinates to a string in the format &lt;x, y, z&gt;.
     /// </summary>
     /// <returns></returns>
-    public override string ToString()
-    {
-        return $"<{X},{Z}>";
-    }
-    #endregion   // object overrides
+    public override string ToString() => $"<{X},{Z}>";
+
+    #endregion // object overrides
 
     #region Conversion operators
+
     public static explicit operator LocalChunkCoordinates(GlobalChunkCoordinates value)
     {
         int localX;
         int localZ;
 
         if (value.X >= 0)
+        {
             localX = value.X / WorldConstants.RegionWidth;
+        }
         else
-            localX = (value.X + 1) / WorldConstants.RegionWidth - 1;
+        {
+            localX = ((value.X + 1) / WorldConstants.RegionWidth) - 1;
+        }
 
         if (value.Z >= 0)
+        {
             localZ = value.Z / WorldConstants.RegionDepth;
+        }
         else
-            localZ = (value.Z + 1) / WorldConstants.RegionDepth - 1;
+        {
+            localZ = ((value.Z + 1) / WorldConstants.RegionDepth) - 1;
+        }
 
-        return new LocalChunkCoordinates(value.X - localX * WorldConstants.RegionWidth, value.Z - localZ * WorldConstants.RegionDepth);
+        return new LocalChunkCoordinates(
+            value.X - (localX * WorldConstants.RegionWidth),
+            value.Z - (localZ * WorldConstants.RegionDepth)
+        );
     }
 
-    public static explicit operator LocalChunkCoordinates(GlobalVoxelCoordinates value)
-    {
-        return GlobalVoxelToLocalChunk(value.X, value.Z);
-    }
+    public static explicit operator LocalChunkCoordinates(GlobalVoxelCoordinates value) => GlobalVoxelToLocalChunk(value.X, value.Z);
 
     private static LocalChunkCoordinates GlobalVoxelToLocalChunk(int x, int z)
     {
         int regionX;
         int regionZ;
-        int regionWidth = WorldConstants.RegionWidth * WorldConstants.ChunkWidth;
-        int regionDepth = WorldConstants.RegionDepth * WorldConstants.ChunkDepth;
+        var regionWidth = WorldConstants.RegionWidth * WorldConstants.ChunkWidth;
+        var regionDepth = WorldConstants.RegionDepth * WorldConstants.ChunkDepth;
 
         if (x >= 0)
+        {
             regionX = x / regionWidth;
+        }
         else
-            regionX = (x + 1) / regionWidth - 1;
+        {
+            regionX = ((x + 1) / regionWidth) - 1;
+        }
 
         if (z >= 0)
+        {
             regionZ = z / regionDepth;
+        }
         else
-            regionZ = (z + 1) / regionDepth - 1;
+        {
+            regionZ = ((z + 1) / regionDepth) - 1;
+        }
 
-        int localX = (x - regionX * regionWidth) / WorldConstants.ChunkWidth;
-        int localZ = (z - regionZ * regionDepth) / WorldConstants.ChunkDepth;
+        var localX = (x - (regionX * regionWidth)) / WorldConstants.ChunkWidth;
+        var localZ = (z - (regionZ * regionDepth)) / WorldConstants.ChunkDepth;
 
         return new LocalChunkCoordinates(localX, localZ);
     }
+
     #endregion
 
     #region Constants
-    public static readonly LocalChunkCoordinates Zero = new LocalChunkCoordinates(0, 0);
+
+    public static readonly LocalChunkCoordinates Zero = new(0, 0);
+
     #endregion
 }

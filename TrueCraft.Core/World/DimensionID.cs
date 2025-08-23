@@ -20,7 +20,7 @@ public static class DimensionInfo
 {
     public static string GetName(DimensionID id)
     {
-        switch(id)
+        switch (id)
         {
             case DimensionID.Overworld:
                 return "OverWorld";

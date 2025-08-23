@@ -6,8 +6,6 @@ public class ArrowItem : ItemProvider
 {
     public static readonly short ItemID = 0x106;
 
-    public ArrowItem(XmlNode node) : base(node)
-    {
-
-    }
+    public ArrowItem(XmlNode node)
+        : base(node) { }
 }
