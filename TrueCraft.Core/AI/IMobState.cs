@@ -1,10 +1,9 @@
 ﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.Entities;
 
-namespace TrueCraft.Core.AI
+namespace TrueCraft.Core.AI;
+
+public interface IMobState
 {
-    public interface IMobState
-    {
-        void Update(IMobEntity entity, IEntityManager manager);
-    }
+    void Update(IMobEntity entity, IEntityManager manager);
 }

@@ -7,314 +7,313 @@ using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.Server;
 
-namespace TrueCraft.Inventory
+namespace TrueCraft.Inventory;
+
+public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<IServerSlot>,
+    IServerWindow
 {
-    public class CraftingBenchWindow : TrueCraft.Core.Inventory.CraftingBenchWindow<IServerSlot>,
-        IServerWindow
+    public CraftingBenchWindow(IItemRepository itemRepository,
+        ICraftingRepository craftingRepository, ISlotFactory<IServerSlot> slotFactory,
+        sbyte windowID, ISlots<IServerSlot> mainInventory, ISlots<IServerSlot> hotBar,
+        string name, int width, int height) :
+        base(itemRepository, craftingRepository, slotFactory, windowID, mainInventory, hotBar, name, width, height)
     {
-        public CraftingBenchWindow(IItemRepository itemRepository,
-            ICraftingRepository craftingRepository, ISlotFactory<IServerSlot> slotFactory,
-            sbyte windowID, ISlots<IServerSlot> mainInventory, ISlots<IServerSlot> hotBar,
-            string name, int width, int height) :
-            base(itemRepository, craftingRepository, slotFactory, windowID, mainInventory, hotBar, name, width, height)
-        {
-        }
+    }
 
-        /// <inheritdoc />
-        public CloseWindowPacket GetCloseWindowPacket()
-        {
-            return new CloseWindowPacket(WindowID);
-        }
+    /// <inheritdoc />
+    public CloseWindowPacket GetCloseWindowPacket()
+    {
+        return new CloseWindowPacket(WindowID);
+    }
 
-        public List<SetSlotPacket> GetDirtySetSlotPackets()
-        {
-            int offset = 9;  // TODO hard-coded constant.  This is the offset within the Inventory Window of the Main Inventory.
-            List<SetSlotPacket> packets = ((IServerSlots)MainInventory).GetSetSlotPackets(0, (short)offset);
-            offset += MainInventory.Count;
+    public List<SetSlotPacket> GetDirtySetSlotPackets()
+    {
+        int offset = 9;  // TODO hard-coded constant.  This is the offset within the Inventory Window of the Main Inventory.
+        List<SetSlotPacket> packets = ((IServerSlots)MainInventory).GetSetSlotPackets(0, (short)offset);
+        offset += MainInventory.Count;
 
-            packets.AddRange(((IServerSlots)Hotbar).GetSetSlotPackets(0, (short)offset));
+        packets.AddRange(((IServerSlots)Hotbar).GetSetSlotPackets(0, (short)offset));
 
-            return packets;
-        }
+        return packets;
+    }
 
-        public OpenWindowPacket GetOpenWindowPacket()
-        {
-            int len = Count - MainInventory.Count - Hotbar.Count;
-            return new OpenWindowPacket(WindowID, Type, Name, (sbyte)len);
-        }
+    public OpenWindowPacket GetOpenWindowPacket()
+    {
+        int len = Count - MainInventory.Count - Hotbar.Count;
+        return new OpenWindowPacket(WindowID, Type, Name, (sbyte)len);
+    }
 
-        public WindowItemsPacket GetWindowItemsPacket()
-        {
-            return new WindowItemsPacket(WindowID, AllItems());
-        }
+    public WindowItemsPacket GetWindowItemsPacket()
+    {
+        return new WindowItemsPacket(WindowID, AllItems());
+    }
 
-        public override void SetSlots(ItemStack[] slotContents)
-        {
+    public override void SetSlots(ItemStack[] slotContents)
+    {
 #if DEBUG
-            if (slotContents.Length != Count)
-                throw new ApplicationException($"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected.");
+        if (slotContents.Length != Count)
+            throw new ApplicationException($"{nameof(slotContents)}.Length has value of {slotContents.Length}, but {Count} was expected.");
 #endif
-            int index = 0;
-            for (int j = 0, jul = Slots.Length; j < jul; j++)
-                for (int k = 0, kul = Slots[j].Count; k < kul; k++)
-                {
-                    Slots[j][k].Item = slotContents[index];
-                    Slots[j][k].SetClean();
-                    index++;
-                }
-        }
-
-        public void HandleClick(IRemoteClient client, ClickWindowPacket packet)
+        int index = 0;
+        for (int j = 0, jul = Slots.Length; j < jul; j++)
+        for (int k = 0, kul = Slots[j].Count; k < kul; k++)
         {
-            int slotIndex = packet.SlotIndex;
-            ItemStack itemStaging = client.ItemStaging;
-            bool handled;
+            Slots[j][k].Item = slotContents[index];
+            Slots[j][k].SetClean();
+            index++;
+        }
+    }
+
+    public void HandleClick(IRemoteClient client, ClickWindowPacket packet)
+    {
+        int slotIndex = packet.SlotIndex;
+        ItemStack itemStaging = client.ItemStaging;
+        bool handled;
 
 
-            if (packet.RightClick)
-            {
-                if (packet.Shift)
-                    handled = HandleShiftRightClick(slotIndex, ref itemStaging);
-                else
-                    handled = HandleRightClick(slotIndex, ref itemStaging);
-            }
+        if (packet.RightClick)
+        {
+            if (packet.Shift)
+                handled = HandleShiftRightClick(slotIndex, ref itemStaging);
             else
-            {
-                if (packet.Shift)
-                    handled = HandleShiftLeftClick(slotIndex, ref itemStaging);
-                else
-                    handled = HandleLeftClick(slotIndex, ref itemStaging);
-            }
-
-            if (handled)
-                client.ItemStaging = itemStaging;
-
-            client.QueuePacket(new TransactionStatusPacket(packet.WindowID, packet.TransactionID, handled));
+                handled = HandleRightClick(slotIndex, ref itemStaging);
+        }
+        else
+        {
+            if (packet.Shift)
+                handled = HandleShiftLeftClick(slotIndex, ref itemStaging);
+            else
+                handled = HandleLeftClick(slotIndex, ref itemStaging);
         }
 
-        protected bool HandleLeftClick(int slotIndex, ref ItemStack itemStaging)
-        {
-            if (IsOutputSlot(slotIndex))
-            {
-                if (!itemStaging.Empty)
-                {
-                    if (itemStaging.CanMerge(this[slotIndex]))
-                    {
-                        // The mouse pointer has some items in it, and they
-                        // are compatible with the output
-                        sbyte maxItems = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;   // itemStaging is known to not be Empty
-                        int totalItems = itemStaging.Count + this[slotIndex].Count;
-                        if (totalItems > maxItems)
-                        {   // There are too many items, so this is a No-Op.
-                            // It is assumed that this will follow the pattern of
-                            // sending a Window Click packet and responding
-                            // with accepted = true;
-                            return true;
-                        }
-                        else
-                        {   // There's enough room to pick some up, so pick up o
-                            // Recipe's worth.
-                            itemStaging = new ItemStack(itemStaging.ID, (sbyte)totalItems, itemStaging.Metadata, itemStaging.Nbt);
-                            CraftingGrid.TakeOutput();
-                            return true;
-                        }
-                    }
-                    else
-                    {   // The mouse pointer contains an item incompatible with
-                        // the output, so this is a No-Op.
-                        // Play-testing Beta 1.7.3 with tcpdump shows that the client
-                        // sends a Window Click Packet, and the server responds
-                        // with accepted = true, even though it is a No-Op
-                        return true;
-                    }
-                }
-                else
-                {
-                    // The mouse pointer is empty.  Take one Recipe worth of output
-                    itemStaging = CraftingGrid.TakeOutput();
-                    return true;
-                }
-            }
+        if (handled)
+            client.ItemStaging = itemStaging;
 
+        client.QueuePacket(new TransactionStatusPacket(packet.WindowID, packet.TransactionID, handled));
+    }
+
+    protected bool HandleLeftClick(int slotIndex, ref ItemStack itemStaging)
+    {
+        if (IsOutputSlot(slotIndex))
+        {
             if (!itemStaging.Empty)
             {
-                // Is the slot compatible
                 if (itemStaging.CanMerge(this[slotIndex]))
                 {
-                    // How many Items can be placed?
+                    // The mouse pointer has some items in it, and they
+                    // are compatible with the output
                     sbyte maxItems = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;   // itemStaging is known to not be Empty
                     int totalItems = itemStaging.Count + this[slotIndex].Count;
-                    ItemStack old = this[slotIndex];
                     if (totalItems > maxItems)
-                    {   // Fill the Slot to the max, retaining remaining items.
-                        this[slotIndex] = new ItemStack(old.ID, maxItems, old.Metadata, old.Nbt);
-                        itemStaging = new ItemStack(itemStaging.ID, (sbyte)(totalItems - maxItems), itemStaging.Metadata, itemStaging.Nbt);
+                    {   // There are too many items, so this is a No-Op.
+                        // It is assumed that this will follow the pattern of
+                        // sending a Window Click packet and responding
+                        // with accepted = true;
                         return true;
                     }
                     else
-                    {   // Place all items, the mouse pointer becomes empty.
-                        this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)totalItems, itemStaging.Metadata, itemStaging.Nbt);
-                        itemStaging = ItemStack.EmptyStack;
+                    {   // There's enough room to pick some up, so pick up o
+                        // Recipe's worth.
+                        itemStaging = new ItemStack(itemStaging.ID, (sbyte)totalItems, itemStaging.Metadata, itemStaging.Nbt);
+                        CraftingGrid.TakeOutput();
                         return true;
                     }
                 }
                 else
-                {   // The slot is not compatible with the mouse pointer, so
-                    // swap them.
-                    ItemStack tmp = itemStaging;
-                    itemStaging = this[slotIndex];
-                    this[slotIndex] = tmp;
+                {   // The mouse pointer contains an item incompatible with
+                    // the output, so this is a No-Op.
+                    // Play-testing Beta 1.7.3 with tcpdump shows that the client
+                    // sends a Window Click Packet, and the server responds
+                    // with accepted = true, even though it is a No-Op
                     return true;
                 }
             }
             else
-            {   // The mouse pointer is empty, so pick up everything.
-                itemStaging = this[slotIndex];
-                this[slotIndex] = ItemStack.EmptyStack;
+            {
+                // The mouse pointer is empty.  Take one Recipe worth of output
+                itemStaging = CraftingGrid.TakeOutput();
                 return true;
             }
         }
 
-        protected bool HandleShiftLeftClick(int slotIndex, ref ItemStack itemStaging)
+        if (!itemStaging.Empty)
         {
-            if (IsOutputSlot(slotIndex))
+            // Is the slot compatible
+            if (itemStaging.CanMerge(this[slotIndex]))
             {
-                ItemStack output = this[slotIndex];
-                if (output.Empty)
-                    // This is a No-Op.
+                // How many Items can be placed?
+                sbyte maxItems = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;   // itemStaging is known to not be Empty
+                int totalItems = itemStaging.Count + this[slotIndex].Count;
+                ItemStack old = this[slotIndex];
+                if (totalItems > maxItems)
+                {   // Fill the Slot to the max, retaining remaining items.
+                    this[slotIndex] = new ItemStack(old.ID, maxItems, old.Metadata, old.Nbt);
+                    itemStaging = new ItemStack(itemStaging.ID, (sbyte)(totalItems - maxItems), itemStaging.Metadata, itemStaging.Nbt);
                     return true;
-
-                // Q: What if we craft 4 sticks, but only have room for 2?
-                // Play-testing this in Beta 1.7.3 shows that the excess sticks
-                // simply disappeared.
-
-                output = this[slotIndex];
-                ItemStack remaining = MainInventory.StoreItemStack(output, true);
-                remaining = Hotbar.StoreItemStack(remaining, false);
-                remaining = MainInventory.StoreItemStack(remaining, false);
-                if (remaining.Count != output.Count)
-                    CraftingGrid.TakeOutput();
-
+                }
+                else
+                {   // Place all items, the mouse pointer becomes empty.
+                    this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)totalItems, itemStaging.Metadata, itemStaging.Nbt);
+                    itemStaging = ItemStack.EmptyStack;
+                    return true;
+                }
+            }
+            else
+            {   // The slot is not compatible with the mouse pointer, so
+                // swap them.
+                ItemStack tmp = itemStaging;
+                itemStaging = this[slotIndex];
+                this[slotIndex] = tmp;
                 return true;
             }
+        }
+        else
+        {   // The mouse pointer is empty, so pick up everything.
+            itemStaging = this[slotIndex];
+            this[slotIndex] = ItemStack.EmptyStack;
+            return true;
+        }
+    }
 
-            this[slotIndex] = MoveItemStack(slotIndex);
+    protected bool HandleShiftLeftClick(int slotIndex, ref ItemStack itemStaging)
+    {
+        if (IsOutputSlot(slotIndex))
+        {
+            ItemStack output = this[slotIndex];
+            if (output.Empty)
+                // This is a No-Op.
+                return true;
+
+            // Q: What if we craft 4 sticks, but only have room for 2?
+            // Play-testing this in Beta 1.7.3 shows that the excess sticks
+            // simply disappeared.
+
+            output = this[slotIndex];
+            ItemStack remaining = MainInventory.StoreItemStack(output, true);
+            remaining = Hotbar.StoreItemStack(remaining, false);
+            remaining = MainInventory.StoreItemStack(remaining, false);
+            if (remaining.Count != output.Count)
+                CraftingGrid.TakeOutput();
+
             return true;
         }
 
-        private ItemStack MoveItemStack(int fromSlotIndex)
+        this[slotIndex] = MoveItemStack(slotIndex);
+        return true;
+    }
+
+    private ItemStack MoveItemStack(int fromSlotIndex)
+    {
+        AreaIndices src = (AreaIndices)GetAreaIndex(fromSlotIndex);
+
+        if (src == AreaIndices.Main)
         {
-            AreaIndices src = (AreaIndices)GetAreaIndex(fromSlotIndex);
-
-            if (src == AreaIndices.Main)
-            {
-                return Hotbar.StoreItemStack(this[fromSlotIndex], false);
-            }
-            else if (src == AreaIndices.Hotbar)
-            {
-                return MainInventory.StoreItemStack(this[fromSlotIndex], false);
-            }
-            else
-            {
-                ItemStack remaining = MainInventory.StoreItemStack(this[fromSlotIndex], true);
-                if (remaining.Empty)
-                    return remaining;
-
-                remaining = Hotbar.StoreItemStack(remaining, false);
-                if (remaining.Empty)
-                    return remaining;
-
-                return MainInventory.StoreItemStack(remaining, false);
-            }
+            return Hotbar.StoreItemStack(this[fromSlotIndex], false);
         }
-
-        protected bool HandleRightClick(int slotIndex, ref ItemStack itemStaging)
+        else if (src == AreaIndices.Hotbar)
         {
-            if (IsOutputSlot(slotIndex))
+            return MainInventory.StoreItemStack(this[fromSlotIndex], false);
+        }
+        else
+        {
+            ItemStack remaining = MainInventory.StoreItemStack(this[fromSlotIndex], true);
+            if (remaining.Empty)
+                return remaining;
+
+            remaining = Hotbar.StoreItemStack(remaining, false);
+            if (remaining.Empty)
+                return remaining;
+
+            return MainInventory.StoreItemStack(remaining, false);
+        }
+    }
+
+    protected bool HandleRightClick(int slotIndex, ref ItemStack itemStaging)
+    {
+        if (IsOutputSlot(slotIndex))
+        {
+            ItemStack output = this[slotIndex];
+            if (output.Empty)
+                // It looks odd, but beta 1.7.3 client really does send a
+                // window click packet, and the server responds with
+                // accepted = true.  This is a No-Op.
+                return true;
+
+            // If the item is not compatible with the hand, do nothing
+            if (!itemStaging.CanMerge(output))
+                // It looks odd, but beta 1.7.3 client really does send a
+                // window click packet, and the server responds with
+                // accepted = true.  This is a No-Op.
+                return true;
+
+            // Pick up one Recipe's worth of output.
+            // Q: do we have room for it?
+            IItemProvider itemInOutput = ItemRepository.GetItemProvider(output.ID)!;   // output is known to not be Empty
+            int maxHandStack = itemInOutput.MaximumStack;
+
+            if (!output.Empty && itemStaging.CanMerge(output) && itemStaging.Count + output.Count <= maxHandStack)
             {
-                ItemStack output = this[slotIndex];
-                if (output.Empty)
-                    // It looks odd, but beta 1.7.3 client really does send a
-                    // window click packet, and the server responds with
-                    // accepted = true.  This is a No-Op.
-                    return true;
-
-                // If the item is not compatible with the hand, do nothing
-                if (!itemStaging.CanMerge(output))
-                    // It looks odd, but beta 1.7.3 client really does send a
-                    // window click packet, and the server responds with
-                    // accepted = true.  This is a No-Op.
-                    return true;
-
-                // Pick up one Recipe's worth of output.
-                // Q: do we have room for it?
-                IItemProvider itemInOutput = ItemRepository.GetItemProvider(output.ID)!;   // output is known to not be Empty
-                int maxHandStack = itemInOutput.MaximumStack;
-
-                if (!output.Empty && itemStaging.CanMerge(output) && itemStaging.Count + output.Count <= maxHandStack)
-                {
-                    output = CraftingGrid.TakeOutput();
-                    itemStaging = new ItemStack(output.ID, (sbyte)(output.Count + itemStaging.Count),
-                        output.Metadata, output.Nbt);
-                    return true;
-                }
-
+                output = CraftingGrid.TakeOutput();
+                itemStaging = new ItemStack(output.ID, (sbyte)(output.Count + itemStaging.Count),
+                    output.Metadata, output.Nbt);
                 return true;
             }
 
-            if (!itemStaging.Empty)
+            return true;
+        }
+
+        if (!itemStaging.Empty)
+        {
+            if (this[slotIndex].CanMerge(itemStaging))
             {
-                if (this[slotIndex].CanMerge(itemStaging))
+                // The hand holds something, and the slot contents are compatible, place one item.
+                int maxStack = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;    // itemStaging is known to not be Empty
+                if (maxStack > this[slotIndex].Count)
                 {
-                    // The hand holds something, and the slot contents are compatible, place one item.
-                    int maxStack = ItemRepository.GetItemProvider(itemStaging.ID)!.MaximumStack;    // itemStaging is known to not be Empty
-                    if (maxStack > this[slotIndex].Count)
-                    {
-                        this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)(this[slotIndex].Count + 1), itemStaging.Metadata, itemStaging.Nbt);
-                        itemStaging = itemStaging.GetReducedStack(1);
-                        return true;
-                    }
-                    // Right-clicking on a full compatible slot is a No-Op.
-                    // The Beta 1.7.3 client does send a Window Click and it
-                    // is acknowledged by the server.
+                    this[slotIndex] = new ItemStack(itemStaging.ID, (sbyte)(this[slotIndex].Count + 1), itemStaging.Metadata, itemStaging.Nbt);
+                    itemStaging = itemStaging.GetReducedStack(1);
                     return true;
                 }
-                else
-                {
-                    // The slot contents are not compatible with the items in hand.
-                    // Swap them.
-                    ItemStack tmp = this[slotIndex];
-                    this[slotIndex] = itemStaging;
-                    itemStaging = tmp;
-                    return true;
-                }
+                // Right-clicking on a full compatible slot is a No-Op.
+                // The Beta 1.7.3 client does send a Window Click and it
+                // is acknowledged by the server.
+                return true;
             }
             else
             {
-                // If the hand is empty, pick up half the stack.
-                ItemStack slotContent = this[slotIndex];
-                if (slotContent.Empty)
-                    // Right-clicking an empty hand on an empty slot is a No-Op.
-                    // Beta 1.7.3 does send a Window Click and it is acknowledged
-                    // by the server.
-                    return true;
-
-                int numToPickUp = slotContent.Count;
-                numToPickUp = numToPickUp / 2 + (numToPickUp & 0x0001);
-                itemStaging = new ItemStack(slotContent.ID, (sbyte)numToPickUp, slotContent.Metadata, slotContent.Nbt);
-                this[slotIndex] = slotContent.GetReducedStack(numToPickUp);
+                // The slot contents are not compatible with the items in hand.
+                // Swap them.
+                ItemStack tmp = this[slotIndex];
+                this[slotIndex] = itemStaging;
+                itemStaging = tmp;
                 return true;
             }
         }
-
-        protected bool HandleShiftRightClick(int slotIndex, ref ItemStack itemStaging)
+        else
         {
-            return HandleShiftLeftClick(slotIndex, ref itemStaging);
-        }
+            // If the hand is empty, pick up half the stack.
+            ItemStack slotContent = this[slotIndex];
+            if (slotContent.Empty)
+                // Right-clicking an empty hand on an empty slot is a No-Op.
+                // Beta 1.7.3 does send a Window Click and it is acknowledged
+                // by the server.
+                return true;
 
-        public void Save()
-        {
-            throw new NotImplementedException();
+            int numToPickUp = slotContent.Count;
+            numToPickUp = numToPickUp / 2 + (numToPickUp & 0x0001);
+            itemStaging = new ItemStack(slotContent.ID, (sbyte)numToPickUp, slotContent.Metadata, slotContent.Nbt);
+            this[slotIndex] = slotContent.GetReducedStack(numToPickUp);
+            return true;
         }
+    }
+
+    protected bool HandleShiftRightClick(int slotIndex, ref ItemStack itemStaging)
+    {
+        return HandleShiftLeftClick(slotIndex, ref itemStaging);
+    }
+
+    public void Save()
+    {
+        throw new NotImplementedException();
     }
 }

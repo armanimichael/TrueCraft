@@ -2,68 +2,67 @@
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class DesertBiome : BiomeProvider
 {
-    public class DesertBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.Desert; }
-        }
+        get { return (byte)Biome.Desert; }
+    }
 
-        public override double Temperature
-        {
-            get { return 2.0f; }
-        }
+    public override double Temperature
+    {
+        get { return 2.0f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.0f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.0f; }
+    }
         
-        public override bool Spawn
-        {
-            get { return false; }
-        }
+    public override bool Spawn
+    {
+        get { return false; }
+    }
 
-        public override TreeSpecies[] Trees
+    public override TreeSpecies[] Trees
+    {
+        get
         {
-            get
-            {
-                return new TreeSpecies[0];
-            }
+            return new TreeSpecies[0];
         }
+    }
 
-        public override PlantSpecies[] Plants
+    public override PlantSpecies[] Plants
+    {
+        get
         {
-            get
-            {
-                return new[] { PlantSpecies.Deadbush, PlantSpecies.Cactus };
-            }
+            return new[] { PlantSpecies.Deadbush, PlantSpecies.Cactus };
         }
+    }
 
-        public override byte SurfaceBlock
+    public override byte SurfaceBlock
+    {
+        get
         {
-            get
-            {
-                return SandBlock.BlockID;
-            }
+            return SandBlock.BlockID;
         }
+    }
 
-        public override byte FillerBlock
+    public override byte FillerBlock
+    {
+        get
         {
-            get
-            {
-                return SandstoneBlock.BlockID;
-            }
+            return SandstoneBlock.BlockID;
         }
+    }
 
-        public override int SurfaceDepth
+    public override int SurfaceDepth
+    {
+        get
         {
-            get
-            {
-                return 4;
-            }
+            return 4;
         }
     }
 }

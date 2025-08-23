@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework.Input;
 
-namespace TrueCraft.Client.Input
+namespace TrueCraft.Client.Input;
+
+public class GamePadButtonEventArgs : GamePadEventArgs
 {
-    public class GamePadButtonEventArgs : GamePadEventArgs
-    {
-        public Buttons Button { get; set; }
-    }
+    public Buttons Button { get; set; }
 }

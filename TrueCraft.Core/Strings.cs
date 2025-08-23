@@ -1,7 +1,6 @@
-namespace TrueCraft.Core
+namespace TrueCraft.Core;
+
+public static class Strings
 {
-    public static class Strings
-    {
-        public const string SERVER_CODE_ON_CLIENT = "Server-side only code detected executing on client";
-    }
+    public const string SERVER_CODE_ON_CLIENT = "Server-side only code detected executing on client";
 }

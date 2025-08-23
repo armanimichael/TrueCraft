@@ -1,37 +1,36 @@
 using TrueCraft.Core.Networking;
 
-namespace TrueCraft.Core
+namespace TrueCraft.Core;
+
+public class MetadataShort : MetadataEntry
 {
-    public class MetadataShort : MetadataEntry
+    public override byte Identifier { get { return 1; } }
+    public override string FriendlyName { get { return "short"; } }
+
+    public short Value;
+
+    public static implicit operator MetadataShort(short value)
     {
-        public override byte Identifier { get { return 1; } }
-        public override string FriendlyName { get { return "short"; } }
+        return new MetadataShort(value);
+    }
 
-        public short Value;
+    public MetadataShort()
+    {
+    }
 
-        public static implicit operator MetadataShort(short value)
-        {
-            return new MetadataShort(value);
-        }
+    public MetadataShort(short value)
+    {
+        Value = value;
+    }
 
-        public MetadataShort()
-        {
-        }
+    public override void FromStream(IMinecraftStream stream)
+    {
+        Value = stream.ReadInt16();
+    }
 
-        public MetadataShort(short value)
-        {
-            Value = value;
-        }
-
-        public override void FromStream(IMinecraftStream stream)
-        {
-            Value = stream.ReadInt16();
-        }
-
-        public override void WriteTo(IMinecraftStream stream, byte index)
-        {
-            stream.WriteUInt8(GetKey(index));
-            stream.WriteInt16(Value);
-        }
+    public override void WriteTo(IMinecraftStream stream, byte index)
+    {
+        stream.WriteUInt8(GetKey(index));
+        stream.WriteInt16(Value);
     }
 }

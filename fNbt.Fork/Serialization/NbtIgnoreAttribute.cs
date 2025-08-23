@@ -1,6 +1,5 @@
-namespace fNbt.Serialization
+namespace fNbt.Serialization;
+
+public class NbtIgnoreAttribute : Attribute
 {
-    public class NbtIgnoreAttribute : Attribute
-    {
-    }
 }

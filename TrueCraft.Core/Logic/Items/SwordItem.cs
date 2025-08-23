@@ -1,11 +1,10 @@
 ﻿using System.Xml;
 
-namespace TrueCraft.Core.Logic.Items
+namespace TrueCraft.Core.Logic.Items;
+
+public class SwordItem : ToolItem
 {
-    public class SwordItem : ToolItem
+    public SwordItem(XmlNode node) : base(node)
     {
-        public SwordItem(XmlNode node) : base(node)
-        {
-        }
     }
 }

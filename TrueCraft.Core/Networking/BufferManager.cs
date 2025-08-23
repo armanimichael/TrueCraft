@@ -1,64 +1,63 @@
 ﻿using System.Collections.Generic;
 using System.Net.Sockets;
 
-namespace TrueCraft.Core.Networking
+namespace TrueCraft.Core.Networking;
+
+public class BufferManager
 {
-    public class BufferManager
+    private readonly object bufferLocker = new object();
+
+    private readonly List<byte[]> buffers;
+
+    private readonly int bufferSize;
+
+    private readonly Stack<int> availableBuffers;
+
+    public BufferManager(int bufferSize)
     {
-        private readonly object bufferLocker = new object();
+        this.bufferSize = bufferSize;
+        buffers = new List<byte[]>();
+        availableBuffers = new Stack<int>();
+    }
 
-        private readonly List<byte[]> buffers;
-
-        private readonly int bufferSize;
-
-        private readonly Stack<int> availableBuffers;
-
-        public BufferManager(int bufferSize)
+    public void SetBuffer(SocketAsyncEventArgs args)
+    {
+        if (availableBuffers.Count > 0)
         {
-            this.bufferSize = bufferSize;
-            buffers = new List<byte[]>();
-            availableBuffers = new Stack<int>();
-        }
+            int index = availableBuffers.Pop();
 
-        public void SetBuffer(SocketAsyncEventArgs args)
-        {
-            if (availableBuffers.Count > 0)
-            {
-                int index = availableBuffers.Pop();
-
-                byte[] buffer;
-                lock (bufferLocker)
-                {
-                    buffer = buffers[index];
-                }
-
-                args.SetBuffer(buffer, 0, buffer.Length);
-            }
-            else
-            {
-                byte[] buffer = new byte[bufferSize];
-
-                lock (bufferLocker)
-                {
-                    buffers.Add(buffer);
-                }
-
-                args.SetBuffer(buffer, 0, buffer.Length);
-            }
-        }
-
-        public void ClearBuffer(SocketAsyncEventArgs args)
-        {
-            int index;
+            byte[] buffer;
             lock (bufferLocker)
             {
-                index = buffers.IndexOf(args.Buffer);
+                buffer = buffers[index];
             }
 
-            if (index >= 0)
-                availableBuffers.Push(index);
-
-            args.SetBuffer(null, 0, 0);
+            args.SetBuffer(buffer, 0, buffer.Length);
         }
+        else
+        {
+            byte[] buffer = new byte[bufferSize];
+
+            lock (bufferLocker)
+            {
+                buffers.Add(buffer);
+            }
+
+            args.SetBuffer(buffer, 0, buffer.Length);
+        }
+    }
+
+    public void ClearBuffer(SocketAsyncEventArgs args)
+    {
+        int index;
+        lock (bufferLocker)
+        {
+            index = buffers.IndexOf(args.Buffer);
+        }
+
+        if (index >= 0)
+            availableBuffers.Push(index);
+
+        args.SetBuffer(null, 0, 0);
     }
 }

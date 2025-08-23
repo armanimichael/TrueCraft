@@ -6,249 +6,248 @@ using TrueCraft.Core.Logic;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Logic.Items;
 
-namespace TrueCraft.Core.Test.Inventory
+namespace TrueCraft.Core.Test.Inventory;
+
+[TestFixture]
+public class CraftingAreaTest
 {
-    [TestFixture]
-    public class CraftingAreaTest
+    private static ICraftingRepository GetCraftingRepository()
     {
-        private static ICraftingRepository GetCraftingRepository()
+        return CoreSetup.CraftingRepository;
+    }
+
+    private static IItemRepository GetItemRepository()
+    {
+        // TODO mock Item Repository.
+        return ItemRepository.Get();
+    }
+
+    private class MockSlotFactory : ISlotFactory<ISlot>
+    {
+        public ISlot GetSlot(IItemRepository itemRepository)
         {
-            return CoreSetup.CraftingRepository;
+            throw new NotImplementedException();
         }
 
-        private static IItemRepository GetItemRepository()
+        public List<ISlot> GetSlots(IItemRepository itemRepository, int count)
         {
-            // TODO mock Item Repository.
-            return ItemRepository.Get();
+            List<ISlot> rv = new List<ISlot>(count);
+
+            for (int j = 0; j < count; j++)
+                rv.Add(new Slot(itemRepository));
+
+            return rv;
         }
+    }
 
-        private class MockSlotFactory : ISlotFactory<ISlot>
-        {
-            public ISlot GetSlot(IItemRepository itemRepository)
-            {
-                throw new NotImplementedException();
-            }
+    [TestCase(2, 2)]
+    [TestCase(3, 3)]
+    public void ctor(int width, int height)
+    {
+        CraftingArea<ISlot> actual = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), width, height);
 
-            public List<ISlot> GetSlots(IItemRepository itemRepository, int count)
-            {
-                List<ISlot> rv = new List<ISlot>(count);
+        Assert.AreEqual(1 + width * height, actual.Count);
+        Assert.AreEqual(width, actual.Width);
+        Assert.AreEqual(height, actual.Height);
+    }
 
-                for (int j = 0; j < count; j++)
-                    rv.Add(new Slot(itemRepository));
+    [Test]
+    public void Not_A_Recipe_2x2()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 2, 2);
 
-                return rv;
-            }
-        }
+        area[1].Item = new ItemStack(CobblestoneBlock.BlockID);
 
-        [TestCase(2, 2)]
-        [TestCase(3, 3)]
-        public void ctor(int width, int height)
-        {
-            CraftingArea<ISlot> actual = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), width, height);
+        Assert.Null(area.Recipe);
+        Assert.True(area[0].Item.Empty);
+        Assert.False(area[1].Item.Empty);
+        Assert.True(area[2].Item.Empty);
+        Assert.True(area[3].Item.Empty);
+        Assert.True(area[4].Item.Empty);
+    }
 
-            Assert.AreEqual(1 + width * height, actual.Count);
-            Assert.AreEqual(width, actual.Width);
-            Assert.AreEqual(height, actual.Height);
-        }
+    [Test]
+    public void Is_A_Recipe_2x2()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 2, 2);
+        ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID);
 
-        [Test]
-        public void Not_A_Recipe_2x2()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 2, 2);
+        area[1].Item = planks;
+        area[3].Item = planks;
 
-            area[1].Item = new ItemStack(CobblestoneBlock.BlockID);
+        Assert.NotNull(area[0]);
+        Assert.NotNull(area[0].Item);
+        Assert.AreNotEqual(ItemStack.EmptyStack, area[0].Item);
 
-            Assert.Null(area.Recipe);
-            Assert.True(area[0].Item.Empty);
-            Assert.False(area[1].Item.Empty);
-            Assert.True(area[2].Item.Empty);
-            Assert.True(area[3].Item.Empty);
-            Assert.True(area[4].Item.Empty);
-        }
+        Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
+        Assert.AreEqual(4, area[0].Item.Count);
+        Assert.False(area[1].Item.Empty);
+        Assert.True(area[2].Item.Empty);
+        Assert.False(area[3].Item.Empty);
+        Assert.True(area[4].Item.Empty);
+    }
 
-        [Test]
-        public void Is_A_Recipe_2x2()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 2, 2);
-            ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID);
+    [Test]
+    public void Not_A_Recipe_3x3()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 3, 3);
 
-            area[1].Item = planks;
-            area[3].Item = planks;
+        area[7].Item = new ItemStack(StickItem.ItemID);
 
-            Assert.NotNull(area[0]);
-            Assert.NotNull(area[0].Item);
-            Assert.AreNotEqual(ItemStack.EmptyStack, area[0].Item);
+        Assert.Null(area.Recipe);
+        Assert.True(area[0].Item.Empty);
+        for (int j = 1; j < area.Count; j++)
+            Assert.True(j != 7 ? area[j].Item.Empty : !area[j].Item.Empty);
+    }
 
-            Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
-            Assert.AreEqual(4, area[0].Item.Count);
-            Assert.False(area[1].Item.Empty);
-            Assert.True(area[2].Item.Empty);
-            Assert.False(area[3].Item.Empty);
-            Assert.True(area[4].Item.Empty);
-        }
+    [Test]
+    public void Is_A_Recipe_3x3()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 3, 3);
+        ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID);
 
-        [Test]
-        public void Not_A_Recipe_3x3()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 3, 3);
+        area[3].Item = planks;
+        area[6].Item = planks;
 
-            area[7].Item = new ItemStack(StickItem.ItemID);
+        Assert.NotNull(area[0]);
+        Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
+        Assert.AreEqual(4, area[0].Item.Count);
 
-            Assert.Null(area.Recipe);
-            Assert.True(area[0].Item.Empty);
-            for (int j = 1; j < area.Count; j++)
-                Assert.True(j != 7 ? area[j].Item.Empty : !area[j].Item.Empty);
-        }
+        Assert.True(area[1].Item.Empty);
+        Assert.True(area[2].Item.Empty);
+        Assert.False(area[3].Item.Empty);
+        Assert.True(area[4].Item.Empty);
+        Assert.True(area[5].Item.Empty);
+        Assert.False(area[6].Item.Empty);
+        Assert.True(area[7].Item.Empty);
+        Assert.True(area[8].Item.Empty);
+        Assert.True(area[9].Item.Empty);
+    }
 
-        [Test]
-        public void Is_A_Recipe_3x3()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 3, 3);
-            ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID);
+    [Test]
+    public void Is_Multiple_Recipes()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 3, 3);
 
-            area[3].Item = planks;
-            area[6].Item = planks;
+        // Enough items for two recipes.
+        // Note there is an extra item in area[2].
+        area[2].Item = new ItemStack(WoodenPlanksBlock.BlockID, 3);
+        area[5].Item = new ItemStack(WoodenPlanksBlock.BlockID, 2);
 
-            Assert.NotNull(area[0]);
-            Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
-            Assert.AreEqual(4, area[0].Item.Count);
+        Assert.NotNull(area[0]);
+        Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
 
-            Assert.True(area[1].Item.Empty);
-            Assert.True(area[2].Item.Empty);
-            Assert.False(area[3].Item.Empty);
-            Assert.True(area[4].Item.Empty);
-            Assert.True(area[5].Item.Empty);
-            Assert.False(area[6].Item.Empty);
-            Assert.True(area[7].Item.Empty);
-            Assert.True(area[8].Item.Empty);
-            Assert.True(area[9].Item.Empty);
-        }
+        // Note: play-testing on Beta 1.7.3 indicates it only shows
+        // one recipe's worth of output even when multiple inputs are
+        // placed.
+        Assert.AreEqual(4, area[0].Item.Count);
+    }
 
-        [Test]
-        public void Is_Multiple_Recipes()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 3, 3);
+    [Test]
+    public void TakeOutput1()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 2, 2);
 
-            // Enough items for two recipes.
-            // Note there is an extra item in area[2].
-            area[2].Item = new ItemStack(WoodenPlanksBlock.BlockID, 3);
-            area[5].Item = new ItemStack(WoodenPlanksBlock.BlockID, 2);
+        ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID, 1);
+        area[1].Item = planks;
+        area[3].Item = planks;
 
-            Assert.NotNull(area[0]);
-            Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
+        // Take one output
+        ItemStack actual = area.TakeOutput();
 
-            // Note: play-testing on Beta 1.7.3 indicates it only shows
-            // one recipe's worth of output even when multiple inputs are
-            // placed.
-            Assert.AreEqual(4, area[0].Item.Count);
-        }
+        // This output should be 4 sticks
+        Assert.AreEqual(StickItem.ItemID, actual.ID);
+        Assert.AreEqual(4, actual.Count);
 
-        [Test]
-        public void TakeOutput1()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 2, 2);
+        // The entire grid should now be empty.
+        for (int j = 0; j < area.Count; j++)
+            Assert.True(area[j].Item.Empty);
+    }
 
-            ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID, 1);
-            area[1].Item = planks;
-            area[3].Item = planks;
+    [Test]
+    public void TakeOutput2()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 2, 2);
 
-            // Take one output
-            ItemStack actual = area.TakeOutput();
+        // Add enough for two recipes
+        ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID, 2);
+        area[1].Item = planks;
+        area[3].Item = planks;
 
-            // This output should be 4 sticks
-            Assert.AreEqual(StickItem.ItemID, actual.ID);
-            Assert.AreEqual(4, actual.Count);
+        // Take one output
+        ItemStack actual = area.TakeOutput();
 
-            // The entire grid should now be empty.
-            for (int j = 0; j < area.Count; j++)
-                Assert.True(area[j].Item.Empty);
-        }
+        // This output should be 4 sticks
+        Assert.AreEqual(StickItem.ItemID, actual.ID);
+        Assert.AreEqual(4, actual.Count);
 
-        [Test]
-        public void TakeOutput2()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 2, 2);
+        // There should still be input for one more recipe
+        Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
+        Assert.AreEqual(4, area[0].Item.Count);
+        Assert.False(area[1].Item.Empty);
+        Assert.AreEqual(WoodenPlanksBlock.BlockID, area[1].Item.ID);
+        Assert.AreEqual(1, area[1].Item.Count);
+        Assert.True(area[2].Item.Empty);
+        Assert.False(area[3].Item.Empty);
+        Assert.AreEqual(WoodenPlanksBlock.BlockID, area[3].Item.ID);
+        Assert.AreEqual(1, area[3].Item.Count);
+        Assert.True(area[4].Item.Empty);
+    }
 
-            // Add enough for two recipes
-            ItemStack planks = new ItemStack(WoodenPlanksBlock.BlockID, 2);
-            area[1].Item = planks;
-            area[3].Item = planks;
+    // Put in items for a Pickaxe, hoe, and shovel.
+    // Take them out one after the other.
+    [Test]
+    public void TakeOutput3()
+    {
+        CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
+            GetCraftingRepository(), new MockSlotFactory(), 3, 3);
 
-            // Take one output
-            ItemStack actual = area.TakeOutput();
+        // Add Cobblestone & sticks for a pickaxe, hoe, and shovel
+        area[1].Item = new ItemStack(CobblestoneBlock.BlockID, 2);
+        area[2].Item = new ItemStack(CobblestoneBlock.BlockID, 3);
+        area[3].Item = new ItemStack(CobblestoneBlock.BlockID, 1);
+        area[5].Item = new ItemStack(StickItem.ItemID, 3);
+        area[8].Item = new ItemStack(StickItem.ItemID, 3);
 
-            // This output should be 4 sticks
-            Assert.AreEqual(StickItem.ItemID, actual.ID);
-            Assert.AreEqual(4, actual.Count);
+        // Take out a pickaxe & confirm
+        ItemStack ax = area.TakeOutput();
+        Assert.AreEqual((short)ItemIDs.StonePickaxe, ax.ID);
+        Assert.AreEqual(1, ax.Count);
 
-            // There should still be input for one more recipe
-            Assert.AreEqual(StickItem.ItemID, area[0].Item.ID);
-            Assert.AreEqual(4, area[0].Item.Count);
-            Assert.False(area[1].Item.Empty);
-            Assert.AreEqual(WoodenPlanksBlock.BlockID, area[1].Item.ID);
-            Assert.AreEqual(1, area[1].Item.Count);
-            Assert.True(area[2].Item.Empty);
-            Assert.False(area[3].Item.Empty);
-            Assert.AreEqual(WoodenPlanksBlock.BlockID, area[3].Item.ID);
-            Assert.AreEqual(1, area[3].Item.Count);
-            Assert.True(area[4].Item.Empty);
-        }
+        // Confirm remaining inputs
+        Assert.AreEqual(1, area[1].Item.Count);
+        Assert.AreEqual(2, area[2].Item.Count);
+        Assert.True(area[3].Item.Empty);
+        Assert.AreEqual(2, area[5].Item.Count);
+        Assert.AreEqual(2, area[8].Item.Count);
 
-        // Put in items for a Pickaxe, hoe, and shovel.
-        // Take them out one after the other.
-        [Test]
-        public void TakeOutput3()
-        {
-            CraftingArea<ISlot> area = new CraftingArea<ISlot>(GetItemRepository(),
-                GetCraftingRepository(), new MockSlotFactory(), 3, 3);
+        // Take out a Hoe and confirm
+        ItemStack hoe = area.TakeOutput();
+        Assert.AreEqual((short)ItemIDs.StoneHoe, hoe.ID);
+        Assert.AreEqual(1, hoe.Count);
 
-            // Add Cobblestone & sticks for a pickaxe, hoe, and shovel
-            area[1].Item = new ItemStack(CobblestoneBlock.BlockID, 2);
-            area[2].Item = new ItemStack(CobblestoneBlock.BlockID, 3);
-            area[3].Item = new ItemStack(CobblestoneBlock.BlockID, 1);
-            area[5].Item = new ItemStack(StickItem.ItemID, 3);
-            area[8].Item = new ItemStack(StickItem.ItemID, 3);
+        // confirm remaining inputs
+        Assert.True(area[1].Item.Empty);
+        Assert.AreEqual(1, area[2].Item.Count);
+        Assert.True(area[3].Item.Empty);
+        Assert.AreEqual(1, area[5].Item.Count);
+        Assert.AreEqual(1, area[8].Item.Count);
 
-            // Take out a pickaxe & confirm
-            ItemStack ax = area.TakeOutput();
-            Assert.AreEqual((short)ItemIDs.StonePickaxe, ax.ID);
-            Assert.AreEqual(1, ax.Count);
+        // Take out a shovel & confirm
+        ItemStack shovel = area.TakeOutput();
+        Assert.AreEqual((short)ItemIDs.StoneShovel, shovel.ID);
+        Assert.AreEqual(1, shovel.Count);
 
-            // Confirm remaining inputs
-            Assert.AreEqual(1, area[1].Item.Count);
-            Assert.AreEqual(2, area[2].Item.Count);
-            Assert.True(area[3].Item.Empty);
-            Assert.AreEqual(2, area[5].Item.Count);
-            Assert.AreEqual(2, area[8].Item.Count);
-
-            // Take out a Hoe and confirm
-            ItemStack hoe = area.TakeOutput();
-            Assert.AreEqual((short)ItemIDs.StoneHoe, hoe.ID);
-            Assert.AreEqual(1, hoe.Count);
-
-            // confirm remaining inputs
-            Assert.True(area[1].Item.Empty);
-            Assert.AreEqual(1, area[2].Item.Count);
-            Assert.True(area[3].Item.Empty);
-            Assert.AreEqual(1, area[5].Item.Count);
-            Assert.AreEqual(1, area[8].Item.Count);
-
-            // Take out a shovel & confirm
-            ItemStack shovel = area.TakeOutput();
-            Assert.AreEqual((short)ItemIDs.StoneShovel, shovel.ID);
-            Assert.AreEqual(1, shovel.Count);
-
-            // Confirm entire grid is now empty
-            for (int j = 0; j < area.Count; j++)
-                Assert.True(area[j].Item.Empty);
-        }
+        // Confirm entire grid is now empty
+        for (int j = 0; j < area.Count; j++)
+            Assert.True(area[j].Item.Empty);
     }
 }

@@ -1,36 +1,35 @@
-﻿namespace TrueCraft.Core.World
+﻿namespace TrueCraft.Core.World;
+
+/// <summary>
+/// Enumerates the different dimensions in the world in TrueCraft.
+/// </summary>
+public enum DimensionID
 {
     /// <summary>
-    /// Enumerates the different dimensions in the world in TrueCraft.
+    /// The Nether dimension.
     /// </summary>
-    public enum DimensionID
-    {
-        /// <summary>
-        /// The Nether dimension.
-        /// </summary>
-        Nether = -1,
+    Nether = -1,
 
-        /// <summary>
-        /// The Overworld dimension.
-        /// </summary>
-        Overworld = 0
-    }
+    /// <summary>
+    /// The Overworld dimension.
+    /// </summary>
+    Overworld = 0
+}
 
-    public static class DimensionInfo
+public static class DimensionInfo
+{
+    public static string GetName(DimensionID id)
     {
-        public static string GetName(DimensionID id)
+        switch(id)
         {
-            switch(id)
-            {
-                case DimensionID.Overworld:
-                    return "OverWorld";
+            case DimensionID.Overworld:
+                return "OverWorld";
 
-                case DimensionID.Nether:
-                    return "Nether";
+            case DimensionID.Nether:
+                return "Nether";
 
-                default:
-                    return "Default";
-            }
+            default:
+                return "Default";
         }
     }
 }

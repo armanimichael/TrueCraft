@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace TrueCraft.Core.Networking
+namespace TrueCraft.Core.Networking;
+
+public interface IPacketSegmentProcessor
 {
-    public interface IPacketSegmentProcessor
-    {
-        bool ProcessNextSegment(byte[] nextSegment, int offset, int len, [MaybeNullWhen(false)] out IPacket packet);
-    }
+    bool ProcessNextSegment(byte[] nextSegment, int offset, int len, [MaybeNullWhen(false)] out IPacket packet);
 }

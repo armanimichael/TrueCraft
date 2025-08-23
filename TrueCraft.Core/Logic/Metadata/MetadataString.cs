@@ -1,43 +1,42 @@
 using System;
 using TrueCraft.Core.Networking;
 
-namespace TrueCraft.Core
+namespace TrueCraft.Core;
+
+public class MetadataString : MetadataEntry
 {
-    public class MetadataString : MetadataEntry
+    public override byte Identifier { get { return 4; } }
+    public override string FriendlyName { get { return "string"; } }
+
+    public string Value;
+
+    public static implicit operator MetadataString(string value)
     {
-        public override byte Identifier { get { return 4; } }
-        public override string FriendlyName { get { return "string"; } }
+        return new MetadataString(value);
+    }
 
-        public string Value;
+    public MetadataString()
+    {
+        Value = String.Empty;
+    }
 
-        public static implicit operator MetadataString(string value)
-        {
-            return new MetadataString(value);
-        }
+    public MetadataString(string value)
+    {
+        if (value.Length > 16)
+            throw new ArgumentOutOfRangeException("value", "Maximum string length is 16 characters");
+        while (value.Length < 16)
+            value = value + "\0";
+        Value = value;
+    }
 
-        public MetadataString()
-        {
-            Value = String.Empty;
-        }
+    public override void FromStream(IMinecraftStream stream)
+    {
+        Value = stream.ReadString();
+    }
 
-        public MetadataString(string value)
-        {
-            if (value.Length > 16)
-                throw new ArgumentOutOfRangeException("value", "Maximum string length is 16 characters");
-            while (value.Length < 16)
-                value = value + "\0";
-            Value = value;
-        }
-
-        public override void FromStream(IMinecraftStream stream)
-        {
-            Value = stream.ReadString();
-        }
-
-        public override void WriteTo(IMinecraftStream stream, byte index)
-        {
-            stream.WriteUInt8(GetKey(index));
-            stream.WriteString(Value);
-        }
+    public override void WriteTo(IMinecraftStream stream, byte index)
+    {
+        stream.WriteUInt8(GetKey(index));
+        stream.WriteString(Value);
     }
 }

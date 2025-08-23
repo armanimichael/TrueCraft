@@ -1,30 +1,28 @@
 ﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Entities
+namespace TrueCraft.Core.Entities;
+
+public class SpiderEntity : MobEntity
 {
-    public class SpiderEntity : MobEntity
+    public SpiderEntity(IDimension dimension, IEntityManager entityManager) :
+        base(dimension, entityManager, 16, new Size(1.4, 0.9, 1.4))
     {
-        public SpiderEntity(IDimension dimension, IEntityManager entityManager) :
-            base(dimension, entityManager, 16, new Size(1.4, 0.9, 1.4))
-        {
-        }
+    }
 
-        public override sbyte MobType
+    public override sbyte MobType
+    {
+        get
         {
-            get
-            {
-                return 52;
-            }
+            return 52;
         }
+    }
 
-        public override bool Friendly
+    public override bool Friendly
+    {
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
     }
 }
-

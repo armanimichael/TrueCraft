@@ -2,105 +2,104 @@
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 
-namespace TrueCraft.Core.Networking
+namespace TrueCraft.Core.Networking;
+
+public class SocketAsyncEventArgsPool : IDisposable
 {
-    public class SocketAsyncEventArgsPool : IDisposable
+    private readonly BlockingCollection<SocketAsyncEventArgs> argsPool;
+
+    private readonly int maxPoolSize;
+
+    private BufferManager bufferManager;
+
+    public SocketAsyncEventArgsPool(int poolSize, int maxSize, int bufferSize)
     {
-        private readonly BlockingCollection<SocketAsyncEventArgs> argsPool;
+        maxPoolSize = maxSize;
+        argsPool = new BlockingCollection<SocketAsyncEventArgs>(new ConcurrentQueue<SocketAsyncEventArgs>());
+        bufferManager = new BufferManager(bufferSize);
 
-        private readonly int maxPoolSize;
+        Init(poolSize);
+    }
 
-        private BufferManager bufferManager;
-
-        public SocketAsyncEventArgsPool(int poolSize, int maxSize, int bufferSize)
+    private void Init(int size)
+    {
+        for (int i = 0; i < size; i++)
         {
-            maxPoolSize = maxSize;
-            argsPool = new BlockingCollection<SocketAsyncEventArgs>(new ConcurrentQueue<SocketAsyncEventArgs>());
-            bufferManager = new BufferManager(bufferSize);
+            argsPool.Add(CreateEventArgs());
+        }
+    }
 
-            Init(poolSize);
+    public SocketAsyncEventArgs Get()
+    {
+        SocketAsyncEventArgs? args;
+        if (!argsPool.TryTake(out args))
+        {
+            args = CreateEventArgs();
         }
 
-        private void Init(int size)
+        if (argsPool.Count > maxPoolSize)
         {
-            for (int i = 0; i < size; i++)
-            {
-                argsPool.Add(CreateEventArgs());
-            }
+            Trim(argsPool.Count - maxPoolSize);
         }
 
-        public SocketAsyncEventArgs Get()
+        return args;
+    }
+
+    public void Add(SocketAsyncEventArgs args)
+    {
+        if (!argsPool.IsAddingCompleted)
+            argsPool.Add(args);
+    }
+
+    protected SocketAsyncEventArgs CreateEventArgs()
+    {
+        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        bufferManager.SetBuffer(args);
+
+        return args;
+    }
+
+    public void Trim(int count)
+    {
+        for (int i = 0; i < count; i++)
         {
             SocketAsyncEventArgs? args;
-            if (!argsPool.TryTake(out args))
+
+            if (argsPool.TryTake(out args))
             {
-                args = CreateEventArgs();
+                bufferManager.ClearBuffer(args);
+                args.Dispose();
             }
+        }
+    }
 
-            if (argsPool.Count > maxPoolSize)
+    public void Dispose()
+    {
+        Dispose(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            argsPool.CompleteAdding();
+
+            while (argsPool.Count > 0)
             {
-                Trim(argsPool.Count - maxPoolSize);
-            }
+                SocketAsyncEventArgs arg = argsPool.Take();
 
-            return args;
-        }
-
-        public void Add(SocketAsyncEventArgs args)
-        {
-            if (!argsPool.IsAddingCompleted)
-                argsPool.Add(args);
-        }
-
-        protected SocketAsyncEventArgs CreateEventArgs()
-        {
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
-            bufferManager.SetBuffer(args);
-
-            return args;
-        }
-
-        public void Trim(int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                SocketAsyncEventArgs? args;
-
-                if (argsPool.TryTake(out args))
-                {
-                    bufferManager.ClearBuffer(args);
-                    args.Dispose();
-                }
+                bufferManager.ClearBuffer(arg);
+                arg.Dispose();
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
+        bufferManager = null!;
+    }
 
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                argsPool.CompleteAdding();
-
-                while (argsPool.Count > 0)
-                {
-                    SocketAsyncEventArgs arg = argsPool.Take();
-
-                    bufferManager.ClearBuffer(arg);
-                    arg.Dispose();
-                }
-            }
-
-            bufferManager = null!;
-        }
-
-        ~SocketAsyncEventArgsPool()
-        {
-            Dispose(false);
-        }
+    ~SocketAsyncEventArgsPool()
+    {
+        Dispose(false);
     }
 }

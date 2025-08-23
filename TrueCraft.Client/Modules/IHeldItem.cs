@@ -1,9 +1,8 @@
 using TrueCraft.Core;
 
-namespace TrueCraft.Client.Modules
+namespace TrueCraft.Client.Modules;
+
+public interface IHeldItem
 {
-    public interface IHeldItem
-    {
-        ItemStack HeldItem { get; set; }
-    }
+    ItemStack HeldItem { get; set; }
 }

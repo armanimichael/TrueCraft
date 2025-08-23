@@ -4,29 +4,28 @@ using TrueCraft.Core.Networking;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Logic.Items
+namespace TrueCraft.Core.Logic.Items;
+
+public class RedstoneItem : ItemProvider
 {
-    public class RedstoneItem : ItemProvider
+    public static readonly short ItemID = 0x14B;
+
+    public RedstoneItem(XmlNode node) : base(node)
     {
-        public static readonly short ItemID = 0x14B;
+    }
 
-        public RedstoneItem(XmlNode node) : base(node)
+    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    {
+        ServerOnly.Assert();
+
+        coordinates += MathHelper.BlockFaceToCoordinates(face);
+        IBlockProvider supportingBlock = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates + Vector3i.Down));
+
+        if (supportingBlock.Opaque)
         {
-        }
-
-        public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
-        {
-            ServerOnly.Assert();
-
-            coordinates += MathHelper.BlockFaceToCoordinates(face);
-            IBlockProvider supportingBlock = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates + Vector3i.Down));
-
-            if (supportingBlock.Opaque)
-            {
-                dimension.SetBlockID(coordinates, RedstoneDustBlock.BlockID);
-                item.Count--;
-                user.Hotbar[user.SelectedSlot].Item = item;
-            }
+            dimension.SetBlockID(coordinates, RedstoneDustBlock.BlockID);
+            item.Count--;
+            user.Hotbar[user.SelectedSlot].Item = item;
         }
     }
 }

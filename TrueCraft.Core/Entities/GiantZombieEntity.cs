@@ -1,46 +1,44 @@
 ﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Entities
+namespace TrueCraft.Core.Entities;
+
+public class GiantZombieEntity : ZombieEntity
 {
-    public class GiantZombieEntity : ZombieEntity
+    public GiantZombieEntity(IDimension dimension, IEntityManager entityManager) :
+        base(dimension, entityManager)
     {
-        public GiantZombieEntity(IDimension dimension, IEntityManager entityManager) :
-            base(dimension, entityManager)
-        {
-        }
+    }
 
-        public override Size Size
+    public override Size Size
+    {
+        get
         {
-            get
-            {
-                return new Size(0.6, 1.8, 0.6) * 6;
-            }
+            return new Size(0.6, 1.8, 0.6) * 6;
         }
+    }
 
-        public override short MaxHealth
+    public override short MaxHealth
+    {
+        get
         {
-            get
-            {
-                return 100;
-            }
+            return 100;
         }
+    }
 
-        public override sbyte MobType
+    public override sbyte MobType
+    {
+        get
         {
-            get
-            {
-                return 53;
-            }
+            return 53;
         }
+    }
 
-        public override bool Friendly
+    public override bool Friendly
+    {
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
     }
 }
-

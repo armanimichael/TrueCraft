@@ -1,21 +1,20 @@
 ﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Entities
-{
-    public class PigEntity : MobEntity
-    {
-        public PigEntity(IDimension dimension, IEntityManager entityManager) :
-            base(dimension, entityManager, 10, new Size(0.9))
-        {
-        }
+namespace TrueCraft.Core.Entities;
 
-        public override sbyte MobType
+public class PigEntity : MobEntity
+{
+    public PigEntity(IDimension dimension, IEntityManager entityManager) :
+        base(dimension, entityManager, 10, new Size(0.9))
+    {
+    }
+
+    public override sbyte MobType
+    {
+        get
         {
-            get
-            {
-                return 90;
-            }
+            return 90;
         }
     }
 }

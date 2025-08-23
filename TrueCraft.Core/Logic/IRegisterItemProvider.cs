@@ -1,11 +1,10 @@
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public interface IRegisterItemProvider
 {
-    public interface IRegisterItemProvider
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="itemProvider"></param>
-        void RegisterItemProvider(IItemProvider itemProvider);
-    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="itemProvider"></param>
+    void RegisterItemProvider(IItemProvider itemProvider);
 }

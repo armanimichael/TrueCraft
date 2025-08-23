@@ -1,29 +1,28 @@
 ﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Entities
+namespace TrueCraft.Core.Entities;
+
+public class ZombiePigmanEntity : MobEntity
 {
-    public class ZombiePigmanEntity : MobEntity
+    public ZombiePigmanEntity(IDimension dimension, IEntityManager entityManager) :
+        base(dimension, entityManager, 20, new Size(0.6, 1.8, 0.6))
     {
-        public ZombiePigmanEntity(IDimension dimension, IEntityManager entityManager) :
-            base(dimension, entityManager, 20, new Size(0.6, 1.8, 0.6))
-        {
-        }
+    }
 
-        public override sbyte MobType
+    public override sbyte MobType
+    {
+        get
         {
-            get
-            {
-                return 57;
-            }
+            return 57;
         }
+    }
 
-        public override bool Friendly
+    public override bool Friendly
+    {
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
     }
 }

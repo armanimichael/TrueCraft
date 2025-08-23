@@ -5,58 +5,57 @@ using System.Collections.Generic;
 using TrueCraft.Core.Logging;
 using TrueCraft.Core.Logic;
 
-namespace TrueCraft.Core.Server
+namespace TrueCraft.Core.Server;
+
+/// <summary>
+/// Called when the given packet comes in from a remote client. Return false to cease communication
+/// with that client.
+/// </summary>
+public delegate void PacketHandler(IPacket packet, IRemoteClient client, IMultiplayerServer server);
+
+// TODO: this looks like it should be a server-side only concern.
+//        However, moving it is non-trivial due to the large number of
+//        references to it in Core.
+public interface IMultiplayerServer
 {
+    event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
+    event EventHandler<PlayerJoinedQuitEventArgs> PlayerJoined;
+    event EventHandler<PlayerJoinedQuitEventArgs> PlayerQuit;
+
+    IAccessConfiguration AccessConfiguration { get; }
+    IPacketReader PacketReader { get; }
+    IList<IRemoteClient> Clients { get; }
+
+    // TODO: this returns an IWorld interface.
     /// <summary>
-    /// Called when the given packet comes in from a remote client. Return false to cease communication
-    /// with that client.
+    /// 
     /// </summary>
-    public delegate void PacketHandler(IPacket packet, IRemoteClient client, IMultiplayerServer server);
+    object? World { get; }
 
-    // TODO: this looks like it should be a server-side only concern.
-    //        However, moving it is non-trivial due to the large number of
-    //        references to it in Core.
-    public interface IMultiplayerServer
-    {
-        event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
-        event EventHandler<PlayerJoinedQuitEventArgs> PlayerJoined;
-        event EventHandler<PlayerJoinedQuitEventArgs> PlayerQuit;
+    IEventScheduler Scheduler { get; }
 
-        IAccessConfiguration AccessConfiguration { get; }
-        IPacketReader PacketReader { get; }
-        IList<IRemoteClient> Clients { get; }
+    [Obsolete()]
+    IBlockRepository BlockRepository { get; }
 
-        // TODO: this returns an IWorld interface.
-        /// <summary>
-        /// 
-        /// </summary>
-        object? World { get; }
+    [Obsolete()]
+    IItemRepository ItemRepository { get; }
 
-        IEventScheduler Scheduler { get; }
+    IPEndPoint? EndPoint { get; }
+    bool BlockUpdatesEnabled { get; set; }
+    bool EnableClientLogging { get; set; }
 
-        [Obsolete()]
-        IBlockRepository BlockRepository { get; }
+    void Start(IPEndPoint endPoint);
+    void Stop();
+    void RegisterPacketHandler(byte packetId, PacketHandler handler);
 
-        [Obsolete()]
-        IItemRepository ItemRepository { get; }
+    void AddLogProvider(ILogProvider provider);
+    void Log(LogCategory category, string text, params object[] parameters);
 
-        IPEndPoint? EndPoint { get; }
-        bool BlockUpdatesEnabled { get; set; }
-        bool EnableClientLogging { get; set; }
+    void SendMessage(string message, params object[] parameters);
 
-        void Start(IPEndPoint endPoint);
-        void Stop();
-        void RegisterPacketHandler(byte packetId, PacketHandler handler);
+    void DisconnectClient(IRemoteClient client);
 
-        void AddLogProvider(ILogProvider provider);
-        void Log(LogCategory category, string text, params object[] parameters);
-
-        void SendMessage(string message, params object[] parameters);
-
-        void DisconnectClient(IRemoteClient client);
-
-        bool PlayerIsWhitelisted(string client);
-        bool PlayerIsBlacklisted(string client);
-        bool PlayerIsOp(string client);
-    }
+    bool PlayerIsWhitelisted(string client);
+    bool PlayerIsBlacklisted(string client);
+    bool PlayerIsOp(string client);
 }

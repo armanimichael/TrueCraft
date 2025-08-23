@@ -1,19 +1,18 @@
-﻿namespace TrueCraft.Core.Networking.Packets
+﻿namespace TrueCraft.Core.Networking.Packets;
+
+public struct UselessEntityPacket : IPacket
 {
-    public struct UselessEntityPacket : IPacket
+    public byte ID { get { return 0x1E; } }
+
+    public int EntityID;
+
+    public void ReadPacket(IMinecraftStream stream)
     {
-        public byte ID { get { return 0x1E; } }
+        EntityID = stream.ReadInt32();
+    }
 
-        public int EntityID;
-
-        public void ReadPacket(IMinecraftStream stream)
-        {
-            EntityID = stream.ReadInt32();
-        }
-
-        public void WritePacket(IMinecraftStream stream)
-        {
-            stream.WriteInt32(EntityID);
-        }
+    public void WritePacket(IMinecraftStream stream)
+    {
+        stream.WriteInt32(EntityID);
     }
 }

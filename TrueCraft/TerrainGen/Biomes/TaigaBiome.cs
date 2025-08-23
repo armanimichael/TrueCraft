@@ -1,39 +1,38 @@
 ﻿using TrueCraft.Core;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class TaigaBiome : BiomeProvider
 {
-    public class TaigaBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.Taiga; }
-        }
+        get { return (byte)Biome.Taiga; }
+    }
 
-        public override double Temperature
-        {
-            get { return 0.0f; }
-        }
+    public override double Temperature
+    {
+        get { return 0.0f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.0f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.0f; }
+    }
 
-        public override TreeSpecies[] Trees
+    public override TreeSpecies[] Trees
+    {
+        get
         {
-            get
-            {
-                return new[] { TreeSpecies.Spruce };
-            }
+            return new[] { TreeSpecies.Spruce };
         }
+    }
 
-        public override double TreeDensity
+    public override double TreeDensity
+    {
+        get
         {
-            get
-            {
-                return 5;
-            }
+            return 5;
         }
     }
 }

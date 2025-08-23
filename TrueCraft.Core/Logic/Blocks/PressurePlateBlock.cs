@@ -1,45 +1,44 @@
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public abstract class PressurePlateBlock : BlockProvider
 {
-    public abstract class PressurePlateBlock : BlockProvider
+    public override double BlastResistance { get { return 2.5; } }
+
+    public override double Hardness { get { return 0.5; } }
+
+    public override byte Luminance { get { return 0; } }
+
+    public override bool Opaque { get { return false; } }
+}
+
+public class WoodenPressurePlateBlock : PressurePlateBlock
+{
+    public static readonly byte BlockID = 0x48;
+        
+    public override byte ID { get { return 0x48; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public override double BlastResistance { get { return 2.5; } }
-
-        public override double Hardness { get { return 0.5; } }
-
-        public override byte Luminance { get { return 0; } }
-
-        public override bool Opaque { get { return false; } }
+        return "Wooden Pressure Plate";
     }
 
-    public class WoodenPressurePlateBlock : PressurePlateBlock
+    public override SoundEffectClass SoundEffect
     {
-        public static readonly byte BlockID = 0x48;
-        
-        public override byte ID { get { return 0x48; } }
-        
-        public override string GetDisplayName(short metadata)
+        get
         {
-            return "Wooden Pressure Plate";
-        }
-
-        public override SoundEffectClass SoundEffect
-        {
-            get
-            {
-                return SoundEffectClass.Wood;
-            }
+            return SoundEffectClass.Wood;
         }
     }
+}
 
-    public class StonePressurePlateBlock : PressurePlateBlock
+public class StonePressurePlateBlock : PressurePlateBlock
+{
+    public static readonly byte BlockID = 0x46;
+
+    public override byte ID { get { return 0x46; } }
+
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly byte BlockID = 0x46;
-
-        public override byte ID { get { return 0x46; } }
-
-        public override string GetDisplayName(short metadata)
-        {
-            return "Stone Pressure Plate";
-        }
+        return "Stone Pressure Plate";
     }
 }

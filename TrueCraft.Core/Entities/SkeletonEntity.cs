@@ -1,29 +1,28 @@
 ﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Entities
+namespace TrueCraft.Core.Entities;
+
+public class SkeletonEntity : MobEntity
 {
-    public class SkeletonEntity : MobEntity
+    public SkeletonEntity(IDimension dimension, IEntityManager entityManager) :
+        base(dimension, entityManager, 20, new Size(0.6, 1.8, 0.6))
     {
-        public SkeletonEntity(IDimension dimension, IEntityManager entityManager) :
-            base(dimension, entityManager, 20, new Size(0.6, 1.8, 0.6))
-        {
-        }
+    }
 
-        public override sbyte MobType
+    public override sbyte MobType
+    {
+        get
         {
-            get
-            {
-                return 51;
-            }
+            return 51;
         }
+    }
 
-        public override bool Friendly
+    public override bool Friendly
+    {
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
     }
 }

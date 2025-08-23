@@ -1,16 +1,16 @@
-﻿namespace fNbt {
-    /// <summary> Compression method used for loading/saving NBT files. </summary>
-    public enum NbtCompression {
-        /// <summary> Automatically detect file compression. Not a valid format for saving. </summary>
-        AutoDetect,
+﻿namespace fNbt;
 
-        /// <summary> No compression. </summary>
-        None,
+/// <summary> Compression method used for loading/saving NBT files. </summary>
+public enum NbtCompression {
+    /// <summary> Automatically detect file compression. Not a valid format for saving. </summary>
+    AutoDetect,
 
-        /// <summary> Compressed, with GZip header (default). </summary>
-        GZip,
+    /// <summary> No compression. </summary>
+    None,
 
-        /// <summary> Compressed, with ZLib header (RFC-1950). </summary>
-        ZLib
-    }
+    /// <summary> Compressed, with GZip header (default). </summary>
+    GZip,
+
+    /// <summary> Compressed, with ZLib header (RFC-1950). </summary>
+    ZLib
 }

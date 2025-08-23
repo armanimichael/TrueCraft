@@ -1,39 +1,38 @@
 ﻿using TrueCraft.Core;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class SwamplandBiome : BiomeProvider
 {
-    public class SwamplandBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.Swampland; }
-        }
+        get { return (byte)Biome.Swampland; }
+    }
 
-        public override double Temperature
-        {
-            get { return 0.8f; }
-        }
+    public override double Temperature
+    {
+        get { return 0.8f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.9f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.9f; }
+    }
 
-        public override TreeSpecies[] Trees
+    public override TreeSpecies[] Trees
+    {
+        get
         {
-            get
-            {
-                return new TreeSpecies[0];
-            }
+            return new TreeSpecies[0];
         }
+    }
 
-        public override PlantSpecies[] Plants
+    public override PlantSpecies[] Plants
+    {
+        get
         {
-            get
-            {
-                return new[] { PlantSpecies.SugarCane, PlantSpecies.TallGrass };
-            }
+            return new[] { PlantSpecies.SugarCane, PlantSpecies.TallGrass };
         }
     }
 }

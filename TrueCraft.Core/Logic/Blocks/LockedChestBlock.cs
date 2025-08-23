@@ -1,39 +1,38 @@
 using System;
 
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public class LockedChestBlock : BlockProvider, IBurnableItem
 {
-    public class LockedChestBlock : BlockProvider, IBurnableItem
+    public static readonly byte BlockID = 0x5F;
+        
+    public override byte ID { get { return 0x5F; } }
+        
+    public override double BlastResistance { get { return 0; } }
+
+    public override double Hardness { get { return 0; } }
+
+    public override byte Luminance { get { return 0; } }
+
+    public override bool Opaque { get { return false; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly byte BlockID = 0x5F;
-        
-        public override byte ID { get { return 0x5F; } }
-        
-        public override double BlastResistance { get { return 0; } }
+        return "Locked Chest";
+    }
 
-        public override double Hardness { get { return 0; } }
+    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(15); } }
 
-        public override byte Luminance { get { return 0; } }
-
-        public override bool Opaque { get { return false; } }
-        
-        public override string GetDisplayName(short metadata)
+    public override SoundEffectClass SoundEffect
+    {
+        get
         {
-            return "Locked Chest";
+            return SoundEffectClass.Wood;
         }
+    }
 
-        public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(15); } }
-
-        public override SoundEffectClass SoundEffect
-        {
-            get
-            {
-                return SoundEffectClass.Wood;
-            }
-        }
-
-        public override Tuple<int, int> GetTextureMap(byte metadata)
-        {
-            return new Tuple<int, int>(10, 1);
-        }
+    public override Tuple<int, int> GetTextureMap(byte metadata)
+    {
+        return new Tuple<int, int>(10, 1);
     }
 }

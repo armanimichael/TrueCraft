@@ -1,8 +1,7 @@
 ﻿using System;
 
-namespace TrueCraft.Client.Input
+namespace TrueCraft.Client.Input;
+
+public class GamePadEventArgs : EventArgs
 {
-    public class GamePadEventArgs : EventArgs
-    {
-    }
 }

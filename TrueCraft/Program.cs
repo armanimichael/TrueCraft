@@ -12,119 +12,118 @@ using TrueCraft.Core.Logic;
 using TrueCraft.Core.Lighting;
 using TrueCraft.Handlers;
 
-namespace TrueCraft
+namespace TrueCraft;
+
+public class Program
 {
-    public class Program
+    public static ServerConfiguration? ServerConfiguration;
+
+    public static MultiplayerServer? Server;
+
+    public static IServerServiceLocator _serviceLocator = null!;
+
+    public static IServerServiceLocator ServiceLocator
     {
-        public static ServerConfiguration? ServerConfiguration;
-
-        public static MultiplayerServer? Server;
-
-        public static IServerServiceLocator _serviceLocator = null!;
-
-        public static IServerServiceLocator ServiceLocator
+        get => _serviceLocator;
+        set
         {
-            get => _serviceLocator;
-            set
-            {
-                _serviceLocator = value;
-                InteractionHandlers.ServiceLocator = _serviceLocator;
-            }
+            _serviceLocator = value;
+            InteractionHandlers.ServiceLocator = _serviceLocator;
         }
+    }
 
-        public static void Main(string[] args)
+    public static void Main(string[] args)
+    {
+        try
         {
-            try
-            {
-                IServiceLocator coreServiceLocator = Discover.DoDiscovery(new Discover());
+            IServiceLocator coreServiceLocator = Discover.DoDiscovery(new Discover());
 
-                // TODO: World path must be passed here.
-                Server = new MultiplayerServer(coreServiceLocator);
+            // TODO: World path must be passed here.
+            Server = new MultiplayerServer(coreServiceLocator);
 
-                ServiceLocator = new ServerServiceLocator(Server, coreServiceLocator);
+            ServiceLocator = new ServerServiceLocator(Server, coreServiceLocator);
 
-                Server.AddLogProvider(new ConsoleLogProvider(LogCategory.Notice | LogCategory.Warning | LogCategory.Error | LogCategory.Debug));
+            Server.AddLogProvider(new ConsoleLogProvider(LogCategory.Notice | LogCategory.Warning | LogCategory.Error | LogCategory.Debug));
 #if DEBUG
-                Server.AddLogProvider(new FileLogProvider(new StreamWriter("packets.log", false), LogCategory.Packets));
+            Server.AddLogProvider(new FileLogProvider(new StreamWriter("packets.log", false), LogCategory.Packets));
 #endif
 
-                ServerConfiguration = Configuration.LoadConfiguration<ServerConfiguration>("config.yaml");
+            ServerConfiguration = Configuration.LoadConfiguration<ServerConfiguration>("config.yaml");
 
-                var buckets = ServerConfiguration.Debug?.Profiler?.Buckets?.Split(',');
-                if (buckets != null)
-                {
-                    foreach (var bucket in buckets)
-                    {
-                        Profiler.EnableBucket(bucket.Trim());
-                    }
-                }
-
-                if (ServerConfiguration.Debug!.DeleteWorldOnStartup)
-                {
-                    if (Directory.Exists("world"))
-                        Directory.Delete("world", true);
-                }
-                if (ServerConfiguration.Debug.DeletePlayersOnStartup)
-                {
-                    if (Directory.Exists("players"))
-                        Directory.Delete("players", true);
-                }
-
-                var worldPath = Path.Combine(Paths.Worlds, "world");
-
-                if (!Directory.Exists(worldPath))
-                {
-                    int seed = MathHelper.Random.Next();
-                    TrueCraft.World.World.CreateWorld(seed, Paths.Worlds, "world");
-                }
-
-                var world = TrueCraft.World.World.LoadWorld(ServiceLocator, worldPath);
-                ServiceLocator.World = world;
-                Server.World = world;
-
-                IDimensionServer overWorld = (IDimensionServer)world[DimensionID.Overworld];
-                overWorld.Initialize(new GlobalChunkCoordinates(0, 0), Server, null);
-
-                // TODO: Is this needed when loading (and not creating)?
-                Server.Log(LogCategory.Notice, "Lighting the world (this will take a moment)...");
-                foreach (Lighting lighter in Server.WorldLighters)
-                {
-                    while (lighter.TryLightNext()) ;
-                }
-
-                Server.Start(new IPEndPoint(IPAddress.Parse(ServerConfiguration.ServerAddress), ServerConfiguration.ServerPort));
-                Console.CancelKeyPress += HandleCancelKeyPress;
-                Server.Scheduler.ScheduleEvent("world.save", null,
-                    TimeSpan.FromSeconds(ServerConfiguration.WorldSaveInterval), SaveWorlds);
-                while (true)
-                {
-                    Thread.Yield();
-                }
-            }
-            catch (Exception ex)
+            var buckets = ServerConfiguration.Debug?.Profiler?.Buckets?.Split(',');
+            if (buckets != null)
             {
-                if (Server is not null)
+                foreach (var bucket in buckets)
                 {
-                    Server.Log(LogCategory.Error, ex.Message);
-                    SaveWorlds(Server);
+                    Profiler.EnableBucket(bucket.Trim());
                 }
             }
-        }
 
-        static void SaveWorlds(IMultiplayerServer server)
-        {
-            // TODO: Surely, this is too time consuming of an operation to be done from
-            //       a scheduled event.
-            Server!.Log(LogCategory.Notice, "Saving world...");
-            ((IWorld?)Server.World)?.Save();
-            Server.Log(LogCategory.Notice, "Done.");
-            server.Scheduler.ScheduleEvent("world.save", null,
-                TimeSpan.FromSeconds(ServerConfiguration!.WorldSaveInterval), SaveWorlds);
-        }
+            if (ServerConfiguration.Debug!.DeleteWorldOnStartup)
+            {
+                if (Directory.Exists("world"))
+                    Directory.Delete("world", true);
+            }
+            if (ServerConfiguration.Debug.DeletePlayersOnStartup)
+            {
+                if (Directory.Exists("players"))
+                    Directory.Delete("players", true);
+            }
 
-        static void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
-        {
-            Server!.Stop();
+            var worldPath = Path.Combine(Paths.Worlds, "world");
+
+            if (!Directory.Exists(worldPath))
+            {
+                int seed = MathHelper.Random.Next();
+                TrueCraft.World.World.CreateWorld(seed, Paths.Worlds, "world");
+            }
+
+            var world = TrueCraft.World.World.LoadWorld(ServiceLocator, worldPath);
+            ServiceLocator.World = world;
+            Server.World = world;
+
+            IDimensionServer overWorld = (IDimensionServer)world[DimensionID.Overworld];
+            overWorld.Initialize(new GlobalChunkCoordinates(0, 0), Server, null);
+
+            // TODO: Is this needed when loading (and not creating)?
+            Server.Log(LogCategory.Notice, "Lighting the world (this will take a moment)...");
+            foreach (Lighting lighter in Server.WorldLighters)
+            {
+                while (lighter.TryLightNext()) ;
+            }
+
+            Server.Start(new IPEndPoint(IPAddress.Parse(ServerConfiguration.ServerAddress), ServerConfiguration.ServerPort));
+            Console.CancelKeyPress += HandleCancelKeyPress;
+            Server.Scheduler.ScheduleEvent("world.save", null,
+                TimeSpan.FromSeconds(ServerConfiguration.WorldSaveInterval), SaveWorlds);
+            while (true)
+            {
+                Thread.Yield();
+            }
         }
+        catch (Exception ex)
+        {
+            if (Server is not null)
+            {
+                Server.Log(LogCategory.Error, ex.Message);
+                SaveWorlds(Server);
+            }
+        }
+    }
+
+    static void SaveWorlds(IMultiplayerServer server)
+    {
+        // TODO: Surely, this is too time consuming of an operation to be done from
+        //       a scheduled event.
+        Server!.Log(LogCategory.Notice, "Saving world...");
+        ((IWorld?)Server.World)?.Save();
+        Server.Log(LogCategory.Notice, "Done.");
+        server.Scheduler.ScheduleEvent("world.save", null,
+            TimeSpan.FromSeconds(ServerConfiguration!.WorldSaveInterval), SaveWorlds);
+    }
+
+    static void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    {
+        Server!.Stop();
     }
 }

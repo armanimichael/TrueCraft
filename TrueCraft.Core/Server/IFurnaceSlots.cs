@@ -1,9 +1,8 @@
-namespace TrueCraft.Core.Server
+namespace TrueCraft.Core.Server;
+
+public interface IFurnaceSlots
 {
-    public interface IFurnaceSlots
-    {
-        IServerSlot IngredientSlot { get; }
-        IServerSlot FuelSlot { get; }
-        IServerSlot OutputSlot { get; }
-    }
+    IServerSlot IngredientSlot { get; }
+    IServerSlot FuelSlot { get; }
+    IServerSlot OutputSlot { get; }
 }

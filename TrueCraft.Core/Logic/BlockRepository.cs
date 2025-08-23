@@ -1,55 +1,54 @@
 ﻿using System;
 
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public class BlockRepository : IBlockRepository, IRegisterBlockProvider
 {
-    public class BlockRepository : IBlockRepository, IRegisterBlockProvider
+    private readonly IBlockProvider[] BlockProviders = new IBlockProvider[0x100];
+
+    private static BlockRepository? _singleton = null;
+
+    private BlockRepository()
     {
-        private readonly IBlockProvider[] BlockProviders = new IBlockProvider[0x100];
 
-        private static BlockRepository? _singleton = null;
+    }
 
-        private BlockRepository()
-        {
-
-        }
-
-        internal static IBlockRepository Init(IDiscover discover)
-        {
-            // Creating a new Single Player World requires an initialized
-            // Block Provider.  Starting an existing world must also initialize
-            // the Block Provider.  Thus, we cannot guarantee only one call to
-            // this method.  Subsequent calls are ignored.
-            if (!(object.ReferenceEquals(_singleton, null)))
-                return _singleton;
-
-            _singleton = new BlockRepository();
-            discover.DiscoverBlockProviders(_singleton);
+    internal static IBlockRepository Init(IDiscover discover)
+    {
+        // Creating a new Single Player World requires an initialized
+        // Block Provider.  Starting an existing world must also initialize
+        // the Block Provider.  Thus, we cannot guarantee only one call to
+        // this method.  Subsequent calls are ignored.
+        if (!(object.ReferenceEquals(_singleton, null)))
             return _singleton;
-        }
 
-        /// <summary>
-        /// Gets the single instance of the BlockRepository.
-        /// </summary>
-        /// <returns>The BlockRepository.</returns>
-        [Obsolete("Use ServiceLocator to inject the BlockRepository")]
-        public static BlockRepository Get()
-        {
+        _singleton = new BlockRepository();
+        discover.DiscoverBlockProviders(_singleton);
+        return _singleton;
+    }
+
+    /// <summary>
+    /// Gets the single instance of the BlockRepository.
+    /// </summary>
+    /// <returns>The BlockRepository.</returns>
+    [Obsolete("Use ServiceLocator to inject the BlockRepository")]
+    public static BlockRepository Get()
+    {
 #if DEBUG
-            if (object.ReferenceEquals(_singleton, null))
-                throw new ApplicationException("Call to BlockRepository.Get without initialization.");
+        if (object.ReferenceEquals(_singleton, null))
+            throw new ApplicationException("Call to BlockRepository.Get without initialization.");
 #endif
-            return _singleton;
-        }
+        return _singleton;
+    }
 
-        public IBlockProvider GetBlockProvider(byte id)
-        {
-            return BlockProviders[id];
-        }
+    public IBlockProvider GetBlockProvider(byte id)
+    {
+        return BlockProviders[id];
+    }
 
-        /// <inheritdoc />
-        public void RegisterBlockProvider(IBlockProvider provider)
-        {
-            BlockProviders[provider.ID] = provider;
-        }
+    /// <inheritdoc />
+    public void RegisterBlockProvider(IBlockProvider provider)
+    {
+        BlockProviders[provider.ID] = provider;
     }
 }

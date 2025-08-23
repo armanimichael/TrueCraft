@@ -1,78 +1,77 @@
 ﻿using System;
 using System.IO;
 
-namespace TrueCraft.Core
+namespace TrueCraft.Core;
+
+public static class Paths
 {
-    public static class Paths
+    public static string Base
     {
-        public static string Base
+        get
         {
-            get
+            string? xdg_config_home = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            string? config = null;
+            if (xdg_config_home is not null)
             {
-                string? xdg_config_home = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
-                string? config = null;
-                if (xdg_config_home is not null)
-                {
-                    config = Path.Combine(xdg_config_home, "truecraft");
-                    if (Directory.Exists(config))
-                        return config;
-                }
-
-                var appdata = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "truecraft");
-                if (Directory.Exists(appdata))
-                    return appdata;
-
-                var userprofile = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".truecraft");
-                if (Directory.Exists(userprofile))
-                    return userprofile;
-
-                // At this point, there's no existing data to choose from, so use the best option
-                if (config is not null)
-                {
-                    Directory.CreateDirectory(config);
+                config = Path.Combine(xdg_config_home, "truecraft");
+                if (Directory.Exists(config))
                     return config;
-                }
+            }
 
-                Directory.CreateDirectory(appdata);
-
+            var appdata = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "truecraft");
+            if (Directory.Exists(appdata))
                 return appdata;
-            }
-        }
 
-        public static string Worlds
-        {
-            get
-            {
-                return Path.Combine(Base, "worlds");
-            }
-        }
+            var userprofile = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".truecraft");
+            if (Directory.Exists(userprofile))
+                return userprofile;
 
-        public static string Settings
-        {
-            get
+            // At this point, there's no existing data to choose from, so use the best option
+            if (config is not null)
             {
-                return Path.Combine(Base, "settings.json");
+                Directory.CreateDirectory(config);
+                return config;
             }
-        }
 
-        public static string Screenshots
-        {
-            get
-            {
-                return Path.Combine(Base, "screenshots");
-            }
-        }
+            Directory.CreateDirectory(appdata);
 
-        public static string TexturePacks
+            return appdata;
+        }
+    }
+
+    public static string Worlds
+    {
+        get
         {
-            get
-            {
-                return Path.Combine(Base, "texturepacks");
-            }
+            return Path.Combine(Base, "worlds");
+        }
+    }
+
+    public static string Settings
+    {
+        get
+        {
+            return Path.Combine(Base, "settings.json");
+        }
+    }
+
+    public static string Screenshots
+    {
+        get
+        {
+            return Path.Combine(Base, "screenshots");
+        }
+    }
+
+    public static string TexturePacks
+    {
+        get
+        {
+            return Path.Combine(Base, "texturepacks");
         }
     }
 }

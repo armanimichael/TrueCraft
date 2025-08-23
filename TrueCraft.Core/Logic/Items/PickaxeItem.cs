@@ -1,11 +1,10 @@
 ﻿using System.Xml;
 
-namespace TrueCraft.Core.Logic.Items
+namespace TrueCraft.Core.Logic.Items;
+
+public class PickaxeItem : ToolItem
 {
-    public class PickaxeItem : ToolItem
+    public PickaxeItem(XmlNode node) : base(node)
     {
-        public PickaxeItem(XmlNode node) : base(node)
-        {
-        }
     }
 }

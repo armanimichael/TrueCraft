@@ -1,67 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public class ItemRepository : IItemRepository, IRegisterItemProvider
 {
-    public class ItemRepository : IItemRepository, IRegisterItemProvider
+    private readonly List<IItemProvider> ItemProviders;
+
+    // Consumers must call Init before this class is used.
+    private static ItemRepository _singleton = null!;
+
+    private ItemRepository()
     {
-        private readonly List<IItemProvider> ItemProviders;
+        ItemProviders = new List<IItemProvider>();
+    }
 
-        // Consumers must call Init before this class is used.
-        private static ItemRepository _singleton = null!;
-
-        private ItemRepository()
-        {
-            ItemProviders = new List<IItemProvider>();
-        }
-
-        internal static IItemRepository Init(IDiscover discover)
-        {
-            if (!object.ReferenceEquals(_singleton, null))
-                return _singleton;
-
-            _singleton = new ItemRepository();
-            discover.DiscoverItemProviders(_singleton);
-
+    internal static IItemRepository Init(IDiscover discover)
+    {
+        if (!object.ReferenceEquals(_singleton, null))
             return _singleton;
-        }
 
-        [Obsolete("Inject IItemRepository instead")]
-        public static IItemRepository Get()
-        {
+        _singleton = new ItemRepository();
+        discover.DiscoverItemProviders(_singleton);
+
+        return _singleton;
+    }
+
+    [Obsolete("Inject IItemRepository instead")]
+    public static IItemRepository Get()
+    {
 #if DEBUG
-            if (object.ReferenceEquals(_singleton, null))
-                throw new ApplicationException("Call to ItemRepository.Get without initialization.");
+        if (object.ReferenceEquals(_singleton, null))
+            throw new ApplicationException("Call to ItemRepository.Get without initialization.");
 #endif
-            return _singleton;
-        }
+        return _singleton;
+    }
 
-        public IItemProvider? GetItemProvider(short id)
+    public IItemProvider? GetItemProvider(short id)
+    {
+        // TODO: Binary search
+        for (int i = 0; i < ItemProviders.Count; i++)
         {
-            // TODO: Binary search
-            for (int i = 0; i < ItemProviders.Count; i++)
-            {
-                if (ItemProviders[i].ID == id)
-                    return ItemProviders[i];
-            }
-            return null;
+            if (ItemProviders[i].ID == id)
+                return ItemProviders[i];
         }
+        return null;
+    }
 
-        /// <inheritdoc />
-        public void RegisterItemProvider(IItemProvider provider)
+    /// <inheritdoc />
+    public void RegisterItemProvider(IItemProvider provider)
+    {
+        int i;
+        for (i = ItemProviders.Count - 1; i >= 0; i--)
         {
-            int i;
-            for (i = ItemProviders.Count - 1; i >= 0; i--)
+            if (provider.ID == ItemProviders[i].ID)
             {
-                if (provider.ID == ItemProviders[i].ID)
-                {
-                    ItemProviders[i] = provider; // Override
-                    return;
-                }
-                if (ItemProviders[i].ID < provider.ID)
-                    break;
+                ItemProviders[i] = provider; // Override
+                return;
             }
-            ItemProviders.Insert(i + 1, provider);
+            if (ItemProviders[i].ID < provider.ID)
+                break;
         }
+        ItemProviders.Insert(i + 1, provider);
     }
 }

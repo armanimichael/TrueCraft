@@ -3,61 +3,60 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using TrueCraft.Core.Logic;
 
-namespace TrueCraft.Core.Inventory
+namespace TrueCraft.Core.Inventory;
+
+public class Slot : ISlot
 {
-    public class Slot : ISlot
+    private ItemStack _item = ItemStack.EmptyStack;
+
+    protected readonly IItemRepository _itemRepository;
+
+    /// <summary>
+    /// Constructs an empty Inventory Slot.
+    /// </summary>
+    /// <param name="itemRepository">The Item Repository</param>
+    /// <param name="index">The index of this Inventory Slot within its Parent collection.</param>
+    public Slot(IItemRepository itemRepository)
     {
-        private ItemStack _item = ItemStack.EmptyStack;
+        if (itemRepository == null)
+            throw new ArgumentNullException(nameof(itemRepository));
 
-        protected readonly IItemRepository _itemRepository;
+        _itemRepository = itemRepository;
+    }
 
-        /// <summary>
-        /// Constructs an empty Inventory Slot.
-        /// </summary>
-        /// <param name="itemRepository">The Item Repository</param>
-        /// <param name="index">The index of this Inventory Slot within its Parent collection.</param>
-        public Slot(IItemRepository itemRepository)
+    /// <inheritdoc />
+    public virtual int CanAccept(ItemStack other)
+    {
+        if (other.Empty) return 0;
+
+        if (_item.Empty) return other.Count;
+
+        if (_item.CanMerge(other))
         {
-            if (itemRepository == null)
-                    throw new ArgumentNullException(nameof(itemRepository));
-
-            _itemRepository = itemRepository;
+            IItemProvider provider = _itemRepository.GetItemProvider(_item.ID)!;
+            int maxStack = provider.MaximumStack;
+            return Math.Min(maxStack - _item.Count, other.Count);
         }
 
-        /// <inheritdoc />
-        public virtual int CanAccept(ItemStack other)
+        return 0;
+    }
+
+    /// <inheritdoc />
+    public virtual ItemStack Item
+    {
+        get => _item;
+        set
         {
-            if (other.Empty) return 0;
-
-            if (_item.Empty) return other.Count;
-
-            if (_item.CanMerge(other))
-            {
-                IItemProvider provider = _itemRepository.GetItemProvider(_item.ID)!;
-                int maxStack = provider.MaximumStack;
-                return Math.Min(maxStack - _item.Count, other.Count);
-            }
-
-            return 0;
+            if (_item == value) return;
+            _item = value;
+            OnPropertyChanged();
         }
+    }
 
-        /// <inheritdoc />
-        public virtual ItemStack Item
-        {
-            get => _item;
-            set
-            {
-                if (_item == value) return;
-                _item = value;
-                OnPropertyChanged();
-            }
-        }
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName]string property = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        }
+    protected virtual void OnPropertyChanged([CallerMemberName]string property = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 }

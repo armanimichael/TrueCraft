@@ -1,7 +1,6 @@
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public interface ICraftingRepository
 {
-    public interface ICraftingRepository
-    {
-        ICraftingRecipe? GetRecipe(CraftingPattern craftingArea);
-    }
+    ICraftingRecipe? GetRecipe(CraftingPattern craftingArea);
 }

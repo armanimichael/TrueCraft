@@ -1,23 +1,22 @@
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public interface IDiscover
 {
-    public interface IDiscover
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="repository"></param>
-        void DiscoverItemProviders(IRegisterItemProvider repository);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="repository"></param>
+    void DiscoverItemProviders(IRegisterItemProvider repository);
 
-        /// <summary>
-        /// Finds all the available Block Providers and registers them in the Block Repository.
-        /// </summary>
-        /// <param name="repository"></param>
-        void DiscoverBlockProviders(IRegisterBlockProvider repository);
+    /// <summary>
+    /// Finds all the available Block Providers and registers them in the Block Repository.
+    /// </summary>
+    /// <param name="repository"></param>
+    void DiscoverBlockProviders(IRegisterBlockProvider repository);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="repository"></param>
-        void DiscoverRecipes(IRegisterRecipe repository);
-    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="repository"></param>
+    void DiscoverRecipes(IRegisterRecipe repository);
 }

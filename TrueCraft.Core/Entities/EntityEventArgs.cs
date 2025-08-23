@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace TrueCraft.Core.Entities
-{
-    public class EntityEventArgs : EventArgs
-    {
-        public IEntity Entity { get; set; }
+namespace TrueCraft.Core.Entities;
 
-        public EntityEventArgs(IEntity entity)
-        {
-            Entity = entity;
-        }
+public class EntityEventArgs : EventArgs
+{
+    public IEntity Entity { get; set; }
+
+    public EntityEventArgs(IEntity entity)
+    {
+        Entity = entity;
     }
 }

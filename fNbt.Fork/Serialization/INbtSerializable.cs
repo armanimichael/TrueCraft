@@ -1,8 +1,7 @@
-﻿namespace fNbt.Serialization
+﻿namespace fNbt.Serialization;
+
+public interface INbtSerializable
 {
-    public interface INbtSerializable
-    {
-        NbtTag Serialize(string tagName);
-        void Deserialize(NbtTag value);
-    }
+    NbtTag Serialize(string tagName);
+    void Deserialize(NbtTag value);
 }

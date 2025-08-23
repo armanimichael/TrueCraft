@@ -3,22 +3,22 @@ using NUnit.Framework;
 using System.Xml;
 using System.IO;
 
-namespace TrueCraft.Core.Test.Logic
+namespace TrueCraft.Core.Test.Logic;
+
+[TestFixture]
+public class TestItemProvider
 {
-    [TestFixture]
-    public class TestItemProvider
+    private static XmlNode GetTopNode(string xml)
     {
-        private static XmlNode GetTopNode(string xml)
-        {
-            XmlDocument doc = new XmlDocument();
-            using (StringReader sr = new StringReader(xml))
-            using (XmlReader xmlr = XmlReader.Create(sr))
-                doc.Load(xmlr);
+        XmlDocument doc = new XmlDocument();
+        using (StringReader sr = new StringReader(xml))
+        using (XmlReader xmlr = XmlReader.Create(sr))
+            doc.Load(xmlr);
 
-            return doc.FirstChild!;
-        }
+        return doc.FirstChild!;
+    }
 
-        [TestCase(332, 16, @"<item>
+    [TestCase(332, 16, @"<item>
       <id>332</id>
       <maximumstack>16</maximumstack>
       <visiblemetadata>
@@ -33,13 +33,12 @@ namespace TrueCraft.Core.Test.Logic
       </visiblemetadata>
     </item>
 ")]
-        public void ctor(short expectedId, byte expectedMaxStack, string xml)
-        {
-            XmlNode itemNode = GetTopNode(xml);
-            IItemProvider actual = new ItemProvider(itemNode);
+    public void ctor(short expectedId, byte expectedMaxStack, string xml)
+    {
+        XmlNode itemNode = GetTopNode(xml);
+        IItemProvider actual = new ItemProvider(itemNode);
 
-            Assert.AreEqual(expectedId, actual.ID);
-            Assert.AreEqual(expectedMaxStack, actual.MaximumStack);
-        }
+        Assert.AreEqual(expectedId, actual.ID);
+        Assert.AreEqual(expectedMaxStack, actual.MaximumStack);
     }
 }

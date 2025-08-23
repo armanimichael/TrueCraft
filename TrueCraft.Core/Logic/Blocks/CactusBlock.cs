@@ -4,170 +4,169 @@ using TrueCraft.Core.Entities;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.Networking;
 
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public class CactusBlock : BlockProvider
 {
-    public class CactusBlock : BlockProvider
+    public static readonly int MinGrowthSeconds = 30;
+    public static readonly int MaxGrowthSeconds = 60;
+    public static readonly int MaxGrowHeight = 3;
+
+    public static readonly byte BlockID = 0x51;
+        
+    public override byte ID { get { return 0x51; } }
+        
+    public override double BlastResistance { get { return 2; } }
+
+    public override double Hardness { get { return 0.4; } }
+
+    public override byte Luminance { get { return 0; } }
+
+    public override bool Opaque { get { return false; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly int MinGrowthSeconds = 30;
-        public static readonly int MaxGrowthSeconds = 60;
-        public static readonly int MaxGrowHeight = 3;
+        return "Cactus";
+    }
 
-        public static readonly byte BlockID = 0x51;
-        
-        public override byte ID { get { return 0x51; } }
-        
-        public override double BlastResistance { get { return 2; } }
-
-        public override double Hardness { get { return 0.4; } }
-
-        public override byte Luminance { get { return 0; } }
-
-        public override bool Opaque { get { return false; } }
-        
-        public override string GetDisplayName(short metadata)
+    public override SoundEffectClass SoundEffect
+    {
+        get
         {
-            return "Cactus";
+            return SoundEffectClass.Cloth;
         }
+    }
 
-        public override SoundEffectClass SoundEffect
+    public override Tuple<int, int> GetTextureMap(byte metadata)
+    {
+        return new Tuple<int, int>(6, 4);
+    }
+
+    public bool ValidCactusPosition(BlockDescriptor descriptor, IBlockRepository repository, IDimension dimension, bool checkNeighbor = true, bool checkSupport = true)
+    {
+        if (checkNeighbor)
         {
-            get
-            {
-                return SoundEffectClass.Cloth;
-            }
-        }
-
-        public override Tuple<int, int> GetTextureMap(byte metadata)
-        {
-            return new Tuple<int, int>(6, 4);
-        }
-
-        public bool ValidCactusPosition(BlockDescriptor descriptor, IBlockRepository repository, IDimension dimension, bool checkNeighbor = true, bool checkSupport = true)
-        {
-            if (checkNeighbor)
-            {
-                GlobalVoxelCoordinates coords = descriptor.Coordinates;
-                foreach (Vector3i neighbor in Vector3i.Neighbors4)
-                    if (dimension.GetBlockID(coords + neighbor) != AirBlock.BlockID)
-                        return false;
-            }
-
-            if (checkSupport)
-            {
-                var supportingBlock = repository.GetBlockProvider(dimension.GetBlockID(descriptor.Coordinates + Vector3i.Down));
-                if ((supportingBlock.ID != CactusBlock.BlockID) && (supportingBlock.ID != SandBlock.BlockID))
+            GlobalVoxelCoordinates coords = descriptor.Coordinates;
+            foreach (Vector3i neighbor in Vector3i.Neighbors4)
+                if (dimension.GetBlockID(coords + neighbor) != AirBlock.BlockID)
                     return false;
-            }
-
-            return true;
         }
 
-        private void TryGrowth(IMultiplayerServer server, IChunk chunk, LocalVoxelCoordinates coords)
+        if (checkSupport)
         {
-            if (chunk.GetBlockID(coords) != BlockID)
-                return;
+            var supportingBlock = repository.GetBlockProvider(dimension.GetBlockID(descriptor.Coordinates + Vector3i.Down));
+            if ((supportingBlock.ID != CactusBlock.BlockID) && (supportingBlock.ID != SandBlock.BlockID))
+                return false;
+        }
 
-            // Find current height of stalk
-            int height = 0;
-            for (int y = -MaxGrowHeight; y <= MaxGrowHeight; y++)
+        return true;
+    }
+
+    private void TryGrowth(IMultiplayerServer server, IChunk chunk, LocalVoxelCoordinates coords)
+    {
+        if (chunk.GetBlockID(coords) != BlockID)
+            return;
+
+        // Find current height of stalk
+        int height = 0;
+        for (int y = -MaxGrowHeight; y <= MaxGrowHeight; y++)
+        {
+            if (chunk.GetBlockID(coords + (Vector3i.Down * y)) == BlockID)
+                height++;
+        }
+        if (height < MaxGrowHeight)
+        {
+            var meta = chunk.GetMetadata(coords);
+            meta++;
+            chunk.SetMetadata(coords, meta);
+            if (meta == 15)
             {
-                if (chunk.GetBlockID(coords + (Vector3i.Down * y)) == BlockID)
-                    height++;
-            }
-            if (height < MaxGrowHeight)
-            {
-                var meta = chunk.GetMetadata(coords);
-                meta++;
-                chunk.SetMetadata(coords, meta);
-                if (meta == 15)
+                if (chunk.GetBlockID(coords + Vector3i.Up) == 0)
                 {
-                    if (chunk.GetBlockID(coords + Vector3i.Up) == 0)
-                    {
-                        chunk.SetBlockID(coords + Vector3i.Up, BlockID);
-                        server.Scheduler.ScheduleEvent("cactus", chunk,
-                            TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
-                            (_server) => TryGrowth(_server, chunk, coords + Vector3i.Up));
-                    }
-                }
-                else
-                {
+                    chunk.SetBlockID(coords + Vector3i.Up, BlockID);
                     server.Scheduler.ScheduleEvent("cactus", chunk,
                         TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
-                        (_server) => TryGrowth(_server, chunk, coords));
+                        (_server) => TryGrowth(_server, chunk, coords + Vector3i.Up));
                 }
+            }
+            else
+            {
+                server.Scheduler.ScheduleEvent("cactus", chunk,
+                    TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
+                    (_server) => TryGrowth(_server, chunk, coords));
+            }
+        }
+    }
+
+    public void DestroyCactus(BlockDescriptor descriptor, IMultiplayerServer server, IDimension dimension)
+    {
+        ServerOnly.Assert();
+
+        var toDrop = 0;
+
+        // Search upwards
+        for (int y = descriptor.Coordinates.Y; y < 127; y++)
+        {
+            var coordinates = new GlobalVoxelCoordinates(descriptor.Coordinates.X, y, descriptor.Coordinates.Z);
+            if (dimension.GetBlockID(coordinates) == CactusBlock.BlockID)
+            {
+                dimension.SetBlockID(coordinates, AirBlock.BlockID);
+                toDrop++;
             }
         }
 
-        public void DestroyCactus(BlockDescriptor descriptor, IMultiplayerServer server, IDimension dimension)
+        // Search downwards.
+        for (int y = descriptor.Coordinates.Y - 1; y > 0; y--)
         {
-            ServerOnly.Assert();
-
-            var toDrop = 0;
-
-            // Search upwards
-            for (int y = descriptor.Coordinates.Y; y < 127; y++)
+            var coordinates = new GlobalVoxelCoordinates(descriptor.Coordinates.X, y, descriptor.Coordinates.Z);
+            if (dimension.GetBlockID(coordinates) == CactusBlock.BlockID)
             {
-                var coordinates = new GlobalVoxelCoordinates(descriptor.Coordinates.X, y, descriptor.Coordinates.Z);
-                if (dimension.GetBlockID(coordinates) == CactusBlock.BlockID)
-                {
-                    dimension.SetBlockID(coordinates, AirBlock.BlockID);
-                    toDrop++;
-                }
+                dimension.SetBlockID(coordinates, AirBlock.BlockID);
+                toDrop++;
             }
+        }
 
-            // Search downwards.
-            for (int y = descriptor.Coordinates.Y - 1; y > 0; y--)
-            {
-                var coordinates = new GlobalVoxelCoordinates(descriptor.Coordinates.X, y, descriptor.Coordinates.Z);
-                if (dimension.GetBlockID(coordinates) == CactusBlock.BlockID)
-                {
-                    dimension.SetBlockID(coordinates, AirBlock.BlockID);
-                    toDrop++;
-                }
-            }
+        IEntityManager manager = ((IDimensionServer)dimension).EntityManager;
+        manager.SpawnEntity(
+            new ItemEntity(dimension, manager, (Vector3)(descriptor.Coordinates + Vector3i.Up),
+                new ItemStack(CactusBlock.BlockID, (sbyte)toDrop)));
+    }
+
+    public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
+    {
+        ServerOnly.Assert();
+
+        if (ValidCactusPosition(descriptor, dimension.BlockRepository, dimension))
+            base.BlockPlaced(descriptor, face, dimension, user);
+        else
+        {
+            dimension.SetBlockID(descriptor.Coordinates, AirBlock.BlockID);
 
             IEntityManager manager = ((IDimensionServer)dimension).EntityManager;
             manager.SpawnEntity(
                 new ItemEntity(dimension, manager, (Vector3)(descriptor.Coordinates + Vector3i.Up),
-                    new ItemStack(CactusBlock.BlockID, (sbyte)toDrop)));
+                    new ItemStack(CactusBlock.BlockID, (sbyte)1)));
+            // user.Inventory.PickUpStack() wasn't working?
         }
 
-        public override void BlockPlaced(BlockDescriptor descriptor, BlockFace face, IDimension dimension, IRemoteClient user)
-        {
-            ServerOnly.Assert();
+        IChunk chunk = dimension.GetChunk(descriptor.Coordinates)!;
+        user.Server.Scheduler.ScheduleEvent("cactus", chunk,
+            TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
+            (server) => TryGrowth(server, chunk, (LocalVoxelCoordinates)descriptor.Coordinates));
+    }
 
-            if (ValidCactusPosition(descriptor, dimension.BlockRepository, dimension))
-                base.BlockPlaced(descriptor, face, dimension, user);
-            else
-            {
-                dimension.SetBlockID(descriptor.Coordinates, AirBlock.BlockID);
+    public override void BlockUpdate(BlockDescriptor descriptor, BlockDescriptor source, IMultiplayerServer server, IDimension dimension)
+    {
+        if (!ValidCactusPosition(descriptor, dimension.BlockRepository, dimension))
+            DestroyCactus(descriptor, server, dimension);
+        base.BlockUpdate(descriptor, source, server, dimension);
+    }
 
-                IEntityManager manager = ((IDimensionServer)dimension).EntityManager;
-                manager.SpawnEntity(
-                    new ItemEntity(dimension, manager, (Vector3)(descriptor.Coordinates + Vector3i.Up),
-                        new ItemStack(CactusBlock.BlockID, (sbyte)1)));
-                // user.Inventory.PickUpStack() wasn't working?
-            }
-
-            IChunk chunk = dimension.GetChunk(descriptor.Coordinates)!;
-            user.Server.Scheduler.ScheduleEvent("cactus", chunk,
-                TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
-                (server) => TryGrowth(server, chunk, (LocalVoxelCoordinates)descriptor.Coordinates));
-        }
-
-        public override void BlockUpdate(BlockDescriptor descriptor, BlockDescriptor source, IMultiplayerServer server, IDimension dimension)
-        {
-            if (!ValidCactusPosition(descriptor, dimension.BlockRepository, dimension))
-                DestroyCactus(descriptor, server, dimension);
-            base.BlockUpdate(descriptor, source, server, dimension);
-        }
-
-        public override void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coordinates)
-        {
-            IChunk chunk = dimension.GetChunk(coordinates)!;
-            server.Scheduler.ScheduleEvent("cactus", chunk,
-                TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
-                s => TryGrowth(s, chunk, (LocalVoxelCoordinates)coordinates));
-        }
+    public override void BlockLoadedFromChunk(IMultiplayerServer server, IDimension dimension, GlobalVoxelCoordinates coordinates)
+    {
+        IChunk chunk = dimension.GetChunk(coordinates)!;
+        server.Scheduler.ScheduleEvent("cactus", chunk,
+            TimeSpan.FromSeconds(MathHelper.Random.Next(MinGrowthSeconds, MaxGrowthSeconds)),
+            s => TryGrowth(s, chunk, (LocalVoxelCoordinates)coordinates));
     }
 }

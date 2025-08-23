@@ -1,22 +1,21 @@
 using TrueCraft.Core.Logic;
 
-namespace TrueCraft
+namespace TrueCraft;
+
+public interface IServiceLocator
 {
-    public interface IServiceLocator
-    {
-        /// <summary>
-        /// Gets the Block Repository.
-        /// </summary>
-        IBlockRepository BlockRepository { get; }
+    /// <summary>
+    /// Gets the Block Repository.
+    /// </summary>
+    IBlockRepository BlockRepository { get; }
 
-        /// <summary>
-        /// Gets the Item Repository.
-        /// </summary>
-        IItemRepository ItemRepository { get; }
+    /// <summary>
+    /// Gets the Item Repository.
+    /// </summary>
+    IItemRepository ItemRepository { get; }
 
-        /// <summary>
-        /// Gets the Crafting Repository
-        /// </summary>
-        ICraftingRepository CraftingRepository { get; }
-    }
+    /// <summary>
+    /// Gets the Crafting Repository
+    /// </summary>
+    ICraftingRepository CraftingRepository { get; }
 }

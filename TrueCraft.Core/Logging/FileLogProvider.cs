@@ -1,24 +1,23 @@
 ﻿using System.IO;
 
-namespace TrueCraft.Core.Logging
+namespace TrueCraft.Core.Logging;
+
+public class FileLogProvider : ILogProvider
 {
-    public class FileLogProvider : ILogProvider
+    public StreamWriter Stream { get; set; }
+    public LogCategory EnabledCategories { get; set; }
+
+    public FileLogProvider(StreamWriter stream, LogCategory enabledCategories = LogCategory.Notice | LogCategory.Warning | LogCategory.Error)
     {
-        public StreamWriter Stream { get; set; }
-        public LogCategory EnabledCategories { get; set; }
+        Stream = stream;
+        EnabledCategories = enabledCategories;
+    }
 
-        public FileLogProvider(StreamWriter stream, LogCategory enabledCategories = LogCategory.Notice | LogCategory.Warning | LogCategory.Error)
+    public void Log(LogCategory category, string text, params object[] parameters)
+    {
+        if ((EnabledCategories & category) != 0)
         {
-            Stream = stream;
-            EnabledCategories = enabledCategories;
-        }
-
-        public void Log(LogCategory category, string text, params object[] parameters)
-        {
-            if ((EnabledCategories & category) != 0)
-            {
-                Stream.WriteLine(text, parameters);
-            }
+            Stream.WriteLine(text, parameters);
         }
     }
 }

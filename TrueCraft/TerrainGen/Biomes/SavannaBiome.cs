@@ -1,47 +1,46 @@
 ﻿using TrueCraft.Core;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class SavannaBiome : BiomeProvider
 {
-    public class SavannaBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.Savanna; }
-        }
+        get { return (byte)Biome.Savanna; }
+    }
 
-        public override double Temperature
-        {
-            get { return 1.2f; }
-        }
+    public override double Temperature
+    {
+        get { return 1.2f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.0f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.0f; }
+    }
 
-        public override TreeSpecies[] Trees
+    public override TreeSpecies[] Trees
+    {
+        get
         {
-            get
-            {
-                return new[] { TreeSpecies.Oak };
-            }
+            return new[] { TreeSpecies.Oak };
         }
+    }
 
-        public override PlantSpecies[] Plants
+    public override PlantSpecies[] Plants
+    {
+        get
         {
-            get
-            {
-                return new[] { PlantSpecies.Deadbush, PlantSpecies.Fern };
-            }
+            return new[] { PlantSpecies.Deadbush, PlantSpecies.Fern };
         }
+    }
 
-        public override double TreeDensity
+    public override double TreeDensity
+    {
+        get
         {
-            get
-            {
-                return 50;
-            }
+            return 50;
         }
     }
 }

@@ -1,41 +1,40 @@
 using System;
 
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public class FenceBlock : BlockProvider, IBurnableItem
 {
-    public class FenceBlock : BlockProvider, IBurnableItem
+    public static readonly byte BlockID = 0x55;
+        
+    public override byte ID { get { return 0x55; } }
+        
+    public override double BlastResistance { get { return 15; } }
+
+    public override double Hardness { get { return 2; } }
+
+    public override byte Luminance { get { return 0; } }
+
+    public override bool Opaque { get { return false; } }
+
+    public override bool Flammable { get { return true; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly byte BlockID = 0x55;
-        
-        public override byte ID { get { return 0x55; } }
-        
-        public override double BlastResistance { get { return 15; } }
+        return "Fence";
+    }
 
-        public override double Hardness { get { return 2; } }
+    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(15); } }
 
-        public override byte Luminance { get { return 0; } }
-
-        public override bool Opaque { get { return false; } }
-
-        public override bool Flammable { get { return true; } }
-        
-        public override string GetDisplayName(short metadata)
+    public override SoundEffectClass SoundEffect
+    {
+        get
         {
-            return "Fence";
+            return SoundEffectClass.Wood;
         }
+    }
 
-        public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(15); } }
-
-        public override SoundEffectClass SoundEffect
-        {
-            get
-            {
-                return SoundEffectClass.Wood;
-            }
-        }
-
-        public override Tuple<int, int> GetTextureMap(byte metadata)
-        {
-            return new Tuple<int, int>(4, 0);
-        }
+    public override Tuple<int, int> GetTextureMap(byte metadata)
+    {
+        return new Tuple<int, int>(4, 0);
     }
 }

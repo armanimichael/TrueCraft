@@ -1,31 +1,30 @@
 ﻿using TrueCraft.Core;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class SeasonalForestBiome : BiomeProvider
 {
-    public class SeasonalForestBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.SeasonalForest; }
-        }
+        get { return (byte)Biome.SeasonalForest; }
+    }
 
-        public override double Temperature
-        {
-            get { return 0.7f; }
-        }
+    public override double Temperature
+    {
+        get { return 0.7f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.8f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.8f; }
+    }
 
-        public override PlantSpecies[] Plants
+    public override PlantSpecies[] Plants
+    {
+        get
         {
-            get
-            {
-                return new[] { PlantSpecies.Fern, PlantSpecies.TallGrass };
-            }
+            return new[] { PlantSpecies.Fern, PlantSpecies.TallGrass };
         }
     }
 }

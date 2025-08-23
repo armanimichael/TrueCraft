@@ -1,37 +1,36 @@
 using System;
 
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public class PortalBlock : BlockProvider
 {
-    public class PortalBlock : BlockProvider
+    public static readonly byte BlockID = 0x5A;
+        
+    public override byte ID { get { return 0x5A; } }
+        
+    public override double BlastResistance { get { return 0; } }
+
+    public override double Hardness { get { return -1; } }
+
+    public override byte Luminance { get { return 0; } }
+
+    public override bool Opaque { get { return false; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly byte BlockID = 0x5A;
-        
-        public override byte ID { get { return 0x5A; } }
-        
-        public override double BlastResistance { get { return 0; } }
+        return "Portal";
+    }
 
-        public override double Hardness { get { return -1; } }
-
-        public override byte Luminance { get { return 0; } }
-
-        public override bool Opaque { get { return false; } }
-        
-        public override string GetDisplayName(short metadata)
+    public override SoundEffectClass SoundEffect
+    {
+        get
         {
-            return "Portal";
+            return SoundEffectClass.Glass;
         }
+    }
 
-        public override SoundEffectClass SoundEffect
-        {
-            get
-            {
-                return SoundEffectClass.Glass;
-            }
-        }
-
-        public override Tuple<int, int> GetTextureMap(byte metadata)
-        {
-            return new Tuple<int, int>(14, 0);
-        }
+    public override Tuple<int, int> GetTextureMap(byte metadata)
+    {
+        return new Tuple<int, int>(14, 0);
     }
 }

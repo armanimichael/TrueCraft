@@ -1,27 +1,26 @@
 using System;
 
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public class NetherrackBlock : BlockProvider
 {
-    public class NetherrackBlock : BlockProvider
+    public static readonly byte BlockID = 0x57;
+        
+    public override byte ID { get { return 0x57; } }
+        
+    public override double BlastResistance { get { return 2; } }
+
+    public override double Hardness { get { return 0.4; } }
+
+    public override byte Luminance { get { return 0; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly byte BlockID = 0x57;
-        
-        public override byte ID { get { return 0x57; } }
-        
-        public override double BlastResistance { get { return 2; } }
+        return "Netherrack";
+    }
 
-        public override double Hardness { get { return 0.4; } }
-
-        public override byte Luminance { get { return 0; } }
-        
-        public override string GetDisplayName(short metadata)
-        {
-            return "Netherrack";
-        }
-
-        public override Tuple<int, int> GetTextureMap(byte metadata)
-        {
-            return new Tuple<int, int>(7, 6);
-        }
+    public override Tuple<int, int> GetTextureMap(byte metadata)
+    {
+        return new Tuple<int, int>(7, 6);
     }
 }

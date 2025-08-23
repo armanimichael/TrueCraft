@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace TrueCraft.Client.Events
-{
-    public class ChatMessageEventArgs : EventArgs
-    {
-        public string Message { get; set; }
+namespace TrueCraft.Client.Events;
 
-        public ChatMessageEventArgs(string message)
-        {
-            Message = message;
-        }
+public class ChatMessageEventArgs : EventArgs
+{
+    public string Message { get; set; }
+
+    public ChatMessageEventArgs(string message)
+    {
+        Message = message;
     }
 }

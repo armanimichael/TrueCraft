@@ -3,64 +3,63 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.Linq;
 
-namespace TrueCraft.Client.Input
+namespace TrueCraft.Client.Input;
+
+public class GamePadHandler : GameComponent
 {
-    public class GamePadHandler : GameComponent
+    public GamePadState State { get; set; }
+    public PlayerIndex PlayerIndex { get; set; }
+
+    public event EventHandler<GamePadButtonEventArgs>? ButtonDown;
+    public event EventHandler<GamePadButtonEventArgs>? ButtonUp;
+
+    public GamePadHandler(Game game) : base(game)
     {
-        public GamePadState State { get; set; }
-        public PlayerIndex PlayerIndex { get; set; }
+        PlayerIndex = PlayerIndex.One;
+    }
 
-        public event EventHandler<GamePadButtonEventArgs>? ButtonDown;
-        public event EventHandler<GamePadButtonEventArgs>? ButtonUp;
+    public override void Initialize()
+    {
+        State = GamePad.GetState(PlayerIndex);
 
-        public GamePadHandler(Game game) : base(game)
+        base.Initialize();
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        var newState = GamePad.GetState(PlayerIndex);
+        Process(newState, State);
+        State = newState;
+
+        base.Update(gameTime);
+    }
+
+    private void Process(GamePadState newState, GamePadState oldState)
+    {
+        if (!newState.IsConnected)
+            return;
+        if (newState.Buttons != oldState.Buttons)
         {
-            PlayerIndex = PlayerIndex.One;
-        }
+            var newButtons = Enum.GetValues(typeof(Buttons))
+                .Cast<Buttons>()
+                .Where(newState.IsButtonDown);
+            var oldButtons = Enum.GetValues(typeof(Buttons))
+                .Cast<Buttons>()
+                .Where(oldState.IsButtonDown);
 
-        public override void Initialize()
-        {
-            State = GamePad.GetState(PlayerIndex);
+            var pressed = newButtons.Except(oldButtons).ToArray();
+            var unpressed = oldButtons.Except(newButtons).ToArray();
 
-            base.Initialize();
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            var newState = GamePad.GetState(PlayerIndex);
-            Process(newState, State);
-            State = newState;
-
-            base.Update(gameTime);
-        }
-
-        private void Process(GamePadState newState, GamePadState oldState)
-        {
-            if (!newState.IsConnected)
-                return;
-            if (newState.Buttons != oldState.Buttons)
+            foreach (var button in pressed)
             {
-                var newButtons = Enum.GetValues(typeof(Buttons))
-                   .Cast<Buttons>()
-                   .Where(newState.IsButtonDown);
-                var oldButtons = Enum.GetValues(typeof(Buttons))
-                   .Cast<Buttons>()
-                   .Where(oldState.IsButtonDown);
+                if (ButtonDown != null)
+                    ButtonDown(this, new GamePadButtonEventArgs { Button = button });
+            }
 
-                var pressed = newButtons.Except(oldButtons).ToArray();
-                var unpressed = oldButtons.Except(newButtons).ToArray();
-
-                foreach (var button in pressed)
-                {
-                    if (ButtonDown != null)
-                        ButtonDown(this, new GamePadButtonEventArgs { Button = button });
-                }
-
-                foreach (var button in unpressed)
-                {
-                    if (ButtonUp != null)
-                        ButtonUp(this, new GamePadButtonEventArgs { Button = button });
-                }
+            foreach (var button in unpressed)
+            {
+                if (ButtonUp != null)
+                    ButtonUp(this, new GamePadButtonEventArgs { Button = button });
             }
         }
     }

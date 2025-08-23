@@ -4,162 +4,161 @@ using System.Collections.Generic;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Client.World
+namespace TrueCraft.Client.World;
+
+public class Dimension : IDimensionClient
 {
-    public class Dimension : IDimensionClient
+    private readonly IBlockRepository _blockRepository;
+
+    private readonly IItemRepository _itemRepository;
+
+    private Dictionary<GlobalChunkCoordinates, IChunk> _chunks;
+
+    public Dimension(IBlockRepository blockRepository, IItemRepository itemRepository)
     {
-        private readonly IBlockRepository _blockRepository;
+        _blockRepository = blockRepository;
+        _itemRepository = itemRepository;
+        _chunks = new Dictionary<GlobalChunkCoordinates, IChunk>(434);
+    }
 
-        private readonly IItemRepository _itemRepository;
+    /// <inheritdoc />
+    public DimensionID ID { get => DimensionID.Overworld; }
 
-        private Dictionary<GlobalChunkCoordinates, IChunk> _chunks;
-
-        public Dimension(IBlockRepository blockRepository, IItemRepository itemRepository)
+    /// <inheritdoc />
+    public string Name
+    {
+        get
         {
-            _blockRepository = blockRepository;
-            _itemRepository = itemRepository;
-            _chunks = new Dictionary<GlobalChunkCoordinates, IChunk>(434);
+            return DimensionInfo.GetName(ID);
         }
+    }
 
-        /// <inheritdoc />
-        public DimensionID ID { get => DimensionID.Overworld; }
+    /// <inheritdoc />
+    public IBlockRepository BlockRepository { get => _blockRepository; }
 
-        /// <inheritdoc />
-        public string Name
-        {
-            get
-            {
-                return DimensionInfo.GetName(ID);
-            }
-        }
+    /// <inheritdoc />
+    public IItemRepository ItemRepository { get => _itemRepository; }
 
-        /// <inheritdoc />
-        public IBlockRepository BlockRepository { get => _blockRepository; }
+    /// <inheritdoc />
+    public long TimeOfDay { get; set; }  // TODO: validate set value.
 
-        /// <inheritdoc />
-        public IItemRepository ItemRepository { get => _itemRepository; }
+    /// <inheritdoc />
+    public IChunk? GetChunk(GlobalVoxelCoordinates coordinates)
+    {
+        return GetChunk((GlobalChunkCoordinates)coordinates);
+    }
 
-        /// <inheritdoc />
-        public long TimeOfDay { get; set; }  // TODO: validate set value.
+    /// <inheritdoc />
+    public IChunk? GetChunk(GlobalChunkCoordinates coordinates)
+    {
+        if (_chunks.ContainsKey(coordinates))
+            return _chunks[coordinates];
 
-        /// <inheritdoc />
-        public IChunk? GetChunk(GlobalVoxelCoordinates coordinates)
-        {
-            return GetChunk((GlobalChunkCoordinates)coordinates);
-        }
+        return null;
+    }
 
-        /// <inheritdoc />
-        public IChunk? GetChunk(GlobalChunkCoordinates coordinates)
-        {
-            if (_chunks.ContainsKey(coordinates))
-                return _chunks[coordinates];
+    /// <inheritdoc />
+    public void AddChunk(IChunk chunk)
+    {
+        _chunks[chunk.Coordinates] = chunk;
+    }
 
-            return null;
-        }
+    /// <inheritdoc />
+    public LocalVoxelCoordinates FindBlockPosition(GlobalVoxelCoordinates coordinates, out IChunk? chunk)
+    {
+        chunk = GetChunk(coordinates);
+        return (LocalVoxelCoordinates)coordinates;
+    }
 
-        /// <inheritdoc />
-        public void AddChunk(IChunk chunk)
-        {
-            _chunks[chunk.Coordinates] = chunk;
-        }
+    /// <inheritdoc />
+    public BlockDescriptor GetBlockData(GlobalVoxelCoordinates coordinates)
+    {
+        throw new NotImplementedException();
+    }
 
-        /// <inheritdoc />
-        public LocalVoxelCoordinates FindBlockPosition(GlobalVoxelCoordinates coordinates, out IChunk? chunk)
-        {
-            chunk = GetChunk(coordinates);
-            return (LocalVoxelCoordinates)coordinates;
-        }
+    /// <inheritdoc />
+    public byte GetBlockID(GlobalVoxelCoordinates coordinates)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        return chunk?.GetBlockID((LocalVoxelCoordinates)coordinates) ?? 0;
+    }
 
-        /// <inheritdoc />
-        public BlockDescriptor GetBlockData(GlobalVoxelCoordinates coordinates)
-        {
-            throw new NotImplementedException();
-        }
+    /// <inheritdoc />
+    public byte GetBlockLight(GlobalVoxelCoordinates coordinates)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        return chunk?.GetBlockLight((LocalVoxelCoordinates)coordinates) ?? 0;
+    }
 
-        /// <inheritdoc />
-        public byte GetBlockID(GlobalVoxelCoordinates coordinates)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            return chunk?.GetBlockID((LocalVoxelCoordinates)coordinates) ?? 0;
-        }
+    /// <inheritdoc />
+    public byte GetMetadata(GlobalVoxelCoordinates coordinates)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        return chunk?.GetMetadata((LocalVoxelCoordinates)coordinates) ?? 0;
+    }
 
-        /// <inheritdoc />
-        public byte GetBlockLight(GlobalVoxelCoordinates coordinates)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            return chunk?.GetBlockLight((LocalVoxelCoordinates)coordinates) ?? 0;
-        }
+    /// <inheritdoc />
+    public byte GetSkyLight(GlobalVoxelCoordinates coordinates)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        return chunk?.GetSkyLight((LocalVoxelCoordinates)coordinates) ?? 0;
+    }
 
-        /// <inheritdoc />
-        public byte GetMetadata(GlobalVoxelCoordinates coordinates)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            return chunk?.GetMetadata((LocalVoxelCoordinates)coordinates) ?? 0;
-        }
+    /// <inheritdoc />
+    public bool IsChunkLoaded(GlobalVoxelCoordinates coordinates)
+    {
+        return _chunks.ContainsKey((GlobalChunkCoordinates)coordinates);
+    }
 
-        /// <inheritdoc />
-        public byte GetSkyLight(GlobalVoxelCoordinates coordinates)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            return chunk?.GetSkyLight((LocalVoxelCoordinates)coordinates) ?? 0;
-        }
+    /// <inheritdoc />
+    public bool IsValidPosition(GlobalVoxelCoordinates position)
+    {
+        return position.Y >= 0 && position.Y < WorldConstants.Height;
+    }
 
-        /// <inheritdoc />
-        public bool IsChunkLoaded(GlobalVoxelCoordinates coordinates)
-        {
-            return _chunks.ContainsKey((GlobalChunkCoordinates)coordinates);
-        }
+    /// <inheritdoc />
+    public void SetBlockData(GlobalVoxelCoordinates coordinates, BlockDescriptor block)
+    {
+        throw new NotImplementedException();
+    }
 
-        /// <inheritdoc />
-        public bool IsValidPosition(GlobalVoxelCoordinates position)
-        {
-            return position.Y >= 0 && position.Y < WorldConstants.Height;
-        }
+    /// <inheritdoc />
+    public void SetBlockID(GlobalVoxelCoordinates coordinates, byte value)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        chunk?.SetBlockID((LocalVoxelCoordinates)coordinates, value);
+    }
 
-        /// <inheritdoc />
-        public void SetBlockData(GlobalVoxelCoordinates coordinates, BlockDescriptor block)
-        {
-            throw new NotImplementedException();
-        }
+    /// <inheritdoc />
+    public void SetBlockLight(GlobalVoxelCoordinates coordinates, byte value)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        chunk?.SetBlockLight((LocalVoxelCoordinates)coordinates, value);
+    }
 
-        /// <inheritdoc />
-        public void SetBlockID(GlobalVoxelCoordinates coordinates, byte value)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            chunk?.SetBlockID((LocalVoxelCoordinates)coordinates, value);
-        }
+    /// <inheritdoc />
+    public void SetMetadata(GlobalVoxelCoordinates coordinates, byte value)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        chunk?.SetMetadata((LocalVoxelCoordinates)coordinates, value);
+    }
 
-        /// <inheritdoc />
-        public void SetBlockLight(GlobalVoxelCoordinates coordinates, byte value)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            chunk?.SetBlockLight((LocalVoxelCoordinates)coordinates, value);
-        }
+    /// <inheritdoc />
+    public void SetSkyLight(GlobalVoxelCoordinates coordinates, byte value)
+    {
+        IChunk? chunk = GetChunk(coordinates);
+        chunk?.SetSkyLight((LocalVoxelCoordinates)coordinates, value);
+    }
 
-        /// <inheritdoc />
-        public void SetMetadata(GlobalVoxelCoordinates coordinates, byte value)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            chunk?.SetMetadata((LocalVoxelCoordinates)coordinates, value);
-        }
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _chunks.Values.GetEnumerator();
+    }
 
-        /// <inheritdoc />
-        public void SetSkyLight(GlobalVoxelCoordinates coordinates, byte value)
-        {
-            IChunk? chunk = GetChunk(coordinates);
-            chunk?.SetSkyLight((LocalVoxelCoordinates)coordinates, value);
-        }
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _chunks.Values.GetEnumerator();
-        }
-
-        /// <inheritdoc />
-        public IEnumerator<IChunk> GetEnumerator()
-        {
-            return _chunks.Values.GetEnumerator();
-        }
+    /// <inheritdoc />
+    public IEnumerator<IChunk> GetEnumerator()
+    {
+        return _chunks.Values.GetEnumerator();
     }
 }

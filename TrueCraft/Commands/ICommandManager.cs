@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using TrueCraft.Core.Networking;
 
-namespace TrueCraft.Commands
+namespace TrueCraft.Commands;
+
+public interface ICommandManager : IList<ICommand>
 {
-    public interface ICommandManager : IList<ICommand>
-    {
-        ICommand? FindByName(string name);
+    ICommand? FindByName(string name);
 
-        ICommand? FindByAlias(string alias);
+    ICommand? FindByAlias(string alias);
 
-        void HandleCommand(IRemoteClient Client, string Alias, string[] Arguments);
-    }
+    void HandleCommand(IRemoteClient Client, string Alias, string[] Arguments);
 }

@@ -2,26 +2,25 @@ using System.Collections.Generic;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Logic;
 
-namespace TrueCraft.Client.Inventory
+namespace TrueCraft.Client.Inventory;
+
+public class SlotFactory : ISlotFactory<ISlot>
 {
-    public class SlotFactory : ISlotFactory<ISlot>
+    public SlotFactory()
     {
-        public SlotFactory()
-        {
-        }
+    }
 
-        public ISlot GetSlot(IItemRepository itemRepository)
-        {
-            return new Slot(itemRepository);
-        }
+    public ISlot GetSlot(IItemRepository itemRepository)
+    {
+        return new Slot(itemRepository);
+    }
 
-        public List<ISlot> GetSlots(IItemRepository itemRepository, int count)
-        {
-            List<ISlot> rv = new List<ISlot>(count);
-            for (int j = 0; j < count; j++)
-                rv.Add(new Slot(itemRepository));
+    public List<ISlot> GetSlots(IItemRepository itemRepository, int count)
+    {
+        List<ISlot> rv = new List<ISlot>(count);
+        for (int j = 0; j < count; j++)
+            rv.Add(new Slot(itemRepository));
 
-            return rv;
-        }
+        return rv;
     }
 }

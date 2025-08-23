@@ -1,7 +1,6 @@
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public interface IRegisterRecipe
 {
-    public interface IRegisterRecipe
-    {
-        void RegisterRecipe(ICraftingRecipe recipe);
-    }
+    void RegisterRecipe(ICraftingRecipe recipe);
 }

@@ -1,47 +1,46 @@
 ﻿using TrueCraft.Core;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class RainforestBiome : BiomeProvider
 {
-    public class RainforestBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.Rainforest; }
-        }
+        get { return (byte)Biome.Rainforest; }
+    }
 
-        public override double Temperature
-        {
-            get { return 1.2f; }
-        }
+    public override double Temperature
+    {
+        get { return 1.2f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.9f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.9f; }
+    }
 
-        public override TreeSpecies[] Trees
+    public override TreeSpecies[] Trees
+    {
+        get
         {
-            get
-            {
-                return new[] { TreeSpecies.Birch, TreeSpecies.Oak };
-            }
+            return new[] { TreeSpecies.Birch, TreeSpecies.Oak };
         }
+    }
 
-        public override double TreeDensity
+    public override double TreeDensity
+    {
+        get
         {
-            get
-            {
-                return 2;
-            }
+            return 2;
         }
+    }
 
-        public override PlantSpecies[] Plants
+    public override PlantSpecies[] Plants
+    {
+        get
         {
-            get
-            {
-                return new[] { PlantSpecies.Fern, PlantSpecies.TallGrass };
-            }
+            return new[] { PlantSpecies.Fern, PlantSpecies.TallGrass };
         }
     }
 }

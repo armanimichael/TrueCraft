@@ -3,22 +3,22 @@ using System.Xml;
 using System.IO;
 using TrueCraft.Core.Logic.Items;
 
-namespace TrueCraft.Core.Test.Logic.Items
+namespace TrueCraft.Core.Test.Logic.Items;
+
+[TestFixture]
+public class TestFoodItem
 {
-    [TestFixture]
-    public class TestFoodItem
+    private static XmlNode GetTopNode(string xml)
     {
-        private static XmlNode GetTopNode(string xml)
-        {
-            XmlDocument doc = new XmlDocument();
-            using (StringReader sr = new StringReader(xml))
-            using (XmlReader xmlr = XmlReader.Create(sr))
-                doc.Load(xmlr);
+        XmlDocument doc = new XmlDocument();
+        using (StringReader sr = new StringReader(xml))
+        using (XmlReader xmlr = XmlReader.Create(sr))
+            doc.Load(xmlr);
 
-            return doc.FirstChild!;
-        }
+        return doc.FirstChild!;
+    }
 
-        [TestCase(2, @"<item>
+    [TestCase(2, @"<item>
       <id>260</id>
       <maximumstack>1</maximumstack>
       <visiblemetadata>
@@ -37,12 +37,11 @@ namespace TrueCraft.Core.Test.Logic.Items
       </food>
     </item>
 ")]
-        public void ctor(float expectedRestores, string xml)
-        {
-            XmlNode itemNode = GetTopNode(xml);
-            IFoodItem actual = new FoodItem(itemNode);
+    public void ctor(float expectedRestores, string xml)
+    {
+        XmlNode itemNode = GetTopNode(xml);
+        IFoodItem actual = new FoodItem(itemNode);
 
-            Assert.AreEqual(expectedRestores, actual.Restores);
-        }
+        Assert.AreEqual(expectedRestores, actual.Restores);
     }
 }

@@ -2,63 +2,62 @@
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.TerrainGen.Biomes
+namespace TrueCraft.TerrainGen.Biomes;
+
+public class TundraBiome : BiomeProvider
 {
-    public class TundraBiome : BiomeProvider
+    public override byte ID
     {
-        public override byte ID
-        {
-            get { return (byte)Biome.Tundra; }
-        }
+        get { return (byte)Biome.Tundra; }
+    }
 
-        public override double Temperature
-        {
-            get { return 0.1f; }
-        }
+    public override double Temperature
+    {
+        get { return 0.1f; }
+    }
 
-        public override double Rainfall
-        {
-            get { return 0.7f; }
-        }
+    public override double Rainfall
+    {
+        get { return 0.7f; }
+    }
 
-        public override TreeSpecies[] Trees
+    public override TreeSpecies[] Trees
+    {
+        get
         {
-            get
-            {
-                return new[] { TreeSpecies.Spruce };
-            }
+            return new[] { TreeSpecies.Spruce };
         }
+    }
 
-        public override PlantSpecies[] Plants
+    public override PlantSpecies[] Plants
+    {
+        get
         {
-            get
-            {
-                return new PlantSpecies[0];
-            }
+            return new PlantSpecies[0];
         }
+    }
 
-        public override double TreeDensity
+    public override double TreeDensity
+    {
+        get
         {
-            get
-            {
-                return 50;
-            }
+            return 50;
         }
+    }
 
-        public override byte SurfaceBlock
+    public override byte SurfaceBlock
+    {
+        get
         {
-            get
-            {
-                return GrassBlock.BlockID;
-            }
+            return GrassBlock.BlockID;
         }
+    }
 
-        public override byte FillerBlock
+    public override byte FillerBlock
+    {
+        get
         {
-            get
-            {
-                return DirtBlock.BlockID;
-            }
+            return DirtBlock.BlockID;
         }
     }
 }

@@ -1,43 +1,42 @@
 using System;
 
-namespace TrueCraft.Core.Logic.Blocks
+namespace TrueCraft.Core.Logic.Blocks;
+
+public class LapisLazuliBlock : BlockProvider
 {
-    public class LapisLazuliBlock : BlockProvider
+    public static readonly byte BlockID = 0x16;
+        
+    public override byte ID { get { return 0x16; } }
+        
+    public override double BlastResistance { get { return 15; } }
+
+    public override double Hardness { get { return 3; } }
+
+    public override byte Luminance { get { return 0; } }
+        
+    public override string GetDisplayName(short metadata)
     {
-        public static readonly byte BlockID = 0x16;
-        
-        public override byte ID { get { return 0x16; } }
-        
-        public override double BlastResistance { get { return 15; } }
+        return "Lapis Lazuli Block";
+    }
 
-        public override double Hardness { get { return 3; } }
+    public override Tuple<int, int> GetTextureMap(byte metadata)
+    {
+        return new Tuple<int, int>(0, 9);
+    }
 
-        public override byte Luminance { get { return 0; } }
-        
-        public override string GetDisplayName(short metadata)
+    public override ToolMaterial EffectiveToolMaterials
+    {
+        get
         {
-            return "Lapis Lazuli Block";
+            return ToolMaterial.Stone | ToolMaterial.Iron | ToolMaterial.Diamond;
         }
+    }
 
-        public override Tuple<int, int> GetTextureMap(byte metadata)
+    public override ToolType EffectiveTools
+    {
+        get
         {
-            return new Tuple<int, int>(0, 9);
-        }
-
-        public override ToolMaterial EffectiveToolMaterials
-        {
-            get
-            {
-                return ToolMaterial.Stone | ToolMaterial.Iron | ToolMaterial.Diamond;
-            }
-        }
-
-        public override ToolType EffectiveTools
-        {
-            get
-            {
-                return ToolType.Pickaxe;
-            }
+            return ToolType.Pickaxe;
         }
     }
 }

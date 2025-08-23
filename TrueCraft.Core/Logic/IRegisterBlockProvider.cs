@@ -1,12 +1,11 @@
-namespace TrueCraft.Core.Logic
+namespace TrueCraft.Core.Logic;
+
+public interface IRegisterBlockProvider
 {
-    public interface IRegisterBlockProvider
-    {
-        /// <summary>
-        /// Registers a new block provider. This overrides any existing block providers that use the
-        /// same block ID.
-        /// </summary>
-        /// <param name="provider">The Block Provider to be registered</param>
-        void RegisterBlockProvider(IBlockProvider provider);
-    }
+    /// <summary>
+    /// Registers a new block provider. This overrides any existing block providers that use the
+    /// same block ID.
+    /// </summary>
+    /// <param name="provider">The Block Provider to be registered</param>
+    void RegisterBlockProvider(IBlockProvider provider);
 }

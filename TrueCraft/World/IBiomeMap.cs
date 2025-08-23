@@ -1,27 +1,26 @@
 ﻿using System.Collections.Generic;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.World
+namespace TrueCraft.World;
+
+public class BiomeCell
 {
-    public class BiomeCell
-    {
-        public byte BiomeID { get; }
-        public GlobalColumnCoordinates CellPoint { get; }
+    public byte BiomeID { get; }
+    public GlobalColumnCoordinates CellPoint { get; }
 
-        public BiomeCell(byte biomeID, GlobalColumnCoordinates cellPoint)
-        {
-            this.BiomeID = biomeID;
-            this.CellPoint = cellPoint;
-        }
-    }
-
-    public interface IBiomeMap
+    public BiomeCell(byte biomeID, GlobalColumnCoordinates cellPoint)
     {
-        IList<BiomeCell> BiomeCells { get; }
-        void AddCell(BiomeCell cell);
-        byte GetBiome(GlobalColumnCoordinates location);
-        byte GenerateBiome(int seed, IBiomeRepository biomes, GlobalColumnCoordinates location, bool spawn);
-        BiomeCell? ClosestCell(GlobalColumnCoordinates location);
-        double ClosestCellPoint(GlobalColumnCoordinates location);
+        this.BiomeID = biomeID;
+        this.CellPoint = cellPoint;
     }
+}
+
+public interface IBiomeMap
+{
+    IList<BiomeCell> BiomeCells { get; }
+    void AddCell(BiomeCell cell);
+    byte GetBiome(GlobalColumnCoordinates location);
+    byte GenerateBiome(int seed, IBiomeRepository biomes, GlobalColumnCoordinates location, bool spawn);
+    BiomeCell? ClosestCell(GlobalColumnCoordinates location);
+    double ClosestCellPoint(GlobalColumnCoordinates location);
 }

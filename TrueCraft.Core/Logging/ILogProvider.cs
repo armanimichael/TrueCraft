@@ -1,7 +1,6 @@
-﻿namespace TrueCraft.Core.Logging
+﻿namespace TrueCraft.Core.Logging;
+
+public interface ILogProvider
 {
-    public interface ILogProvider
-    {
-        void Log(LogCategory category, string text, params object[] parameters);
-    }
+    void Log(LogCategory category, string text, params object[] parameters);
 }

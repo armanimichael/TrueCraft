@@ -5,116 +5,115 @@ using TrueCraft.Core.Networking;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
-namespace TrueCraft.Core.Logic.Items
+namespace TrueCraft.Core.Logic.Items;
+
+public class BucketItem : ItemProvider
 {
-    public class BucketItem : ItemProvider
+    public static readonly short ItemID = 0x145;
+
+    public BucketItem(XmlNode node) : base(node)
     {
-        public static readonly short ItemID = 0x145;
+    }
 
-        public BucketItem(XmlNode node) : base(node)
+    protected virtual byte? RelevantBlockType { get { return null; } }
+
+    public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
+    {
+        ServerOnly.Assert();
+
+        coordinates += MathHelper.BlockFaceToCoordinates(face);
+        if (item.ID == ItemID) // Empty bucket
         {
-        }
-
-        protected virtual byte? RelevantBlockType { get { return null; } }
-
-        public override void ItemUsedOnBlock(GlobalVoxelCoordinates coordinates, ItemStack item, BlockFace face, IDimension dimension, IRemoteClient user)
-        {
-            ServerOnly.Assert();
-
-            coordinates += MathHelper.BlockFaceToCoordinates(face);
-            if (item.ID == ItemID) // Empty bucket
+            var block = dimension.GetBlockID(coordinates);
+            if (block == WaterBlock.BlockID || block == StationaryWaterBlock.BlockID)
             {
-                var block = dimension.GetBlockID(coordinates);
-                if (block == WaterBlock.BlockID || block == StationaryWaterBlock.BlockID)
+                var meta = dimension.GetMetadata(coordinates);
+                if (meta == 0) // Is source block?
                 {
-                    var meta = dimension.GetMetadata(coordinates);
-                    if (meta == 0) // Is source block?
-                    {
-                        user.Hotbar[user.SelectedSlot].Item = new ItemStack(WaterBucketItem.ItemID);
-                        dimension.SetBlockID(coordinates, 0);
-                    }
-                }
-                else if (block == LavaBlock.BlockID || block == StationaryLavaBlock.BlockID)
-                {
-                    var meta = dimension.GetMetadata(coordinates);
-                    if (meta == 0) // Is source block?
-                    {
-                        user.Hotbar[user.SelectedSlot].Item = new ItemStack(LavaBucketItem.ItemID);
-                        dimension.SetBlockID(coordinates, 0);
-                    }
+                    user.Hotbar[user.SelectedSlot].Item = new ItemStack(WaterBucketItem.ItemID);
+                    dimension.SetBlockID(coordinates, 0);
                 }
             }
-            else
+            else if (block == LavaBlock.BlockID || block == StationaryLavaBlock.BlockID)
             {
-                var provider = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates));
-                if (!provider.Opaque)
+                var meta = dimension.GetMetadata(coordinates);
+                if (meta == 0) // Is source block?
                 {
-                    if (RelevantBlockType != null)
-                    {
-                        var blockType = RelevantBlockType.Value;
-                        user.Server.BlockUpdatesEnabled = false;
-                        dimension.SetBlockID(coordinates, blockType);
-                        dimension.SetMetadata(coordinates, 0); // Source block
-                        user.Server.BlockUpdatesEnabled = true;
-                        var liquidProvider = dimension.BlockRepository.GetBlockProvider(blockType);
-                        liquidProvider.BlockPlaced(new BlockDescriptor { Coordinates = coordinates }, face, dimension, user);
-                    }
-                    user.Hotbar[user.SelectedSlot].Item = new ItemStack(BucketItem.ItemID);
+                    user.Hotbar[user.SelectedSlot].Item = new ItemStack(LavaBucketItem.ItemID);
+                    dimension.SetBlockID(coordinates, 0);
                 }
             }
         }
-    }
-
-    public class LavaBucketItem : BucketItem, IBurnableItem
-    {
-        public static readonly new short ItemID = 0x147;
-
-        public LavaBucketItem(XmlNode node) : base(node)
+        else
         {
-        }
-
-        public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(1000); } }
-
-        protected override byte? RelevantBlockType
-        {
-            get
+            var provider = dimension.BlockRepository.GetBlockProvider(dimension.GetBlockID(coordinates));
+            if (!provider.Opaque)
             {
-                return LavaBlock.BlockID;
+                if (RelevantBlockType != null)
+                {
+                    var blockType = RelevantBlockType.Value;
+                    user.Server.BlockUpdatesEnabled = false;
+                    dimension.SetBlockID(coordinates, blockType);
+                    dimension.SetMetadata(coordinates, 0); // Source block
+                    user.Server.BlockUpdatesEnabled = true;
+                    var liquidProvider = dimension.BlockRepository.GetBlockProvider(blockType);
+                    liquidProvider.BlockPlaced(new BlockDescriptor { Coordinates = coordinates }, face, dimension, user);
+                }
+                user.Hotbar[user.SelectedSlot].Item = new ItemStack(BucketItem.ItemID);
             }
         }
     }
+}
 
-    public class MilkItem : BucketItem
+public class LavaBucketItem : BucketItem, IBurnableItem
+{
+    public static readonly new short ItemID = 0x147;
+
+    public LavaBucketItem(XmlNode node) : base(node)
     {
-        public static readonly new short ItemID = 0x14F;
-
-        public MilkItem(XmlNode node) : base(node)
-        {
-        }
-
-        protected override byte? RelevantBlockType
-        {
-            get
-            {
-                return null;
-            }
-        }
     }
 
-    public class WaterBucketItem : BucketItem
+    public TimeSpan BurnTime { get { return TimeSpan.FromSeconds(1000); } }
+
+    protected override byte? RelevantBlockType
     {
-        public static readonly new short ItemID = 0x146;
-
-        public WaterBucketItem(XmlNode node) : base(node)
+        get
         {
+            return LavaBlock.BlockID;
         }
+    }
+}
 
-        protected override byte? RelevantBlockType
+public class MilkItem : BucketItem
+{
+    public static readonly new short ItemID = 0x14F;
+
+    public MilkItem(XmlNode node) : base(node)
+    {
+    }
+
+    protected override byte? RelevantBlockType
+    {
+        get
         {
-            get
-            {
-                return WaterBlock.BlockID;
-            }
+            return null;
+        }
+    }
+}
+
+public class WaterBucketItem : BucketItem
+{
+    public static readonly new short ItemID = 0x146;
+
+    public WaterBucketItem(XmlNode node) : base(node)
+    {
+    }
+
+    protected override byte? RelevantBlockType
+    {
+        get
+        {
+            return WaterBlock.BlockID;
         }
     }
 }

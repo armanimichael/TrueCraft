@@ -5,47 +5,47 @@ using TrueCraft.Core.Logic;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Logic.Items;
 
-namespace TrueCraft.Core.Test
-{
-    [SetUpFixture]
-    public class CoreSetup
-    {
-        // The test framework will make calls to this class that will
-        // initialize these members prior to running tests.  So we can get
-        // away with "faking" them as non-nullable.
-        private static IBlockRepository _blockRepository = null!;
-        private static IItemRepository _itemRepository = null!;
-        private static ICraftingRepository _craftingRepository = null!;
+namespace TrueCraft.Core.Test;
 
-        public CoreSetup()
+[SetUpFixture]
+public class CoreSetup
+{
+    // The test framework will make calls to this class that will
+    // initialize these members prior to running tests.  So we can get
+    // away with "faking" them as non-nullable.
+    private static IBlockRepository _blockRepository = null!;
+    private static IItemRepository _itemRepository = null!;
+    private static ICraftingRepository _craftingRepository = null!;
+
+    public CoreSetup()
+    {
+    }
+
+    // BlockProviderTest, WorldLighterTest, PhysicsEngineTest, and CraftingAreaTest depend upon
+    // having some blocks and items available in their repositories.
+    private class MockDiscover : IDiscover
+    {
+        public void DiscoverBlockProviders(IRegisterBlockProvider repository)
         {
+            repository.RegisterBlockProvider(new GrassBlock());
+            repository.RegisterBlockProvider(new DirtBlock());
+            repository.RegisterBlockProvider(new StoneBlock());
+            repository.RegisterBlockProvider(new AirBlock());
+            repository.RegisterBlockProvider(new BedrockBlock());
+            repository.RegisterBlockProvider(new LeavesBlock());
+            repository.RegisterBlockProvider(new CobblestoneBlock());
         }
 
-        // BlockProviderTest, WorldLighterTest, PhysicsEngineTest, and CraftingAreaTest depend upon
-        // having some blocks and items available in their repositories.
-        private class MockDiscover : IDiscover
+        public void DiscoverItemProviders(IRegisterItemProvider repository)
         {
-            public void DiscoverBlockProviders(IRegisterBlockProvider repository)
-            {
-                repository.RegisterBlockProvider(new GrassBlock());
-                repository.RegisterBlockProvider(new DirtBlock());
-                repository.RegisterBlockProvider(new StoneBlock());
-                repository.RegisterBlockProvider(new AirBlock());
-                repository.RegisterBlockProvider(new BedrockBlock());
-                repository.RegisterBlockProvider(new LeavesBlock());
-                repository.RegisterBlockProvider(new CobblestoneBlock());
-            }
+            repository.RegisterItemProvider(new LavaBlock());  // Item ID 10
+            repository.RegisterItemProvider(new SandBlock());  // Item ID 12
+            repository.RegisterItemProvider(new StoneBlock()); // Item ID 1
+            repository.RegisterItemProvider(new GrassBlock()); // Item ID 2
+            repository.RegisterItemProvider(new DirtBlock());  // Item ID 3
+            repository.RegisterItemProvider(new CobblestoneBlock());  // Item ID 4
 
-            public void DiscoverItemProviders(IRegisterItemProvider repository)
-            {
-                repository.RegisterItemProvider(new LavaBlock());  // Item ID 10
-                repository.RegisterItemProvider(new SandBlock());  // Item ID 12
-                repository.RegisterItemProvider(new StoneBlock()); // Item ID 1
-                repository.RegisterItemProvider(new GrassBlock()); // Item ID 2
-                repository.RegisterItemProvider(new DirtBlock());  // Item ID 3
-                repository.RegisterItemProvider(new CobblestoneBlock());  // Item ID 4
-
-                string xmlSnowBall = @"    <item>
+            string xmlSnowBall = @"    <item>
       <id>332</id>
       <maximumstack>16</maximumstack>
       <visiblemetadata>
@@ -60,25 +60,25 @@ namespace TrueCraft.Core.Test
       </visiblemetadata>
     </item>
 ";
-                repository.RegisterItemProvider(new SnowballItem(GetTopNode(xmlSnowBall)));
-            }
+            repository.RegisterItemProvider(new SnowballItem(GetTopNode(xmlSnowBall)));
+        }
 
-            private static XmlNode GetTopNode(string xml)
+        private static XmlNode GetTopNode(string xml)
+        {
+            XmlDocument doc = new XmlDocument();
+            using (StringReader sr = new StringReader(xml))
+            using (XmlReader xmlr = XmlReader.Create(sr))
+                doc.Load(xmlr);
+
+            return doc.FirstChild!;
+        }
+
+        public void DiscoverRecipes(IRegisterRecipe repository)
+        {
+            string[] recipeXML = new string[]
             {
-                XmlDocument doc = new XmlDocument();
-                using (StringReader sr = new StringReader(xml))
-                using (XmlReader xmlr = XmlReader.Create(sr))
-                    doc.Load(xmlr);
-
-                return doc.FirstChild!;
-            }
-
-            public void DiscoverRecipes(IRegisterRecipe repository)
-            {
-                string[] recipeXML = new string[]
-                {
-                    // Sticks
-                    @"<recipe>
+                // Sticks
+                @"<recipe>
       <pattern>
         <r>
           <c>
@@ -99,8 +99,8 @@ namespace TrueCraft.Core.Test
       </output>
     </recipe>
 ",
-                    // Stone shovel
-                    @"<recipe>
+                // Stone shovel
+                @"<recipe>
       <pattern>
         <r>
           <c>
@@ -127,8 +127,8 @@ namespace TrueCraft.Core.Test
       </output>
     </recipe>
 ",
-                    // Stone Hoe
-                    @"<recipe>
+                // Stone Hoe
+                @"<recipe>
       <pattern>
         <r>
           <c>
@@ -167,8 +167,8 @@ namespace TrueCraft.Core.Test
       </output>
     </recipe>
 ",
-                    // Stone PickAxe
-                    @"<recipe>
+                // Stone PickAxe
+                @"<recipe>
       <pattern>
         <r>
           <c>
@@ -218,30 +218,29 @@ namespace TrueCraft.Core.Test
         <count>1</count>
       </output>
     </recipe>"
-                };
+            };
 
-                for (int j = 0; j < recipeXML.Length; j ++)
-                {
-                    XmlDocument doc= new XmlDocument();
-                    doc.LoadXml(recipeXML[j]);
-                    XmlNode item = doc.DocumentElement!;
+            for (int j = 0; j < recipeXML.Length; j ++)
+            {
+                XmlDocument doc= new XmlDocument();
+                doc.LoadXml(recipeXML[j]);
+                XmlNode item = doc.DocumentElement!;
 
-                    repository.RegisterRecipe(new CraftingRecipe(item));
-                }
+                repository.RegisterRecipe(new CraftingRecipe(item));
             }
         }
+    }
 
-        public static IBlockRepository BlockRepository { get => _blockRepository; }
-        public static IItemRepository ItemRepository { get => _itemRepository; }
-        public static ICraftingRepository CraftingRepository { get => _craftingRepository; }
+    public static IBlockRepository BlockRepository { get => _blockRepository; }
+    public static IItemRepository ItemRepository { get => _itemRepository; }
+    public static ICraftingRepository CraftingRepository { get => _craftingRepository; }
 
-        [OneTimeSetUp]
-        public void SetupRepositories()
-        {
-            IDiscover discover = new MockDiscover();
-            _blockRepository = TrueCraft.Core.Logic.BlockRepository.Init(discover);
-            _itemRepository = TrueCraft.Core.Logic.ItemRepository.Init(discover);
-            _craftingRepository =  TrueCraft.Core.Logic.CraftingRepository.Init(discover);
-        }
+    [OneTimeSetUp]
+    public void SetupRepositories()
+    {
+        IDiscover discover = new MockDiscover();
+        _blockRepository = TrueCraft.Core.Logic.BlockRepository.Init(discover);
+        _itemRepository = TrueCraft.Core.Logic.ItemRepository.Init(discover);
+        _craftingRepository =  TrueCraft.Core.Logic.CraftingRepository.Init(discover);
     }
 }

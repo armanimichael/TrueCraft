@@ -1,15 +1,14 @@
 using System.Xml;
 
-namespace TrueCraft.Core.Logic.Items
+namespace TrueCraft.Core.Logic.Items;
+
+public class BoatItem : ItemProvider
 {
-    public class BoatItem : ItemProvider
+    public static readonly short ItemID = 0x14D;
+
+    public BoatItem(XmlNode node) : base(node)
     {
-        public static readonly short ItemID = 0x14D;
-
-        public BoatItem(XmlNode node) : base(node)
-        {
-        }
-
-        // TODO: Add Behaviour (server-side)
     }
+
+    // TODO: Add Behaviour (server-side)
 }

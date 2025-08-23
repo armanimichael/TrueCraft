@@ -1,11 +1,10 @@
-namespace TrueCraft.Core.Lighting
+namespace TrueCraft.Core.Lighting;
+
+public interface ILighter
 {
-    public interface ILighter
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="operation"></param>
-        void DoLightingOperation(LightingOperation operation);
-    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="operation"></param>
+    void DoLightingOperation(LightingOperation operation);
 }

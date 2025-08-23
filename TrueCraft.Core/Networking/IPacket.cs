@@ -1,9 +1,8 @@
-﻿namespace TrueCraft.Core.Networking
+﻿namespace TrueCraft.Core.Networking;
+
+public interface IPacket
 {
-    public interface IPacket
-    {
-        byte ID { get; }
-        void ReadPacket(IMinecraftStream stream);
-        void WritePacket(IMinecraftStream stream);
-    }
+    byte ID { get; }
+    void ReadPacket(IMinecraftStream stream);
+    void WritePacket(IMinecraftStream stream);
 }
