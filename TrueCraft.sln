@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrueCraft", "TrueCraft\True
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrueCraft.Core", "TrueCraft.Core\TrueCraft.Core.csproj", "{FA4BE9A3-DBF0-4380-BA2B-FFAA71C4706D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fNbt", "externals\fNbt\fNbt\fNbt.csproj", "{4488498D-976D-4DA3-BF72-109531AF0488}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrueCraft.Client", "TrueCraft.Client\TrueCraft.Client.csproj", "{A6516869-A2FB-4E31-85C8-2285490CB32C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrueCraft.Launcher", "TrueCraft.Launcher\TrueCraft.Launcher.csproj", "{6604F17A-552E-405D-B327-37C8B1648C86}"
@@ -30,12 +28,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4488498D-976D-4DA3-BF72-109531AF0488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4488498D-976D-4DA3-BF72-109531AF0488}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4488498D-976D-4DA3-BF72-109531AF0488}.Optimized Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4488498D-976D-4DA3-BF72-109531AF0488}.Optimized Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4488498D-976D-4DA3-BF72-109531AF0488}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4488498D-976D-4DA3-BF72-109531AF0488}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6604F17A-552E-405D-B327-37C8B1648C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6604F17A-552E-405D-B327-37C8B1648C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6604F17A-552E-405D-B327-37C8B1648C86}.Optimized Debug|Any CPU.ActiveCfg = Optimized Debug|Any CPU
