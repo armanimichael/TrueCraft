@@ -1,6 +1,5 @@
 using System;
 using TrueCraft.Core.World;
-using TrueCraft.Core.Windows;
 using TrueCraft.Core.Entities;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Inventory;

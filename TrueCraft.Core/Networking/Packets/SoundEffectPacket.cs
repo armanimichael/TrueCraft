@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Networking.Packets
+﻿namespace TrueCraft.Core.Networking.Packets
 {
     /// <summary>
     /// Plays a sound effect (or special case: generates smoke particles)

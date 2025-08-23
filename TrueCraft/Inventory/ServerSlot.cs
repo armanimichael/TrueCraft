@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.CompilerServices;
 using TrueCraft.Core;
 using TrueCraft.Core.Inventory;

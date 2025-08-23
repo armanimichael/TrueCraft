@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TrueCraft.TerrainGen.Noise
+﻿namespace TrueCraft.TerrainGen.Noise
 {
     //Perlin Noise implemented using http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
     public class Perlin : NoiseGen

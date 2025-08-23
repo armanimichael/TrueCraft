@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Networking.Packets
+﻿namespace TrueCraft.Core.Networking.Packets
 {
     /// <summary>
     /// Sent by the server to specify the coordinates of the spawn point. This only affects what the

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Networking.Packets
+﻿namespace TrueCraft.Core.Networking.Packets
 {
     /// <summary>
     /// Sent to update the rotation of the player's head and body.

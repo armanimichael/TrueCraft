@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Xml;
 using System.Xml.Schema;
 using NUnit.Framework;
-using TrueCraft.Core;
 
 namespace TrueCraft.Core.Test.Assets
 {

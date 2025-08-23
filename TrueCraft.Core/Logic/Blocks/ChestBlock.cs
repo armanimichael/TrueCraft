@@ -1,7 +1,6 @@
 using System;
 using TrueCraft.Core.World;
 using fNbt;
-using TrueCraft.Core.Windows;
 using TrueCraft.Core.Entities;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Server;

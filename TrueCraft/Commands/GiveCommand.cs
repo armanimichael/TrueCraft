@@ -6,7 +6,6 @@ using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.Server;
-using TrueCraft.Core.Windows;
 using TrueCraft.Inventory;
 
 namespace TrueCraft.Commands

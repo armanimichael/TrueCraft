@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Networking.Packets
+﻿namespace TrueCraft.Core.Networking.Packets
 {
     /// <summary>
     /// Used by clients to send messages and by servers to propegate messages to clients.

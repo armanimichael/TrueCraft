@@ -1,7 +1,6 @@
 using System;
 using Moq;
 using NUnit.Framework;
-using TrueCraft;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Server;
 using TrueCraft.World;

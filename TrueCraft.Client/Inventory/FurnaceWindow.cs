@@ -7,7 +7,6 @@ using TrueCraft.Core;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Windows;
-using TrueCraft.Core.World;
 
 namespace TrueCraft.Client.Inventory
 {

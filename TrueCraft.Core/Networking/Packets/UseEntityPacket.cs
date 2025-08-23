@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Networking.Packets
+﻿namespace TrueCraft.Core.Networking.Packets
 {
     /// <summary>
     /// Sent by clients upon clicking an entity.

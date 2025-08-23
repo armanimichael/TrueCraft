@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using fNbt;
 using TrueCraft.Core;
 using TrueCraft.Core.Inventory;
-using TrueCraft.Core.Logic;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;

@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.World;
 using TrueCraft.World;

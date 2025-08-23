@@ -1,4 +1,3 @@
-using System;
 using TrueCraft.Client.Handlers;
 using TrueCraft.Client.Modules;
 

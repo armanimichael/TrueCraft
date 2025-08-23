@@ -1,4 +1,3 @@
-using System;
 using TrueCraft.Core.World;
 using NUnit.Framework;
 

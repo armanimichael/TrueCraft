@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Logic
+﻿namespace TrueCraft.Core.Logic
 {
     /// <summary>
     /// Providers block providers for a server.

@@ -1,7 +1,6 @@
 using fNbt;
 using fNbt.Serialization;
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
 
 namespace TrueCraft.Core

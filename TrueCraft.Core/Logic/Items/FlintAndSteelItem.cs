@@ -1,5 +1,4 @@
-﻿using System;
-using System.Xml;
+﻿using System.Xml;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Server;

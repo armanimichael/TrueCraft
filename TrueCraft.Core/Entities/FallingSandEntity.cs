@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.Core.World;
+﻿using TrueCraft.Core.World;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Logic;
 using System.Linq;

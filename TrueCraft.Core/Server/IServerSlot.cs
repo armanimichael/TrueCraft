@@ -1,5 +1,3 @@
-using System;
-using fNbt;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Networking.Packets;
 

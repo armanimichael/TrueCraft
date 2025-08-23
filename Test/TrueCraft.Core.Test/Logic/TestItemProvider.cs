@@ -1,9 +1,6 @@
-using System;
-using Moq;
 using TrueCraft.Core.Logic;
 using NUnit.Framework;
 using System.Xml;
-using System.Text;
 using System.IO;
 
 namespace TrueCraft.Core.Test.Logic

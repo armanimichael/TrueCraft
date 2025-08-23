@@ -1,4 +1,3 @@
-using System;
 using System.Xml;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Networking;

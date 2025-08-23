@@ -2,7 +2,6 @@
 using TrueCraft.Core.Entities;
 using System.Collections.Generic;
 using TrueCraft.Core.Networking;
-using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.Server
 {

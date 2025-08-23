@@ -1,4 +1,3 @@
-using System;
 using fNbt;
 
 namespace TrueCraft.Launcher.Singleplayer

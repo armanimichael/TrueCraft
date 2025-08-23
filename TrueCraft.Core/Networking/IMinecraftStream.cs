@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace TrueCraft.Core.Networking
+﻿namespace TrueCraft.Core.Networking
 {
     public interface IMinecraftStream
     {

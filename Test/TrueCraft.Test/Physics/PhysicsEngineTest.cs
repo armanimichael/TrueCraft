@@ -4,17 +4,14 @@ using System.ComponentModel;
 using Moq;
 using NUnit.Framework;
 using TrueCraft.Core.Entities;
-using TrueCraft.Core.Lighting;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Physics;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
-using TrueCraft.TerrainGen;
 using TrueCraft.Test.World;
 using TrueCraft.World;
-using static TrueCraft.Core.Logic.Blocks.StairsBlock;
 
 namespace TrueCraft.Core.Test.Physics
 {

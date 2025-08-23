@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.Core.Server;
+﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.Entities

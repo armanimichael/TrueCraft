@@ -2,10 +2,8 @@
 using TrueCraft.Core.Networking;
 using System.Net;
 using System.Collections.Generic;
-using TrueCraft.Core.World;
 using TrueCraft.Core.Logging;
 using TrueCraft.Core.Logic;
-using TrueCraft.Core.Inventory;
 
 namespace TrueCraft.Core.Server
 {

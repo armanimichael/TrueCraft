@@ -3,7 +3,6 @@ using System.Linq;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.Server;
-using TrueCraft.Core.Physics;
 using System.Collections.Generic;
 using TrueCraft.Core.World;
 

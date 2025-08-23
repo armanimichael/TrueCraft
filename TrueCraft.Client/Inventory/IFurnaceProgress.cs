@@ -1,5 +1,3 @@
-using System;
-
 namespace TrueCraft.Client.Inventory
 {
     public interface IFurnaceProgress

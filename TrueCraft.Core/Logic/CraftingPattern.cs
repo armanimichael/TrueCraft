@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Xml;
-using TrueCraft.Core.Inventory;
-using TrueCraft.Core.Windows;
 
 namespace TrueCraft.Core.Logic
 {

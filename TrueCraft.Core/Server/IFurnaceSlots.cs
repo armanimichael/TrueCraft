@@ -1,6 +1,3 @@
-using System;
-using TrueCraft.Core.Inventory;
-
 namespace TrueCraft.Core.Server
 {
     public interface IFurnaceSlots

@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
-using TrueCraft.Core;
-using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
-using TrueCraft.Core.Server;
 
 namespace TrueCraft.Inventory
 {

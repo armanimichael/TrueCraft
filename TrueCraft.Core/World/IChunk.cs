@@ -1,7 +1,5 @@
 ﻿using System;
 using fNbt;
-using TrueCraft.Core;
-using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.World
 {

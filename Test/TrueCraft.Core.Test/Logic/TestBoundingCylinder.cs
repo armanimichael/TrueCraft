@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using System;
+
 namespace TrueCraft.Core.Test
 {
     [TestFixture]

@@ -1,5 +1,3 @@
-using System;
-
 namespace TrueCraft.Core.Logic.Blocks
 {
     public class LavaBlock : FluidBlock

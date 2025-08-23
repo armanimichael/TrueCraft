@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.Logic
+﻿namespace TrueCraft.Core.Logic
 {
     /// <summary>
     /// Describes an item that can be smelted in a furnace to produce a new item.

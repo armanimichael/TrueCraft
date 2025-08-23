@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TrueCraft.Core;
 using TrueCraft.Core.AI;
 using TrueCraft.Core.World;

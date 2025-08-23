@@ -1,4 +1,3 @@
-using System;
 using TrueCraft.Core.Networking;
 
 namespace TrueCraft.Core

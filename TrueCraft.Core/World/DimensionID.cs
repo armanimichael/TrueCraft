@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core.World
+﻿namespace TrueCraft.Core.World
 {
     /// <summary>
     /// Enumerates the different dimensions in the world in TrueCraft.

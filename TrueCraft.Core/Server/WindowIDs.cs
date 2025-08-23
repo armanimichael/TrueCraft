@@ -1,5 +1,3 @@
-using System;
-
 namespace TrueCraft.Core.Server
 {
     // TODO: refactor to server-side only

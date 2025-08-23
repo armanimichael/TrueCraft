@@ -8,7 +8,6 @@ using TrueCraft.Core.Logic.Blocks;
 using System.Linq;
 using fNbt;
 using TrueCraft.Core.Logic.Items;
-using TrueCraft.Core.Physics;
 
 namespace TrueCraft.Core.Logic
 {

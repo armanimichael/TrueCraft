@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TrueCraft.TerrainGen.Noise;
-using TrueCraft.Core;
 using TrueCraft.Core.World;
 
 namespace TrueCraft.World

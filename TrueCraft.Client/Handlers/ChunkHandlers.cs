@@ -1,5 +1,4 @@
-﻿using System;
-using MonoGame.Framework.Utilities.Deflate;
+﻿using MonoGame.Framework.Utilities.Deflate;
 using TrueCraft.Client.Events;
 using TrueCraft.Client.World;
 using TrueCraft.Core.Networking;

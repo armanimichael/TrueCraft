@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;

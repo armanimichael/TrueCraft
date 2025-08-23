@@ -1,11 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Linq;
 using System.Net.Sockets;
 using TrueCraft.Core;
-using System.Threading;
-using System.Reflection;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Client.Handlers;

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrueCraft.Core
+﻿namespace TrueCraft.Core
 {
     /// <summary>
     /// Enumerates the different game modes in TrueCraft.

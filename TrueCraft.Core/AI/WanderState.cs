@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.Core.Entities;
+﻿using TrueCraft.Core.Entities;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 using System.Threading.Tasks;

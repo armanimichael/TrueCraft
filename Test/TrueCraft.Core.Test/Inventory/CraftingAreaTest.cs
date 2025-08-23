@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Moq;
 using NUnit.Framework;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Logic;

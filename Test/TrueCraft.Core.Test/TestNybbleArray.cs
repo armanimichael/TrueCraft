@@ -1,7 +1,6 @@
 using System;
 using fNbt;
 using NUnit.Framework;
-using TrueCraft.Core;
 
 namespace TrueCraft.Core.Test
 {

@@ -1,4 +1,3 @@
-using System;
 using TrueCraft.Core.Inventory;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Server;

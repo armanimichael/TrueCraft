@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TrueCraft.Core;
-using TrueCraft.Core.Logic;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.World;
 using TrueCraft.Client.Input;

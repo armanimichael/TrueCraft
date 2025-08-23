@@ -1,6 +1,4 @@
-﻿using System;
-using TrueCraft.Core.Server;
-using TrueCraft.Core.Networking;
+﻿using TrueCraft.Core.Networking;
 
 namespace TrueCraft.Commands
 {

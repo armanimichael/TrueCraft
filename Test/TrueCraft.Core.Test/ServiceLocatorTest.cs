@@ -3,7 +3,6 @@ using Moq;
 using NUnit.Framework;
 using TrueCraft.Core;
 using TrueCraft.Core.Logic;
-using TrueCraft.Core.Server;
 
 namespace TrueCraft.Test
 {

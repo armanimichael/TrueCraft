@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.World;
+﻿using TrueCraft.World;
 
 namespace TrueCraft.TerrainGen.Noise
 {

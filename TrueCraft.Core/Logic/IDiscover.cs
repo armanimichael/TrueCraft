@@ -1,4 +1,3 @@
-using System;
 namespace TrueCraft.Core.Logic
 {
     public interface IDiscover

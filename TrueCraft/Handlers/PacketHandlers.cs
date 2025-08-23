@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.Core.Server;
+﻿using TrueCraft.Core.Server;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.Networking;
 using TrueCraft.Exceptions;

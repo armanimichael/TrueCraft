@@ -1,5 +1,3 @@
-using System;
-
 namespace TrueCraft.Core.Inventory
 {
     public interface IInventoryWindow<T> : IWindow<T> where T : ISlot

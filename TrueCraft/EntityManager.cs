@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using TrueCraft.Core;
 using TrueCraft.Core.Entities;
-using TrueCraft.Core.Logic;
 using TrueCraft.Core.Networking;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.Physics;

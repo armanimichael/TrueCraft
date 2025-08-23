@@ -1,4 +1,3 @@
-using System;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;

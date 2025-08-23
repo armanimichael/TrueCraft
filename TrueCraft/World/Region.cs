@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using fNbt;
-using TrueCraft.Core.Networking;
 using TrueCraft.Core.World;
 
 namespace TrueCraft.World

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using TrueCraft.Core;
+﻿using System.Collections.Generic;
 using TrueCraft.Core.World;
-using System.Diagnostics;
 using TrueCraft.Core.Logic;
 
 namespace TrueCraft.Core.AI

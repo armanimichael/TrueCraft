@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.Core.AI;
+﻿using TrueCraft.Core.AI;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
 

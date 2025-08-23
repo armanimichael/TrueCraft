@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TrueCraft.Core
+﻿namespace TrueCraft.Core
 {
     /// <summary>
     /// Enumerates the different species of trees in TrueCraft.

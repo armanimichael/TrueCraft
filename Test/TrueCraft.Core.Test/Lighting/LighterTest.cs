@@ -5,7 +5,6 @@ using NUnit.Framework;
 using TrueCraft.Core.Lighting;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Logic.Blocks;
-using TrueCraft.Core.Server;
 using TrueCraft.Core.Test.World;
 using TrueCraft.Core.World;
 

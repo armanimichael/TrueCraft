@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using TrueCraft.Core;
 using TrueCraft.Core.Logic;
 
 namespace TrueCraft.Core.Inventory

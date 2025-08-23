@@ -1,8 +1,5 @@
-using System;
-using TrueCraft.Core;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Windows;
-using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.Inventory
 {

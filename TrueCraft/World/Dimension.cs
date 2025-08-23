@@ -1,18 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using fNbt;
-using TrueCraft.Core;
 using TrueCraft.Core.Lighting;
 using TrueCraft.Core.Logging;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
-using TrueCraft.Profiling;
 
 namespace TrueCraft.World
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using Gtk;
+﻿using Gtk;
 
 namespace TrueCraft.Launcher.Views
 {

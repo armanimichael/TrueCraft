@@ -1,6 +1,5 @@
 ﻿using System;
 using TrueCraft.Core.AI;
-using TrueCraft.Core.Physics;
 
 namespace TrueCraft.Core.Entities
 {

@@ -1,6 +1,4 @@
 ﻿using System;
-using TrueCraft.Core.Entities;
-using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.Logic
 {

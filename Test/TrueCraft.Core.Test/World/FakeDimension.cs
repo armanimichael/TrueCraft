@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TrueCraft.Core.Logic;
-using TrueCraft.Core.Logic.Blocks;
 using TrueCraft.Core.World;
 
 namespace TrueCraft.Core.Test.World

@@ -3,11 +3,9 @@ using System.Diagnostics;
 using Moq;
 using NUnit.Framework;
 using TrueCraft.Core.AI;
-using TrueCraft.Core.Lighting;
 using TrueCraft.Core.Logic;
 using TrueCraft.Core.Server;
 using TrueCraft.Core.World;
-using TrueCraft.TerrainGen;
 using TrueCraft.Test.World;
 using TrueCraft.World;
 

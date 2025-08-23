@@ -1,5 +1,4 @@
-﻿using System;
-using TrueCraft.Core.World;
+﻿using TrueCraft.Core.World;
 using TrueCraft.Core.Server;
 
 namespace TrueCraft.Core.AI

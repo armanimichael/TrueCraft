@@ -1,5 +1,3 @@
-using System;
-
 namespace TrueCraft.Core.Utility
 {
     /// <summary>

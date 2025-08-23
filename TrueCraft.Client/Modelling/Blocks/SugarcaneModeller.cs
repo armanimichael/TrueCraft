@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using TrueCraft.Core.Logic.Blocks;
 
 namespace TrueCraft.Client.Modelling.Blocks
