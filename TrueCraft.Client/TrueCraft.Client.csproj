@@ -29,7 +29,6 @@
     <Content Include="Content/**/*.ogg" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Content/**/*.wav" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content/Fonts/*.fnt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="packages.config" />
   </ItemGroup>
 
   <ItemGroup>
