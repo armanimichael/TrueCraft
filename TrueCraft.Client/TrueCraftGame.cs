@@ -67,6 +67,7 @@ public class TrueCraftGame : Game
         _serviceLocator = serviceLocator;
 
         Window.Title = "TrueCraft";
+        Window.AllowUserResizing = true;
         Content.RootDirectory = "Content";
         Graphics = new GraphicsDeviceManager(this);
         Graphics.SynchronizeWithVerticalRetrace = false;
@@ -75,6 +76,7 @@ public class TrueCraftGame : Game
         Graphics.PreferredBackBufferHeight = UserSettings.Local.WindowResolution.Height;
         Graphics.GraphicsProfile = GraphicsProfile.HiDef;
         Graphics.ApplyChanges();
+        SetScaleFactor();
         Window.ClientSizeChanged += Window_ClientSizeChanged;
         Client = client;
         _endPoint = endPoint;
@@ -98,6 +100,14 @@ public class TrueCraftGame : Game
 
     private void Window_ClientSizeChanged(object? sender, EventArgs e)
     {
+        SetScaleFactor();
+        IconRenderer.PrepareEffects(this);
+        UpdateCamera();
+        CreateRenderTarget();
+    }
+
+    private void SetScaleFactor()
+    {
         if (GraphicsDevice.Viewport.Width < 640 || GraphicsDevice.Viewport.Height < 480)
         {
             ScaleFactor = 0.5f;
@@ -110,10 +120,6 @@ public class TrueCraftGame : Game
         {
             ScaleFactor = 1.5f;
         }
-
-        IconRenderer.PrepareEffects(this);
-        UpdateCamera();
-        CreateRenderTarget();
     }
 
     protected override void Initialize()

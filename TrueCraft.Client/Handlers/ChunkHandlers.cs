@@ -1,4 +1,4 @@
-﻿using MonoGame.Framework.Utilities.Deflate;
+﻿using Ionic.Zlib;
 using TrueCraft.Client.Events;
 using TrueCraft.Client.World;
 using TrueCraft.Core.Networking;

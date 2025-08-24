@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using fNbt;
-using MonoGame.Framework.Utilities.Deflate;
+using Ionic.Zlib;
 using TrueCraft.Core;
 using TrueCraft.Core.Networking.Packets;
 using TrueCraft.Core.World;
